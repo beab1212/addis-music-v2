@@ -10,14 +10,15 @@ export const Navbar = () => {
   const { isAuthenticated, user, openAuthModal } = useAuthStore();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 z-30">
+    <nav className="fixed top-0 left-0 right-0 bg-white/80x dark:bg-gray-900/80x backdrop-blur-xl border-b border-gray-200 dark:border-gray-700 z-30">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/app" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-linear-to-br from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">M</span>
+            <div className="w-10 h-10 bg-linear-to-br from-orange-500x to-pink-500x rounded-lg flex items-center justify-center">
+              {/* <span className="text-white font-bold text-xl">M</span> */}
+              <img src="/addisMusic.png" alt="Addis Music Logo" className="object-contain" />
             </div>
-            <span className="font-bold text-xl text-gray-900 dark:text-white hidden sm:block">MusicFlow</span>
+            <span className="font-bold text-xl text-gray-900 dark:text-white hidden sm:block">Addis Music</span>
           </Link>
 
           <div className="flex items-center gap-4">
