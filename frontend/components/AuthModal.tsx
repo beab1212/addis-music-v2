@@ -111,12 +111,30 @@ export const AuthModal = () => {
                 />
               </div>
 
+              <div>
+                <div className="mb-4 text-center text-gray-500 dark:text-gray-400">or</div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={() => addToast('Google sign-in is not implemented yet.', 'info')}
+                  className="w-full flex items-center justify-center gap-2 border border-gray-300 dark:border-gray-600 py-3 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                >
+                  <img
+                    src="/icons8-google-48.png"
+                    alt="Google"
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                  <span className="text-gray-600 dark:text-gray-400">Continue with Google</span>
+                </motion.button>
+              </div>
+
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-linear-to-r from-orange-500 to-pink-500 text-white py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Loading...' : authMode === 'signin' ? 'Sign In' : 'Sign Up'}
               </motion.button>
