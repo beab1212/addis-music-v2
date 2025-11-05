@@ -48,11 +48,11 @@ export const MiniPlayer = () => {
               src={currentSong.coverUrl}
               alt={currentSong.title}
               className="w-14 h-14 rounded-lg shadow-lg object-cover cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => navigate.push('/player')}
+              onClick={() => navigate.push('/app/player')}
             />
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-gray-900 dark:text-white truncate cursor-pointer hover:text-orange-500 transition-colors"
-                  onClick={() => navigate.push('/player')}>
+                  onClick={() => navigate.push('/app/player')}>
                 {currentSong.title}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{currentSong.artist}</p>
@@ -119,7 +119,7 @@ export const MiniPlayer = () => {
           </div>
 
           <button
-            onClick={() => navigate.push('/player')}
+            onClick={() => navigate.push('/app/player')}
             className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <Maximize2 size={18} />
