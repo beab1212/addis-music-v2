@@ -1,136 +1,133 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Play, Edit, Trash2, MoreVertical } from 'lucide-react';
+import { Edit, LogOut, Crown } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 import { usePlaylistStore } from '@/store/playlistStore';
-import { usePlayerStore } from '@/store/playerStore';
-import { useToastStore } from '@/store/toastStore';
-import { formatDuration } from '@/utils/helpers';
+import { useRouter } from 'next/navigation';
+import { PlaylistCard } from '@/components/PlaylistCard';
+import { mockSongs } from '@/utils/mockData';
+import { SongCard } from '@/components/SongCard';
 
-export default function PlaylistDetail() {
-  const params = useParams();
-  const id = params?.playlistId as string;
+export default function Profile() {
+  const { user, logout } = useAuthStore();
+  const { playlists } = usePlaylistStore();
   const navigate = useRouter();
-  const { getPlaylistById, removeSongFromPlaylist, deletePlaylist } = usePlaylistStore();
-  const { setQueue, setCurrentSong } = usePlayerStore();
-  const { addToast } = useToastStore();
 
-  const playlist = getPlaylistById(id as string);
-
-  if (!playlist) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Playlist not found</h2>
-      </div>
-    );
+  if (!user) {
+    navigate.push('/');
+    return null;
   }
 
-  const handlePlay = () => {
-    if (playlist.songs.length > 0) {
-      setQueue(playlist.songs);
-      setCurrentSong(playlist.songs[0]);
-      addToast('Playing playlist', 'success');
-    }
-  };
+  const userPlaylists = playlists.filter((p) => p.createdBy === user.id);
+  const likedSongs = mockSongs.filter((s) => user.likedSongs.includes(s.id));
 
-  const handleDelete = () => {
-    deletePlaylist(playlist.id);
-    addToast('Playlist deleted', 'success');
-    navigate.push('/library');
+  const handleLogout = () => {
+    logout();
+    navigate.push('/');
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
-      >
-        <div className="flex flex-col md:flex-row gap-6 mb-8">
-          <img
-            src={playlist.coverUrl}
-            alt={playlist.name}
-            className="w-64 h-64 rounded-2xl shadow-2xl object-cover"
-          />
-          <div className="flex flex-col justify-end">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PLAYLIST</p>
-            <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              {playlist.name}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{playlist.description}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {playlist.songs.length} songs
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="bg-linear-to-br from-orange-400 to-pink-500 rounded-3xl p-8 mb-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10" />
+          <div className="relative flex flex-col md:flex-row items-center gap-6">
+            <img
+              src={user.photoUrl}
+              alt={user.username}
+              className="w-32 h-32 rounded-full border-4 border-white shadow-2xl object-cover"
+            />
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                <h1 className="text-4xl font-bold text-white">{user.username}</h1>
+                {user.isPremium && (
+                  <div className="bg-yellow-400 text-gray-900 rounded-full p-1.5">
+                    <Crown size={20} />
+                  </div>
+                )}
+              </div>
+              <p className="text-white/90 mb-4">{user.email}</p>
+              <p className="text-white/80">{user.bio}</p>
+            </div>
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-3 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors"
+              >
+                <Edit size={20} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLogout}
+                className="p-3 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-white/30 transition-colors"
+              >
+                <LogOut size={20} />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {!user.isPremium && (
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="bg-linear-to-r from-yellow-400 via-orange-500 to-pink-500 rounded-2xl p-6 mb-8 cursor-pointer"
+            onClick={() => navigate.push('/app/premium')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-2">Upgrade to Premium</h3>
+                <p className="text-white/90">Get unlimited access to all features</p>
+              </div>
+              <Crown size={48} className="text-white" />
+            </div>
+          </motion.div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">Playlists</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {userPlaylists.length}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">Liked Songs</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{likedSongs.length}</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <p className="text-gray-600 dark:text-gray-400 mb-2">Following</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {user.followedArtists.length}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 mb-8">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handlePlay}
-            className="bg-orange-500 text-white rounded-full p-4 shadow-xl hover:bg-orange-600 transition-colors"
-          >
-            <Play size={24} fill="white" />
-          </motion.button>
-          <button
-            onClick={() => navigate.push(`/playlist/${playlist.id}/edit`)}
-            className="p-3 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            <Edit size={20} />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="p-3 rounded-full bg-white dark:bg-gray-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-          >
-            <Trash2 size={20} />
-          </button>
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Your Playlists</h2>
+          {userPlaylists.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {userPlaylists.map((playlist) => (
+                <PlaylistCard key={playlist.id} playlist={playlist} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">No playlists yet</p>
+          )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
-          <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
-            <div className="col-span-1">#</div>
-            <div className="col-span-6">Title</div>
-            <div className="col-span-3">Album</div>
-            <div className="col-span-2 text-right">Duration</div>
-          </div>
-          {playlist.songs.map((song, index) => (
-            <motion.div
-              key={song.id}
-              whileHover={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}
-              className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer group"
-              onClick={() => {
-                setQueue(playlist.songs);
-                setCurrentSong(song);
-              }}
-            >
-              <div className="col-span-1 text-gray-600 dark:text-gray-400">{index + 1}</div>
-              <div className="col-span-6 flex items-center gap-3">
-                <img src={song.coverUrl} alt={song.title} className="w-12 h-12 rounded object-cover" />
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{song.title}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{song.artist}</p>
-                </div>
-              </div>
-              <div className="col-span-3 flex items-center text-gray-600 dark:text-gray-400">
-                {song.album}
-              </div>
-              <div className="col-span-2 flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{formatDuration(song.duration)}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeSongFromPlaylist(playlist.id, song.id);
-                    addToast('Song removed from playlist', 'success');
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <MoreVertical size={16} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Liked Songs</h2>
+          {likedSongs.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {likedSongs.map((song) => (
+                <SongCard key={song.id} song={song} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600 dark:text-gray-400">No liked songs yet</p>
+          )}
         </div>
       </motion.div>
     </div>
