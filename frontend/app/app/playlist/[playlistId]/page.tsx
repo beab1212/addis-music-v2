@@ -37,7 +37,7 @@ export default function PlaylistDetail() {
   const handleDelete = () => {
     deletePlaylist(playlist.id);
     addToast('Playlist deleted', 'success');
-    navigate.push('/library');
+    navigate.push('/app/library');
   };
 
   return (
@@ -75,7 +75,7 @@ export default function PlaylistDetail() {
             <Play size={24} fill="white" />
           </motion.button>
           <button
-            onClick={() => navigate.push(`/playlist/${playlist.id}/edit`)}
+            onClick={() => navigate.push(`/app/playlist/${playlist.id}/edit`)}
             className="p-3 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Edit size={20} />
