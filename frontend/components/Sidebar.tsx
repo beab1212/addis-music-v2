@@ -25,7 +25,7 @@ export const Sidebar = () => {
   const isActive = (path: string) => location === path;
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 pt-16 pb-24 fixed left-0 top-0 bottom-0 z-20">
+    <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 pt-16 pb-24 fixed left-0 top-0 bottom-0 z-20">
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
         <nav className="space-y-1">
           {mainLinks.map(({ to, icon: Icon, label }) => (
