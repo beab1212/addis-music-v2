@@ -78,7 +78,7 @@ export default function Player() {
               transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
               src={currentSong.coverUrl}
               alt={currentSong.title}
-              className="w-full aspect-square rounded-3xl shadow-2xl object-cover mb-8"
+              className="w-full aspect-square rounded-full shadow-2xl object-cover mb-8"
             />
 
             <div className="flex items-start justify-between mb-6">
