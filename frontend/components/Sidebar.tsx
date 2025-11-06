@@ -101,7 +101,7 @@ export const Sidebar = () => {
               </h3>
               <div className="space-y-1">
                 {playlists.slice(0, 5).map((playlist) => (
-                  <Link key={playlist.id} href={`/playlist/${playlist.id}`}>
+                  <Link key={playlist.id} href={`/app/playlist/${playlist.id}`}>
                     <motion.div
                       whileHover={{ x: 4 }}
                       className="flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
