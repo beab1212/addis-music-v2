@@ -4,11 +4,13 @@ import Image from "next/image";
 
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useSyncSession } from "@/hooks/useSyncSession";
 
 
 
 
 export default function Home() {
+  useSyncSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -45,8 +47,8 @@ export default function Home() {
 
   if (session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-        <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-blackx">
+        <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-blackx sm:items-start">
           <h1 className="text-2xl font-bold mb-4">Welcome, {session.user?.email}</h1>
           <button
             onClick={async () => {
