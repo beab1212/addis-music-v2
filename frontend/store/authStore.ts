@@ -8,7 +8,7 @@ interface AuthState {
   isAuthModalOpen: boolean;
   authMode: 'signin' | 'signup';
 
-  login: (email: string, password: string, provider: string | null) => Promise<void>;
+  login: (email: string, password: string, provider: string | null) => Promise<any | null>;
   signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setSession: (session: any | null) => void;
@@ -25,30 +25,46 @@ export const useAuthStore = create<AuthState>()((set) => ({
     authMode: 'signin',
 
     login: async (email: string, password: string, provider: string | null = null) => {
-      let data;
       try {
+        let response;
         if (provider) {
-            if (provider === 'google') {
-                data = await authClient.signIn.social({
-                    provider: "google",
-                });
-            }
-        } else {
-          data = await authClient.signIn.email({
-              email: email, // required
-              password: password, // required
-              callbackURL: "http://localhost:3000/app",
+          if (provider === "google") {
+            response = await authClient.signIn.social({
+              provider: "google",
+            });
+          } else {
+            throw new Error(`Unsupported provider: ${provider}`);
+          }
+        }
+        else {
+          response = await authClient.signIn.email({
+            email,
+            password,
+            callbackURL: "http://localhost:3000/app",
           });
         }
-      } catch (error: any) {
-        throw new Error(error.message);
+
+        const { data, error } = response;
+
+        if (error) {
+          throw new Error(error.message || "Login failed");
+        }
+
+        const user = data && 'user' in data ? (data as { user: any }).user : null;
+
+        set({
+          user: user,
+          isAuthenticated: !!user,
+          isAuthModalOpen: false,
+        });
+
+        return user;
+      } catch (err: any) {
+        console.error("Login error:", err);
+        throw new Error(err.message || "Unexpected login error");
       }
-      set({
-          user: data?.data && 'user' in data.data ? (data.data as any).user : null,
-          isAuthenticated: true,
-          isAuthModalOpen: false
-      });
     },
+
 
     signup: async (username: string, email: string, password: string) => {
       // await new Promise(resolve => setTimeout(resolve, 1000));
@@ -61,13 +77,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
       if (error) {
         throw new Error(error.message);
       }
-
-
-      set({
-        user: { ...mockUser, username, email },
-        isAuthenticated: true,
-        isAuthModalOpen: false
-      });
     },
 
     logout: async () => {

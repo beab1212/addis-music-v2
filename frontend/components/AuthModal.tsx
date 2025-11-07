@@ -23,15 +23,17 @@ export const AuthModal = () => {
 
     try {
       if (authMode === 'signin') {
-        await login(formData.email, formData.password);
+        await login(formData.email, formData.password, null);
         addToast('Welcome back!', 'success');
       } else {
         await signup(formData.username, formData.email, formData.password);
         addToast('Account created successfully!', 'success');
       }
       setFormData({ username: '', email: '', password: '' });
-    } catch (error) {
-      addToast('Authentication failed. Please try again.', 'error');
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : typeof error === 'string' ? error : 'Authentication failed. Please try again.';
+      addToast(message, 'error');
     } finally {
       setLoading(false);
     }
