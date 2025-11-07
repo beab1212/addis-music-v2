@@ -1,3 +1,7 @@
 frontend/i18n/translations.ts
 
-backend/*
+backend/.env
+backend/api/.env
+backend/api/temp/*
+
+Design/*
