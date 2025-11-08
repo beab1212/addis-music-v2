@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { auth } from "../libs/auth.js";
+import { auth } from "../libs/auth";
 
 export const authController = {
     signUpEmail: async (req: Request, res: Response) => {
