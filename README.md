@@ -72,7 +72,7 @@ psql -h localhost -U addismusic -d addisdb
 
 # 6. Sync Database Schema
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma
 ```
 
 ### 🧠 Vector Search Support (pgvector integration)
