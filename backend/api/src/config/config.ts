@@ -35,6 +35,12 @@ interface Config {
         db: number;
     };
 
+    cloudinary: {
+        cloudName: string;
+        apiKey: string;
+        apiSecret: string;
+    };
+
     corsOptions: CorsOptions;
 }
 
@@ -69,6 +75,11 @@ const config: Config = {
         username: process.env.REDIS_USERNAME || '',
         password: process.env.REDIS_PASSWORD || '',
         db: process.env.REDIS_DB ? parseInt(process.env.REDIS_DB) : 0
+    },
+    cloudinary: {
+        cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+        apiKey: process.env.CLOUDINARY_API_KEY || '',
+        apiSecret: process.env.CLOUDINARY_API_SECRET || '',
     },
 
     corsOptions: {
