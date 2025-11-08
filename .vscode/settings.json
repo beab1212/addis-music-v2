@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "Addis",
-        "Nodemailer"
+        "cuid",
+        "Nodemailer",
+        "pgvector"
     ]
 }
