@@ -2,6 +2,11 @@ frontend/i18n/translations.ts
 
 backend/.env
 backend/api/.env
+
+.env
+
 backend/api/temp/*
+backend/temp/*
+
 
 Design/*
