@@ -1,11 +1,12 @@
 import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { z } from "zod";
 // @ts-ignore
 import Database from "better-sqlite3";
 import config from "../config/config";
 import { sendVerificationEmail } from "./email";
 import { redisClient } from "./redis";
-
+import prisma from "./db";
 
 interface SecondaryStorage {
   get: (key: string) => Promise<unknown>; 
@@ -14,7 +15,10 @@ interface SecondaryStorage {
 }
 
 export const auth = betterAuth({
-    database: new Database("./sqlite.db"),
+    // database: new Database("./sqlite.db"),
+    database: prismaAdapter(prisma, {
+        provider: "postgresql",
+    }),
     user: {
         additionalFields: {
             role: {
