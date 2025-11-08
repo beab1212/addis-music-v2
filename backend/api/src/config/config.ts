@@ -24,6 +24,7 @@ interface Config {
         username: string;
         password: string;
         dbName: string;
+        databaseUrl: string;
     };
 
     redis: {
@@ -56,9 +57,11 @@ const config: Config = {
     database: {
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 27017,
-        username: process.env.DB_USERNAME || 'root',
-        password: process.env.DB_PASSWORD || '',
-        dbName: process.env.DB_NAME || 'addis-music',
+        username: process.env.DB_USERNAME || 'addismusic',
+        password: process.env.DB_PASSWORD || '@Addis@Music',
+        dbName: process.env.DB_NAME || 'addisdb',
+
+        databaseUrl: `postgresql://${process.env.DB_USERNAME || 'addismusic'}:${process.env.DB_PASSWORD || '@Addis@Music'}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 27017}/${process.env.DB_NAME || 'addisdb'}`
     },
 
     redis: {
