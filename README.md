@@ -110,6 +110,16 @@ ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(15
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(1536);
 ```
 
+#### Example
+```
+const results = await prisma.$queryRaw`
+  SELECT id, title
+  FROM "Track"
+  ORDER BY "metaDataEmbeddingVector" <-> ${embedding}::vector
+  LIMIT 10;
+`;
+```
+
 
 
 npx @better-auth/cli migrate --config ./src/libs/auth.ts
