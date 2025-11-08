@@ -31,11 +31,6 @@ export const auth = betterAuth({
                 },
                 input: false, // don't allow user to set role
             },
-            isArtist: {
-                type: "boolean",
-                required: true,
-                defaultValue: false,
-            },
         },
     },
     trustedOrigins: ["http://localhost:3000"],
