@@ -2,6 +2,8 @@ frontend/i18n/translations.ts
 
 backend/.env
 backend/api/.env
+backend/sqlite.db
+backend/api/sqlite.db
 
 .env
 
