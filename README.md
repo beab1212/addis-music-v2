@@ -47,7 +47,7 @@ Inside psql
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Create a new user for the app
-CREATE USER addismusic WITH PASSWORD '@Addis@Music';
+CREATE USER addismusic WITH PASSWORD 'dbpassword';
 
 -- Create a database owned by the new user
 CREATE DATABASE addisdb OWNER addismusic;
@@ -71,4 +71,7 @@ psql -h localhost -U addismusic -d addisdb
 
 
 npx @better-auth/cli migrate --config ./src/libs/auth.ts
+
+
+npx prisma migrate dev --name init --schema ./src/prisma/prisma.schema
 
