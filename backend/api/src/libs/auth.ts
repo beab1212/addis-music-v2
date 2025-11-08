@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { z } from "zod";
 // @ts-ignore
@@ -72,6 +73,9 @@ export const auth = betterAuth({
 			await redisClient.del(key);
 		}
 	},
+    plugins: [
+        admin() 
+    ]
 });
 
 
