@@ -56,9 +56,9 @@ const config: Config = {
 
     database: {
         host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 27017,
+        port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
         username: process.env.DB_USERNAME || 'addismusic',
-        password: process.env.DB_PASSWORD || '@Addis@Music',
+        password: process.env.DB_PASSWORD || 'dbpassword',
         dbName: process.env.DB_NAME || 'addisdb',
         databaseUrl: process.env.DATABASE_URL || '',
     },
