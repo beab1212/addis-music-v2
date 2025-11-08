@@ -52,6 +52,9 @@ CREATE USER addismusic WITH PASSWORD 'dbpassword';
 -- Create a database owned by the new user
 CREATE DATABASE addisdb OWNER addismusic;
 
+-- Give permission to create databases
+GRANT CREATE ON DATABASE postgres TO addismusic
+
 -- Optional: list all users
 \du
 
@@ -67,6 +70,45 @@ CREATE DATABASE addisdb OWNER addismusic;
 psql -h localhost -U addismusic -d addisdb
 ```
 
+# 6. Sync Database Schema
+```bash
+npx prisma migrate dev --name init
+```
+
+### 🧠 Vector Search Support (pgvector integration)
+
+Prisma currently does **not support `pgvector` columns natively**,  
+so we manually add them to the database after migrations.
+
+These vector columns are used for **AI-powered music recommendations**,  
+such as finding tracks with similar metadata or sonic features.
+
+---
+
+#### Why this is needed
+- Prisma’s `Bytes` and `Json` types can store embeddings,  
+  but **cannot perform similarity search or vector math**.
+- PostgreSQL’s [`pgvector`](https://github.com/pgvector/pgvector) extension  
+  provides efficient vector storage and similarity operators (`<->`, `<#>`, etc.).
+- By adding vector columns manually, we can query them using  
+  `prisma.$queryRaw` for recommendations, while keeping full Prisma ORM compatibility.
+
+---
+#### Setup Instructions
+
+Make sure the `pgvector` extension is enabled and the columns exist.
+
+```bash
+# Connect to the target database
+\c addisdb;
+
+# Enable pgvector extension (only once per DB)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+# Add vector columns for embeddings (1536 dimensions)
+ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(1536);
+ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(1536);
+```
 
 
 
