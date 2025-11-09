@@ -6,7 +6,10 @@ export function authorize(allowedRoles: string[] | string) {
         if (userRole && (Array.isArray(allowedRoles) ? allowedRoles.includes(userRole) : allowedRoles === userRole)) {
             next();
         } else {
-            res.status(403).json({ message: "Access denied." });
+            res.status(403).json({ 
+                success: false, 
+                message: 'Forbidden: You do not have permission to access this.'
+             });
         }
     };
 }
