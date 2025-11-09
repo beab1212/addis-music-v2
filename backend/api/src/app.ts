@@ -1,5 +1,4 @@
 import config from "./config/config";
-import 'express-async-errors';
 import express, { Router } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
