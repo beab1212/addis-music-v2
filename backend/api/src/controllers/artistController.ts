@@ -42,7 +42,15 @@ export const artistController = {
 
         const updatedData: any = { name, bio };
 
-        // If a new image is uploaded, update the imageUrl
+        const existingArtist = await prisma.artist.findUnique({
+            where: { id: artistId },
+        });
+
+        if (!existingArtist) {
+            throw new CustomErrors.NotFoundError('Artist not found');
+        }
+
+        // Only include imageUrl if a new image was uploaded 
         if (req.file) {
             updatedData.imageUrl = req.file.path;
         }
@@ -57,6 +65,14 @@ export const artistController = {
 
     deleteArtist: async (req: Request, res: Response) => {
         const artistId = uuidSchema.parse(req.params.id);
+
+        const artist = await prisma.artist.findUnique({
+            where: { id: artistId },
+        });
+
+        if (!artist) {
+            throw new CustomErrors.NotFoundError('Artist not found');
+        }
 
         await prisma.artist.delete({
             where: { id: artistId },
