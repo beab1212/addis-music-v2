@@ -10,7 +10,7 @@ async function getSession(req: Request) {
     return session;
 }
 
-export async function requireAuth(req: Request & { user?: { role?: string } }, res: Response, next: NextFunction) {
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
     try {
     const session = await getSession(req);
 
