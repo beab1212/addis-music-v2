@@ -2,7 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import path from 'path';
-import config from '../config/config.js';
+import config from '../config/config';
 
 cloudinary.config({
     cloud_name: config.cloudinary.cloudName,
