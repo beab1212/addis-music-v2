@@ -1,3 +1,4 @@
+import { success } from "better-auth/*";
 import { Request, Response, NextFunction } from "express";
 
 export interface AppError extends Error {
@@ -11,6 +12,7 @@ export const errorHandler = (err: AppError, req: Request, res: Response, next: N
     // only custom errors are sown to the users
     if (err?.custom) {
         return res.status(err.status || 500).json({
+            success: false,
             message: err.message || 'Internal Server Error'
         });
     }
@@ -18,6 +20,7 @@ export const errorHandler = (err: AppError, req: Request, res: Response, next: N
     // if not error messages may contain sensitive ifo
     // so we just return 'Internal server error' with 500
     res.status(500).json({
+        success: false,
         message: 'Internal Server Error'
     });
 }
