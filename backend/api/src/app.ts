@@ -6,8 +6,9 @@ import { auth } from "./libs/auth";
 import { errorHandler } from "./middlewares/errorHandler";
 import authRoute from "./routes/authRoutes";
 import systemRoute from "./routes/systemRoutes";
-import userRouter from "./routes/userRoutes";
+import userRoute from "./routes/userRoutes";
 import genreRoute from "./routes/genreRoutes";
+import artistRoute from "./routes/artistRoutes";
 
 
 const app = express();
@@ -24,8 +25,10 @@ const api = Router();
 app.use("/api", api);
 
 api.use("/system",systemRoute);
-api.use("/user", userRouter);
+api.use("/user", userRoute);
 api.use("/genres", genreRoute);
+api.use("/artists", artistRoute);
+
 
 app.use(errorHandler);
 
