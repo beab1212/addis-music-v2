@@ -9,6 +9,7 @@ import systemRoute from "./routes/systemRoutes";
 import userRoute from "./routes/userRoutes";
 import genreRoute from "./routes/genreRoutes";
 import artistRoute from "./routes/artistRoutes";
+import albumRoute from "./routes/albumRoutes";
 
 
 const app = express();
@@ -28,6 +29,7 @@ api.use("/system",systemRoute);
 api.use("/user", userRoute);
 api.use("/genres", genreRoute);
 api.use("/artists", artistRoute);
+api.use("/albums", albumRoute);
 
 
 app.use(errorHandler);
