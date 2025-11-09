@@ -123,7 +123,7 @@ model Verification {
 // ------------------------------------------------------
 
 model UserProfile {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   userId      String   @unique
   displayName String?
   country     String?
@@ -139,7 +139,7 @@ model UserProfile {
 // ------------------------------------------------------
 
 model Artist {
-  id         String    @id @default(cuid())
+  id         String    @id @default(uuid())
   name       String
   bio        String?
   imageUrl   String?
@@ -152,7 +152,7 @@ model Artist {
 }
 
 model Album {
-  id          String    @id @default(cuid())
+  id          String    @id @default(uuid())
   title       String
   releaseDate DateTime
   coverUrl    String?
@@ -167,7 +167,7 @@ model Album {
 
 
 model Track {
-  id           String     @id @default(cuid())
+  id           String     @id @default(uuid())
   title        String
   durationSec  Int
   audioUrl     String
@@ -197,7 +197,7 @@ model Track {
 // ------------------------------------------------------
 
 model Playlist {
-  id          String        @id @default(cuid())
+  id          String        @id @default(uuid())
   title       String
   description String?
   isPublic    Boolean       @default(true)
@@ -209,7 +209,7 @@ model Playlist {
 }
 
 model PlaylistItem {
-  id         String     @id @default(cuid())
+  id         String     @id @default(uuid())
   playlistId String
   trackId    String
   position   Int
@@ -220,7 +220,7 @@ model PlaylistItem {
 }
 
 model TrackLike {
-  id        String     @id @default(cuid())
+  id        String     @id @default(uuid())
   userId    String
   trackId   String
   createdAt DateTime   @default(now())
@@ -232,7 +232,7 @@ model TrackLike {
 }
 
 model PlayHistory {
-  id        String     @id @default(cuid())
+  id        String     @id @default(uuid())
   userId    String
   trackId   String
   playedAt  DateTime   @default(now())
@@ -249,7 +249,7 @@ model PlayHistory {
 // ------------------------------------------------------
 
 model UserFollow {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
   followerId  String
   followingId String
   createdAt   DateTime @default(now())
@@ -261,7 +261,7 @@ model UserFollow {
 }
 
 model ArtistFollow {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   userId    String
   artistId  String
   createdAt DateTime @default(now())
@@ -277,7 +277,7 @@ model ArtistFollow {
 // ------------------------------------------------------
 
 model Subscription {
-  id           String              @id @default(cuid())
+  id           String              @id @default(uuid())
   userId       String
   plan         SubscriptionPlan
   status       SubscriptionStatus
@@ -291,7 +291,7 @@ model Subscription {
 }
 
 model Payment {
-  id             String           @id @default(cuid())
+  id             String           @id @default(uuid())
   userId         String
   subscriptionId String?
   amount         Decimal
@@ -309,7 +309,7 @@ model Payment {
 // ------------------------------------------------------
 
 model Advertisement {
-  id          String          @id @default(cuid())
+  id          String          @id @default(uuid())
   title       String
   imageUrl    String?
   videoUrl    String?
@@ -327,7 +327,7 @@ model Advertisement {
 }
 
 model AdTarget {
-  id         String          @id @default(cuid())
+  id         String          @id @default(uuid())
   adId       String
   country    String?
   genreId    String?
@@ -340,7 +340,7 @@ model AdTarget {
 }
 
 model AdTrack {
-  id        String          @id @default(cuid())
+  id        String          @id @default(uuid())
   adId      String
   trackId   String
 
@@ -349,7 +349,7 @@ model AdTrack {
 }
 
 model AdImpression {
-  id        String          @id @default(cuid())
+  id        String          @id @default(uuid())
   adId      String
   userId    String?
   shownAt   DateTime        @default(now())
@@ -364,20 +364,20 @@ model AdImpression {
 // ------------------------------------------------------
 
 model Genre {
-  id       String   @id @default(cuid())
+  id       String   @id @default(uuid())
   name     String   @unique
   tracks   Track[]
   albums   Album[]
 }
 
 model Tag {
-  id      String   @id @default(cuid())
+  id      String   @id @default(uuid())
   name    String   @unique
   tracks  TrackTag[]
 }
 
 model TrackTag {
-  id      String   @id @default(cuid())
+  id      String   @id @default(uuid())
   trackId String
   tagId   String
 
@@ -386,7 +386,7 @@ model TrackTag {
 }
 
 model DeviceSession {
-  id          String    @id @default(cuid())
+  id          String    @id @default(uuid())
   userId      String
   deviceType  String
   lastActive  DateTime  @default(now())
