@@ -25,3 +25,10 @@ export class ForbiddenError extends CustomError {
         super(StatusCodes.FORBIDDEN, message);
     }
 }
+
+export const CustomErrors = {
+    UnauthenticatedError,
+    NotFoundError,
+    BadRequestError,
+    ForbiddenError
+}
