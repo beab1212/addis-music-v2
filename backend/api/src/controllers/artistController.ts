@@ -85,29 +85,47 @@ export const artistController = {
         const { page, limit } = paginationSchema.parse(req.query);
         const offset = (page - 1) * limit;
 
-        const artists = await prisma.artist.findMany({
-            skip: offset,
-            take: limit,
-        });
+        const [total, artists] = await Promise.all([
+            prisma.artist.count(),
+            prisma.artist.findMany({ skip: offset, take: limit }),
+        ]);
 
-        res.status(200).json({ success: true, data: { artists } });
+        res.status(200).json({ 
+            success: true,
+            data: { artists },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
     },
 
     searchArtists: async (req: Request, res: Response) => {
         const { q, page, limit } = searchSchema.parse(req.query);   
         const offset = (page - 1) * limit;
 
-        const artists = await prisma.artist.findMany({
-            where: {
-                name: {
-                    contains: q,
-                    mode: 'insensitive',
+        const [artists, total] = await Promise.all([
+            prisma.artist.findMany({
+                where: {
+                    name: {
+                        contains: q,
+                        mode: 'insensitive',
+                    },
                 },
-            },
-            skip: offset,
-            take: limit,
-        });
+                skip: offset,
+                take: limit,
+            }),
+            prisma.artist.count({
+                where: {
+                    name: {
+                        contains: q,
+                        mode: 'insensitive',
+                    },
+                },
+            }),
+        ]);
 
-        res.status(200).json({ success: true, data: { artists } });
+        res.status(200).json({
+            success: true,
+            data: { artists },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
     },
 };
