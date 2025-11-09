@@ -3,7 +3,6 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createArtistSchema } from "../validators/artistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
-import { create } from "domain";
 
 export const artistController = {
     createArtist: async (req: Request, res: Response) => {
