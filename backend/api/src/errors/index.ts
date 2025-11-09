@@ -26,9 +26,17 @@ export class ForbiddenError extends CustomError {
     }
 }
 
+export class ConflictError extends CustomError {
+    constructor(message: string) {
+        super(StatusCodes.CONFLICT, message);
+    }
+}
+
+
 export const CustomErrors = {
     UnauthenticatedError,
     NotFoundError,
     BadRequestError,
-    ForbiddenError
+    ForbiddenError,
+    ConflictError,
 }
