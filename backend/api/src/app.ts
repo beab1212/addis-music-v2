@@ -11,6 +11,7 @@ import genreRoute from "./routes/genreRoutes";
 import artistRoute from "./routes/artistRoutes";
 import albumRoute from "./routes/albumRoutes";
 import playlistRoute from "./routes/playlistRoutes";
+import playlistTrackRoute from "./routes/playlistItemRoutes";
 
 
 const app = express();
@@ -32,6 +33,7 @@ api.use("/genres", genreRoute);
 api.use("/artists", artistRoute);
 api.use("/albums", albumRoute);
 api.use("/playlists", playlistRoute);
+api.use("/playlist-items", playlistTrackRoute);
 
 
 app.use(errorHandler);
