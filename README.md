@@ -135,3 +135,4 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 ```bash
 pip install psycopg2-binary sentence-transformers numpy
 ```
+
