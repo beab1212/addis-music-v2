@@ -127,3 +127,11 @@ npx @better-auth/cli migrate --config ./src/libs/auth.ts
 
 npx prisma migrate dev --name init --schema ./src/prisma/prisma.schema
 
+# Install CPU only pytorch if your device doesn't have GPU
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+
+```bash
+pip install psycopg2-binary sentence-transformers numpy
+```
