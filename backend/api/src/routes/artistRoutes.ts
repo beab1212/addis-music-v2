@@ -10,8 +10,8 @@ const router = Router();
 // Create Artist with image upload
 router.post("/", requireAuth, authorize("admin"), uploadImage.single('image'), artistController.createArtist);
 router.get("/", artistController.getAllArtists);
-router.get("/:id", artistController.getArtistById);
 router.get("/search", artistController.searchArtists);
+router.get("/:id", artistController.getArtistById);
 router.put("/:id", requireAuth, authorize("admin"), uploadImage.single('image'), artistController.updateArtist);
 router.delete("/:id", requireAuth, authorize("admin"), artistController.deleteArtist);
 
