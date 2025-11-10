@@ -10,6 +10,7 @@ import userRoute from "./routes/userRoutes";
 import genreRoute from "./routes/genreRoutes";
 import artistRoute from "./routes/artistRoutes";
 import albumRoute from "./routes/albumRoutes";
+import playlistRoute from "./routes/playlistRoutes";
 
 
 const app = express();
@@ -30,6 +31,7 @@ api.use("/user", userRoute);
 api.use("/genres", genreRoute);
 api.use("/artists", artistRoute);
 api.use("/albums", albumRoute);
+api.use("/playlists", playlistRoute);
 
 
 app.use(errorHandler);
