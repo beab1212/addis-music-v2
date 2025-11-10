@@ -3,6 +3,7 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { addItemToPlaylistSchema, playlistUuidSchema } from "../validators/playlistItemValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
+import { da } from "zod/v4/locales";
 
 export const playlistItemController = {
     addItemToPlaylist: async (req: Request, res: Response) => {
@@ -73,12 +74,12 @@ export const playlistItemController = {
         });
 
         if (!newItem) {
-            throw new CustomErrors.BadRequestError('Failed to add item to playlist');
+            throw new CustomErrors.BadRequestError('Failed to add track to playlist');
         }
 
         res.status(201).json({
             success: true,
-            data: { item: newItem },
+            data: { playlistItem: newItem },
         });
     },
 
@@ -213,6 +214,7 @@ export const playlistItemController = {
         res.status(200).json({
             success: true,
             message: 'Item position updated successfully',
+            data: { playlistId, itemId, newPosition: targetPosition },
         });
     },
 };
