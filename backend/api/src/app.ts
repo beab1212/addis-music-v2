@@ -16,6 +16,7 @@ import playlistTrackRoute from "./routes/playlistItemRoutes";
 import tagRoute from "./routes/tagRoutes";
 import trackTagRoute from "./routes/trackTagRoutes";
 import trackLikeRoute from "./routes/trackLikeRoutes";
+import playHistoryRoute from "./routes/playHistoryRoutes";
 
 
 const app = express();
@@ -42,7 +43,8 @@ api.use("/playlist-items", playlistTrackRoute);
 api.use("/tags", tagRoute);
 api.use("/track-tags", trackTagRoute);
 // main track route here
-api.use("/track", trackLikeRoute);
+api.use("/track-likes", trackLikeRoute);
+api.use("/play-history", playHistoryRoute);
 
 
 app.use(errorHandler);
