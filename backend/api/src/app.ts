@@ -2,6 +2,7 @@ import config from "./config/config";
 import express, { Router } from "express";
 import cors from "cors";
 import { toNodeHandler } from "better-auth/node";
+import prisma from "./libs/db";
 import { auth } from "./libs/auth";
 import { errorHandler } from "./middlewares/errorHandler";
 import authRoute from "./routes/authRoutes";
@@ -17,6 +18,7 @@ import trackTagRoute from "./routes/trackTagRoutes";
 
 
 const app = express();
+
 
 app.use(cors(config.corsOptions));
 
