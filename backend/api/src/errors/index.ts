@@ -32,6 +32,12 @@ export class ConflictError extends CustomError {
     }
 }
 
+export class UnauthorizedError extends CustomError {
+    constructor(message: string) {
+        super(StatusCodes.UNAUTHORIZED, message);
+    }
+}
+
 
 export const CustomErrors = {
     UnauthenticatedError,
@@ -39,4 +45,5 @@ export const CustomErrors = {
     BadRequestError,
     ForbiddenError,
     ConflictError,
+    UnauthorizedError,
 }
