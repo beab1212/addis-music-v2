@@ -10,8 +10,13 @@ export const genreController = {
         console.log('Creating genre with data:', req.body);
         const { name } = createGenreSchema.parse(req.body);
 
-        const existingGenre = await prisma.genre.findUnique({
-            where: { name },
+        const existingGenre = await prisma.genre.findFirst({
+            where: { 
+                name: {
+                    equals: name,
+                    mode: 'insensitive',
+                }
+            },    
         });
 
         if (existingGenre) {
