@@ -31,6 +31,12 @@ export function getLowResCloudinaryUrl(url: string, options?: { width?: number; 
   return url.replace('/upload/', `/upload/${transformations}/`);
 }
 
+
+function capitalizeFirst(str: string): string {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export const formatNumber = (num: number): string => {
   if (num >= 1000000) {
     return `${(num / 1000000).toFixed(1)}M`;
