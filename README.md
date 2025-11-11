@@ -136,3 +136,8 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install psycopg2-binary sentence-transformers numpy
 ```
 
+```bash
+docker pull getmeili/meilisearch
+```
+or
+https://github.com/meilisearch/meilisearch/releases
