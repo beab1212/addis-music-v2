@@ -32,7 +32,7 @@ export function getLowResCloudinaryUrl(url: string, options?: { width?: number; 
 }
 
 
-function capitalizeFirst(str: string): string {
+export function capitalizeFirst(str: string): string {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
