@@ -37,6 +37,7 @@ export const albumController = {
 
         const album = await prisma.album.findUnique({
             where: { id: albumId },
+            include: { tracks: true, artist: true, genre: true },
         });
 
         if (!album) {
