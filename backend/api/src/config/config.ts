@@ -42,6 +42,11 @@ interface Config {
     };
 
     corsOptions: CorsOptions;
+
+    meilisearch: {
+        host: string;
+        apiKey: string;
+    };
 }
 
 const config: Config = {
@@ -87,6 +92,11 @@ const config: Config = {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true, // Allow sending cookies and HTTP authentication credentials
         optionsSuccessStatus: 204 // Some legacy browsers (IE11, various SmartTVs) choke on 200
+    },
+    
+    meilisearch: {
+        host: process.env.MEILI_HOST || '',
+        apiKey: process.env.MEILI_API_KEY || '',
     }
 };
 
