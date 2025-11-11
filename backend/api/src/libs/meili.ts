@@ -2,7 +2,7 @@ import { MeiliSearch } from "meilisearch";
 import config from "../config/config";
 
 
-export const meiliClient = new MeiliSearch({
+const meiliClient = new MeiliSearch({
   host: config.meilisearch.host,
   apiKey: config.meilisearch.apiKey,
 });
@@ -17,3 +17,5 @@ export const checkMeiliConnection = async () => {
     console.error("Error connecting to MeiliSearch:", error);
   }
 };
+
+export default meiliClient;
