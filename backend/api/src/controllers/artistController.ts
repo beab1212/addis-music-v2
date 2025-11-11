@@ -6,7 +6,7 @@ import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 
 export const artistController = {
     createArtist: async (req: Request, res: Response) => {
-        const { name, bio } = createArtistSchema.parse(req.body);
+        const { name, bio, isVerified } = createArtistSchema.parse(req.body);
 
         // req.file will contain Cloudinary info after upload
         const imageUrl = req.file?.path;
@@ -15,6 +15,7 @@ export const artistController = {
             data: {
                 name,
                 bio,
+                isVerified: isVerified || false,
                 imageUrl
             },
         });
