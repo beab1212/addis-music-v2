@@ -8,5 +8,6 @@ export const createArtistSchema = z.object({
     .min(5, "Bio must be at least 5 characters")
     .max(500, "Bio must be at most 500 characters")
     .optional(),
+    isVerified: z.boolean().optional(),
     file: z.any().optional(),
 });
