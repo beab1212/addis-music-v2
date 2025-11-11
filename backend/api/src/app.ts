@@ -18,6 +18,7 @@ import trackTagRoute from "./routes/trackTagRoutes";
 import trackLikeRoute from "./routes/trackLikeRoutes";
 import playHistoryRoute from "./routes/playHistoryRoutes";
 import artistFollowRoute from "./routes/artistFollowRoutes";
+import userFollowRoute from "./routes/userFollowRouter";
 
 
 const app = express();
@@ -47,6 +48,7 @@ api.use("/track-tags", trackTagRoute);
 api.use("/track-likes", trackLikeRoute);
 api.use("/play-history", playHistoryRoute);
 api.use("/artist-follows", artistFollowRoute);
+api.use("/user-follows", userFollowRoute);
 
 app.use(errorHandler);
 
