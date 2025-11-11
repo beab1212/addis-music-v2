@@ -162,6 +162,7 @@ model Artist {
   id         String    @id @default(uuid())
   name       String
   bio        String?
+  isVerified Boolean   @default(true)
   imageUrl   String?
   country    String?
   createdAt  DateTime  @default(now())

@@ -106,6 +106,7 @@ CREATE TABLE "Artist" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "bio" TEXT,
+    "isVerified" BOOLEAN NOT NULL DEFAULT true,
     "imageUrl" TEXT,
     "country" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
