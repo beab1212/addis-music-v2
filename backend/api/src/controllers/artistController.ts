@@ -6,7 +6,7 @@ import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 
 export const artistController = {
     createArtist: async (req: Request, res: Response) => {
-        const { name, bio, isVerified } = createArtistSchema.parse(req.body);
+        const { name, bio, isVerified, genres } = createArtistSchema.parse(req.body);
 
         // req.file will contain Cloudinary info after upload
         const imageUrl = req.file?.path;
@@ -16,7 +16,8 @@ export const artistController = {
                 name,
                 bio,
                 isVerified: isVerified || false,
-                imageUrl
+                imageUrl,
+                genres: [...new Set(genres)],
             },
         });
 
@@ -26,13 +27,21 @@ export const artistController = {
     getArtistById: async (req: Request, res: Response) => {
         const artistId = uuidSchema.parse(req.params.id);
 
-        const artist = await prisma.artist.findUnique({
-            where: { id: artistId },
-        });
+        // add followers count
+        const [artist, followersCount] = await Promise.all([
+            prisma.artist.findUnique({
+                where: { id: artistId },
+            }),
+            prisma.artistFollow.count({
+                where: { artistId },
+            }),
+        ]);
 
         if (!artist) {
             throw new CustomErrors.NotFoundError('Artist not found');
         }
+
+        (artist as any).followersCount = followersCount;
 
         res.status(200).json({ success: true, data: { artist } });
     },
