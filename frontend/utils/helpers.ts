@@ -4,6 +4,33 @@ export const formatDuration = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
+
+export function getLowResCloudinaryUrl(url: string, options?: { width?: number; height?: number; blur?: number; quality?: number }) {
+  if (!url.includes('/upload/')) {
+    console.warn('Not a valid Cloudinary URL.');
+    return url;
+  }
+
+  const width = options?.width || 100;
+  const height = options?.height;
+  const blur = options?.blur || 0;
+  const quality = options?.quality !== undefined ? options.quality : 20;
+
+  // Build transformation string
+  const transformations = [
+    `w_${width}`,
+    height ? `h_${height}` : '',
+    'f_auto',
+    `q_${typeof quality === 'number' ? quality : 'auto'}`,
+    blur > 0 ? `e_blur:${blur}` : '',
+  ]
+    .filter(Boolean)
+    .join(',');
+
+  // Inject transformation string into the URL
+  return url.replace('/upload/', `/upload/${transformations}/`);
+}
+
 export const formatNumber = (num: number): string => {
   if (num >= 1000000) {
     return `${(num / 1000000).toFixed(1)}M`;
