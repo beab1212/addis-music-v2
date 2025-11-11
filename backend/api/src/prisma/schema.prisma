@@ -164,6 +164,7 @@ model Artist {
   bio        String?
   isVerified Boolean   @default(true)
   imageUrl   String?
+  genres     String[]
   country    String?
   createdAt  DateTime  @default(now())
 
