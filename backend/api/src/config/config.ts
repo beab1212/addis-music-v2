@@ -47,6 +47,13 @@ interface Config {
         host: string;
         apiKey: string;
     };
+
+    s3Storage: {
+        region: string;
+        endpoint: string;
+        accessKeyId: string;
+        secretAccesskey: string;
+    }
 }
 
 const config: Config = {
@@ -97,6 +104,13 @@ const config: Config = {
     meilisearch: {
         host: process.env.MEILI_HOST || '',
         apiKey: process.env.MEILI_API_KEY || '',
+    },
+
+    s3Storage: {
+        region: process.env.S3_REGION || '',
+        endpoint: process.env.S3_ENDPOINT || '',
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+        secretAccesskey: process.env.S3_SECRET_ACCESS_KEY || '',
     }
 };
 
