@@ -120,13 +120,6 @@ const results = await prisma.$queryRaw`
 `;
 ```
 
-
-
-npx @better-auth/cli migrate --config ./src/libs/auth.ts
-
-
-npx prisma migrate dev --name init --schema ./src/prisma/prisma.schema
-
 # Install CPU only pytorch if your device doesn't have GPU
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
@@ -136,8 +129,54 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install psycopg2-binary sentence-transformers numpy
 ```
 
+
+
+
+
+
+
+
+
+# Temporary
+
+npx @better-auth/cli migrate --config ./src/libs/auth.ts
+
+npx prisma migrate dev --name init --schema ./src/prisma/prisma.schema
+
+
+
 ```bash
 docker pull getmeili/meilisearch
 ```
 or
 https://github.com/meilisearch/meilisearch/releases
+
+
+
+
+
+Option 1: Using Docker (Recommended for Local Development)
+
+Run this — it will pull the Community Edition automatically from Docker Hub:
+```bash
+docker run -d \
+  --name minio \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -e "MINIO_ROOT_USER=minioadmin" \
+  -e "MINIO_ROOT_PASSWORD=minioadmin" \
+  -v ~/minio-data:/data \
+  minio/minio server /data --console-address ":9001"
+```
+
+Option 2: Download the Community Edition Binary (Manual Install)
+You can always get the latest Community Edition binary from MinIO’s official open-source release site:
+```bash
+wget https://dl.min.io/server/minio/release/linux-amd64/minio
+chmod +x minio
+sudo mv minio /usr/local/bin/
+```
+Then start it:
+```bash
+minio server ~/minio-data --console-address ":9001"
+```
