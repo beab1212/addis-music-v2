@@ -1,7 +1,7 @@
+import { Request, Response } from 'express';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
-import path from 'path';
 import config from '../config/config';
 
 cloudinary.config({
@@ -25,18 +25,23 @@ const cloudinaryStorage = new CloudinaryStorage({
   } as CloudinaryStorageParams,
 });
 
-// Local storage for audio files
-const audioStorage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/audio'); // folder for audio files
-  },
-  filename: function(req, file, cb) {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
+
+const audioFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedTypes = ['audio/mpeg', 'audio/wav', 'audio/mp3']; // MIME types for mp3, wav, and other audio formats
+
+  if (!allowedTypes.includes(file.mimetype)) {
+    return cb(new Error('Invalid file type. Only MP3 and WAV audio files are allowed.'));
   }
-});
+  cb(null, true); // File is valid
+};
+
+const audioStorageMemory = multer.memoryStorage(); // Store audio files in memory for further processing
 
 
 // Separate Multer instances
 export const uploadImage = multer({ storage: cloudinaryStorage });
-export const uploadAudio = multer({ storage: audioStorage });
+export const audioStorage = multer({
+    storage: audioStorageMemory,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: audioFileFilter, // Apply the file filter
+});
