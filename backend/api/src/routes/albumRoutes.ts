@@ -8,9 +8,9 @@ const router = Router();
 
 // Create Album with cover upload
 router.post("/", requireAuth, authorize("admin"), uploadImage.single('cover'), albumController.createAlbum);
-router.get("/", albumController.getAllAlbums);
-router.get("/search", albumController.searchAlbums);
-router.get("/:id", albumController.getAlbumById);
+router.get("/", requireAuth, albumController.getAllAlbums);
+router.get("/search", requireAuth, albumController.searchAlbums);
+router.get("/:id", requireAuth, albumController.getAlbumById);
 router.delete("/:id", requireAuth, authorize("admin"), albumController.deleteAlbum);
 router.put("/:id", requireAuth, authorize("admin"), uploadImage.single('cover'), albumController.updateAlbum);
 
