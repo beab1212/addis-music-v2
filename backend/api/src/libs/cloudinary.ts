@@ -8,4 +8,26 @@ cloudinary.config({
     api_secret: config.cloudinary.apiSecret,
 });
 
+
+export const uploadImageToCloudinary = async (src: string) => {
+    const result = await cloudinary.uploader.upload(src, {
+        folder: 'addis-music/images',
+        use_filename: true,
+        unique_filename: false,
+        overwrite: true,
+    });
+    return result.secure_url;
+}
+
+export const deleteImageFromCloudinary = async (publicId: string) => {
+    try {
+        await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+        console.error('Error deleting image from Cloudinary:', error);
+        return false;
+    }
+    return true;
+}
+
+
 export default cloudinary;
