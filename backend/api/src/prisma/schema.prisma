@@ -197,7 +197,7 @@ model Track {
   albumId      String?
   genreId      String?
   coverUrl     String?
-  tags         String[]
+  tags         String[]?
   popularity   Int        @default(0)
   createdAt    DateTime   @default(now())
 
