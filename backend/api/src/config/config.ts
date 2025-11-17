@@ -53,7 +53,9 @@ interface Config {
         endpoint: string;
         accessKeyId: string;
         secretAccesskey: string;
-    }
+    },
+
+    tempPath: string;
 }
 
 const config: Config = {
@@ -111,7 +113,9 @@ const config: Config = {
         endpoint: process.env.S3_ENDPOINT || '',
         accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
         secretAccesskey: process.env.S3_SECRET_ACCESS_KEY || '',
-    }
+    },
+    
+    tempPath: process.env.TEMP_PATH || '/tmp',
 };
 
 export default config;
