@@ -197,6 +197,7 @@ model Track {
   albumId      String?
   genreId      String?
   coverUrl     String?
+  tags         String[]
   popularity   Int        @default(0)
   createdAt    DateTime   @default(now())
 
@@ -397,16 +398,6 @@ model Genre {
 model Tag {
   id      String   @id @default(uuid())
   name    String   @unique
-  tracks  TrackTag[]
-}
-
-model TrackTag {
-  id      String   @id @default(uuid())
-  trackId String
-  tagId   String
-
-  track   Track   @relation(fields: [trackId], references: [id])
-  tag     Tag     @relation(fields: [tagId], references: [id])
 }
 
 model DeviceSession {
