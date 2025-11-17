@@ -30,12 +30,14 @@ export const checkFileSize = (req: Request, res: Response, next: NextFunction) =
 
     if (file.mimetype.startsWith('image/')) {
       if (file.size > IMAGE_MAX_SIZE) {
+        fs.unlinkSync(file.path);
         return next(
           new CustomErrors.BadRequestError(`Image "${file.originalname}" exceeds ${IMAGE_MAX_SIZE / 1024 / 1024} MB`)
         );
       }
     } else if (file.mimetype.startsWith('audio/')) {
       if (file.size > AUDIO_MAX_SIZE) {
+        fs.unlinkSync(file.path);
         return next(
           new CustomErrors.BadRequestError(`Audio "${file.originalname}" exceeds ${AUDIO_MAX_SIZE / 1024 / 1024} MB`)
         );
