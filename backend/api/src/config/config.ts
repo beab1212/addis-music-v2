@@ -53,6 +53,7 @@ interface Config {
         endpoint: string;
         accessKeyId: string;
         secretAccesskey: string;
+        bucketName: string;
     },
 
     tempPath: string;
@@ -113,6 +114,7 @@ const config: Config = {
         endpoint: process.env.S3_ENDPOINT || '',
         accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
         secretAccesskey: process.env.S3_SECRET_ACCESS_KEY || '',
+        bucketName: 'addis-music',
     },
     
     tempPath: process.env.TEMP_PATH || '/tmp/addis-music',
