@@ -197,7 +197,7 @@ model Track {
   albumId      String?
   genreId      String?
   coverUrl     String?
-  tags         String[]?
+  tags         String[]   @default([])
   popularity   Int        @default(0)
   createdAt    DateTime   @default(now())
 
@@ -212,7 +212,6 @@ model Track {
   playHistory  PlayHistory[]
   adTracks     AdTrack[]
   playlistItems PlaylistItem[]
-  trackTags    TrackTag[]
 }
 
 
