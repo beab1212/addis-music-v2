@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import config from '../config/config';
+import fs from 'fs';
 
 
 cloudinary.config({
@@ -16,6 +17,9 @@ export const uploadImageToCloudinary = async (src: string) => {
         unique_filename: false,
         overwrite: true,
     });
+
+    // remove the file locally after upload if needed
+    fs.unlinkSync(src);
     return result.secure_url;
 }
 
