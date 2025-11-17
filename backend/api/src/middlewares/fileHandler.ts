@@ -7,10 +7,7 @@ import cloudinary from '../libs/cloudinary';
 import config from '../config/config';
 import { CustomErrors } from '../errors';
 
-
-const IMAGE_MAX_SIZE = 5 * 1024 * 1024;   // 5MB
-const AUDIO_MAX_SIZE = 30 * 1024 * 1024;  // 30MB
-
+const AUDIO_MAX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 // create uploads directories if they don't exist
 const audioDir = path.join(config.tempPath, 'audio');
@@ -76,7 +73,7 @@ export const bothUpload = multer({
   }),
 
   limits: {
-    fileSize: AUDIO_MAX_SIZE, // Set max size for audio files
+    fileSize: AUDIO_MAX_SIZE, // Set max size for audio files only work for audio files
   },
 
   fileFilter: (req, file, cb) => {
@@ -88,15 +85,6 @@ export const bothUpload = multer({
 
     if (!isImage && !isAudio) {
       return cb(new CustomErrors.BadRequestError(`Invalid file type for ${file.fieldname}`));
-    }
-
-    // Enforce dynamic per-file limits
-    if (isImage && file.size > IMAGE_MAX_SIZE) {
-      return cb(new CustomErrors.BadRequestError(`Image size exceeds ${IMAGE_MAX_SIZE / 1024 / 1024} MB`));
-    }
-
-    if (isAudio && file.size > AUDIO_MAX_SIZE) {
-      return cb(new CustomErrors.BadRequestError(`Audio size exceeds ${AUDIO_MAX_SIZE / 1024 / 1024} MB`));
     }
 
     cb(null, true);    
