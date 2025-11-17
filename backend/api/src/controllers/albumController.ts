@@ -6,7 +6,7 @@ import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 
 export const albumController = {
     createAlbum: async (req: Request, res: Response) => {
-        const { title, artistId, releaseDate, genreId } = createAlbumSchema.parse(req.body);
+        const { title, artistId, releaseDate, genreId, description, credit } = createAlbumSchema.parse(req.body);
 
         // Find artist and genre in parallel
         const [artist, genre] = await Promise.all([
@@ -26,6 +26,8 @@ export const albumController = {
                 releaseDate,
                 genreId,
                 coverUrl,
+                description,
+                credit,
             },
         });
 
@@ -67,7 +69,7 @@ export const albumController = {
 
     updateAlbum: async (req: Request, res: Response) => {
         const albumId = uuidSchema.parse(req.params.id);
-        const { title, artistId, releaseDate, genreId } = createAlbumSchema.parse(req.body);
+        const { title, artistId, releaseDate, genreId, description, credit } = createAlbumSchema.parse(req.body);
 
         // Find album and artist in parallel
         const [album, artist, genre] = await Promise.all([
@@ -86,6 +88,8 @@ export const albumController = {
             artistId,
             releaseDate,
             genreId,
+            description,
+            credit,
             ...(req.file && { coverUrl: req.file.path }),
         };
 
