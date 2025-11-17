@@ -115,7 +115,7 @@ const config: Config = {
         secretAccesskey: process.env.S3_SECRET_ACCESS_KEY || '',
     },
     
-    tempPath: process.env.TEMP_PATH || '/tmp',
+    tempPath: process.env.TEMP_PATH || '/tmp/addis-music',
 };
 
 export default config;
