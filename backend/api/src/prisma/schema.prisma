@@ -180,6 +180,8 @@ model Album {
   coverUrl    String?
   genreId     String?
   artistId    String
+  description String?
+  credit      String?
   createdAt   DateTime  @default(now())
 
   artist      Artist    @relation(fields: [artistId], references: [id])
@@ -197,6 +199,11 @@ model Track {
   albumId      String?
   genreId      String?
   coverUrl     String?
+  trackNumber  Int?
+  releaseDate  DateTime   @default(now())
+  description  String?
+  credit       String?
+
   tags         String[]   @default([])
   popularity   Int        @default(0)
   createdAt    DateTime   @default(now())
