@@ -15,11 +15,11 @@ import albumRoute from "./routes/albumRoutes";
 import playlistRoute from "./routes/playlistRoutes";
 import playlistTrackRoute from "./routes/playlistItemRoutes";
 import tagRoute from "./routes/tagRoutes";
-import trackTagRoute from "./routes/trackTagRoutes";
 import trackLikeRoute from "./routes/trackLikeRoutes";
 import playHistoryRoute from "./routes/playHistoryRoutes";
 import artistFollowRoute from "./routes/artistFollowRoutes";
 import userFollowRoute from "./routes/userFollowRouter";
+import trackRoute from "./routes/trackRoutes";
 
 
 const app = express();
@@ -44,12 +44,12 @@ api.use("/albums", albumRoute);
 api.use("/playlists", playlistRoute);
 api.use("/playlist-items", playlistTrackRoute);
 api.use("/tags", tagRoute);
-api.use("/track-tags", trackTagRoute);
 // main track route here
 api.use("/track-likes", trackLikeRoute);
 api.use("/play-history", playHistoryRoute);
 api.use("/artist-follows", artistFollowRoute);
 api.use("/user-follows", userFollowRoute);
+api.use("/tracks", trackRoute);
 
 app.use(errorHandler);
 
