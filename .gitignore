@@ -9,6 +9,16 @@ backend/api/sqlite.db
 
 backend/api/temp/*
 backend/temp/*
+backend/media service/*
 
 
 Design/*
+backend/api/src/controllers/trackTagController.ts
+
+
+backend/recommendation service/models/*
+backend/recommendation service/.env
+__pycache__/
+*.pyc
+
+
