@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import config from '../config/config';
 
-export const audioEmbeddingQueue = new Queue('audio-processing', {
+export const audioEmbeddingQueue = new Queue('audio-embedding', {
     connection: {
         host: config.redis.host,
         port: config.redis.port,
