@@ -1,34 +1,12 @@
 import { Queue } from 'bullmq';
 import config from '../config/config';
+import { redisClient } from '../libs/redis';
 
-export const audioEmbeddingQueue = new Queue('audio-embedding', {
-    connection: {
-        host: config.redis.host,
-        port: config.redis.port,
-        password: config.redis.password,
-    },
-});
+// Helper to create a queue
+const createQueue = (name: string) => new Queue(name, { connection: redisClient });
 
-export const lufsNormalizationQueue = new Queue('lufs-normalization', {
-    connection: {
-        host: config.redis.host,
-        port: config.redis.port,
-        password: config.redis.password,
-    },
-});
-
-export const metadataEmbeddingQueue = new Queue('metadata-embedding', {
-    connection: {
-        host: config.redis.host,
-        port: config.redis.port,
-        password: config.redis.password,
-    },
-});
-
-export const sonicEmbeddingQueue = new Queue('sonic-embedding', {
-    connection: {
-        host: config.redis.host,
-        port: config.redis.port,
-        password: config.redis.password,
-    },
-});
+// Queues
+export const audioEmbeddingQueue = createQueue('audio-embedding');
+export const lufsNormalizationQueue = createQueue('lufs-normalization');
+export const metadataEmbeddingQueue = createQueue('metadata-embedding');
+export const sonicEmbeddingQueue = createQueue('sonic-embedding');
