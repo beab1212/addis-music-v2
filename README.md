@@ -106,7 +106,7 @@ Make sure the `pgvector` extension is enabled and the columns exist.
 CREATE EXTENSION IF NOT EXISTS vector;
 
 # Add vector columns for embeddings (1536 dimensions)
-ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(1536);
+ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(1536);
 ```
 
@@ -178,5 +178,5 @@ sudo mv minio /usr/local/bin/
 ```
 Then start it:
 ```bash
-minio server ~/minio-data --console-address ":9001"
+minio server /var/www/minio-data --console-address ":9001"
 ```
