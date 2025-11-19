@@ -10,3 +10,4 @@ db_params = {
 }
 
 connection = psycopg2.connect(**db_params)
+cursor = connection.cursor()
