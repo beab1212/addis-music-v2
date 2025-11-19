@@ -1,10 +1,14 @@
 {
     "cSpell.words": [
         "Addis",
+        "bullmq",
         "cuid",
+        "embedder",
+        "LUFS",
         "Meili",
         "meilisearch",
         "Nodemailer",
-        "pgvector"
+        "pgvector",
+        "pyln"
     ]
 }
