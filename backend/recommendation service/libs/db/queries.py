@@ -1,6 +1,7 @@
 import psycopg2
 from .db import conn
 from psycopg2.extras import RealDictCursor
+import datetime
 
 def get_full_track_details(track_id: str):
     """
@@ -106,3 +107,48 @@ def update_track_metadata_embedding(track_id: str, embedding_vector):
     except Exception as e:
         return {"error": str(e)}
 
+
+
+def get_track(track_id: str):
+    """
+    Returns track as a dict.
+    """
+    query = """
+    SELECT * FROM "Track" WHERE id = %s;
+    """
+
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(query, (track_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+
+            # Normalize date/datetime objects to ISO strings for JSON safety
+            for k, v in row.items():
+                if isinstance(v, (datetime.date, datetime.datetime)):
+                    row[k] = v.isoformat()
+
+            return dict(row)
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def update_track_embedding_and_duration(track_id: str, embedding_vector, track_duration: int = 0):
+    """
+    Updates the sonicEmbeddingVector and durationSec for a given track.
+    """
+    query = """
+    UPDATE "Track"
+    SET "sonicEmbeddingVector" = %s, "durationSec" = %s
+    WHERE id = %s;
+    """
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (embedding_vector, track_duration, track_id))
+            conn.commit()
+            return {"status": "success"}
+    except Exception as e:
+        return {"error": str(e)}
