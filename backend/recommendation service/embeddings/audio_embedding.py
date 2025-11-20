@@ -1,7 +1,10 @@
 import os
-from transformers import ClapProcessor, ClapModel
+from io import BytesIO
 import torch
 import librosa
+from transformers import ClapProcessor, ClapModel
+from utils.download_audio_from_s3 import download_audio_from_s3
+
 
 def load_clap_model_and_processor(model_path: str) -> (ClapProcessor, ClapModel):
     """
@@ -43,20 +46,21 @@ model_path = "./models/clap-htsat-unfused"
 processor, model = load_clap_model_and_processor(model_path)
 print("Model and processor loaded successfully.")
 
-def extract_audio_features(audio_path: str, sr: int = 48000) -> torch.Tensor:
+
+def extract_audio_features(audio_stream: BytesIO, sr: int = 48000) -> torch.Tensor:
     """
     Extracts audio features using the CLAP model.
 
     Args:
-        audio_path (str): Path to the audio file.
+        audio_stream (BytesIO): Byte stream of the audio file.
         sr (int): Sampling rate for the audio.
 
     Returns:
         numpy.ndarray: Extracted audio features as a numpy array.
     """
 
-    # Load audio file using librosa
-    audio, _ = librosa.load(audio_path, sr=sr)
+    # Load audio data using librosa from BytesIO
+    audio, _ = librosa.load(audio_stream, sr=sr)
 
     # Process the audio
     inputs = processor(audios=audio, sampling_rate=sr, return_tensors="pt")
