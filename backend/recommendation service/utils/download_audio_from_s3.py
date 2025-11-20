@@ -1,5 +1,5 @@
 from io import BytesIO
-import librosa
+import librosa      #type: ignore
 from libs.s3_client import client
 
 def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
@@ -24,7 +24,7 @@ def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
         raise
 
 
-def get_audio_duration(audio_stream: io.BytesIO) -> float:
+def get_audio_duration(audio_stream: BytesIO) -> float:
     """
     Get the duration of an audio stream using librosa.
     
