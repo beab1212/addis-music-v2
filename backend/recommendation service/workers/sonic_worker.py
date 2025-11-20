@@ -61,7 +61,7 @@ async def sonic_embedding_worker():
 
     worker.on("completed", lambda job, return_value: asyncio.create_task(on_completed(job, return_value)))
 
-    print("Worker started and listening for jobs...")
+    print("Sonic embedder worker started and listening for jobs...")
 
     # Graceful shutdown mechanism
     shutdown_event = asyncio.Event()
