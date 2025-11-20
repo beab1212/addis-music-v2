@@ -1,4 +1,5 @@
 from io import BytesIO
+import librosa
 from libs.s3_client import client
 
 def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
@@ -21,3 +22,22 @@ def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
     except Exception as e:
         print(f"Error downloading audio from S3: {e}")
         raise
+
+
+def get_audio_duration(audio_stream: io.BytesIO) -> float:
+    """
+    Get the duration of an audio stream using librosa.
+    
+    Args:
+        audio_stream (io.BytesIO): The audio stream (in-memory file).
+    
+    Returns:
+        float: The duration of the audio in seconds.
+    """
+    # Load the audio from the stream using librosa
+    audio_data, sr = librosa.load(audio_stream, sr=None)  # 'sr=None' to preserve original sample rate
+    
+    # Calculate the duration in seconds
+    duration = librosa.get_duration(y=audio_data, sr=sr)
+    
+    return duration
