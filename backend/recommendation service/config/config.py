@@ -1,80 +1,46 @@
-from pydantic_settings import BaseSettings
 from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict # type: ignore
+
+class BaseSettingClass(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
-class DatabaseConfig(BaseModel):
-    host: str
-    port: int
-    username: str
-    password: str
-    db_name: str
-    database_url: str
+class DatabaseConfig(BaseSettingClass):
+    host: str = "localhost"
+    port: int = 5432
+    username: str = "addismusic"
+    password: str = "dbpassword"
+    db_name: str = "addisdb"
+    database_url: str = ""
 
 
-class RedisConfig(BaseModel):
-    host: str
-    port: int
-    username: str
-    password: str
-    db: int
+class RedisConfig(BaseSettingClass):
+    host: str = "localhost"
+    port: int = 6379
+    username: str = ""
+    password: str = ""
+    db: int = 0
 
 
-class CloudinaryConfig(BaseModel):
-    cloud_name: str
-    api_key: str
-    api_secret: str
+class CloudinaryConfig(BaseSettingClass):
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
 
 
+class S3StorageConfig(BaseSettingClass):
+    s3_region: str = ""
+    s3_endpoint: str = ""
+    s3_access_key_id: str = ""
+    s3_secret_access_key: str = ""
+    s3_bucket_name: str = "addis-music"
 
-class S3StorageConfig(BaseModel):
-    region: str
-    endpoint: str
-    access_key_id: str
-    secret_accesskey: str
-    bucket_name: str
 
-
-class Settings(BaseSettings):
-    # Database
-    database: DatabaseConfig = DatabaseConfig(
-        host="localhost",
-        port=5432,
-        username="addismusic",
-        password="dbpassword",
-        db_name="addisdb",
-        database_url=""
-    )
-
-    # Redis
-    redis: RedisConfig = RedisConfig(
-        host="localhost",
-        port=6379,
-        username="",
-        password="",
-        db=0
-    )
-
-    # Cloudinary
-    cloudinary: CloudinaryConfig = CloudinaryConfig(
-        cloud_name="",
-        api_key="",
-        api_secret=""
-    )
-
-    # S3 Storage
-    s3_storage: S3StorageConfig = S3StorageConfig(
-        region="",
-        endpoint="",
-        access_key_id="",
-        secret_accesskey="",
-        bucket_name="addis-music"
-    )
-
-    model_config = {
-        "env_file": ".env",
-        "extra": "allow",  # ignore unknown env vars
-        "env_file_encoding": "utf-8"
-    }
+class Settings():
+    database: DatabaseConfig = DatabaseConfig()
+    redis: RedisConfig = RedisConfig()
+    cloudinary: CloudinaryConfig = CloudinaryConfig()
+    s3_storage: S3StorageConfig = S3StorageConfig()
 
 
 settings = Settings()
