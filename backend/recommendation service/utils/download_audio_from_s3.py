@@ -1,6 +1,7 @@
 from io import BytesIO
-import librosa      #type: ignore
+import librosa
 from libs.s3_client import client
+
 
 def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
     """
@@ -18,6 +19,7 @@ def download_audio_from_s3(bucket_name: str, object_key: str,) -> BytesIO:
         
         # Convert the response to a BytesIO object
         audio_data = BytesIO(response['Body'].read())
+
         return audio_data
     except Exception as e:
         print(f"Error downloading audio from S3: {e}")
