@@ -21,6 +21,17 @@ async function setupMeili() {
     return null;
 }
 
+async function deleteAllDocuments(indexUid: string) {
+  const index = meiliClient.index(indexUid);
+  await index.deleteAllDocuments();
+  console.log(`All documents in index ${indexUid} have been deleted.`);
+}
+
+
+
+deleteAllDocuments("tracks").catch((error) => {
+  console.log("Error deleting documents:", error);
+})
 
 setupMeili().catch((error) => {
   console.error("Error setting up MeiliSearch:", error);
