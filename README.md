@@ -120,6 +120,13 @@ const results = await prisma.$queryRaw`
 `;
 ```
 
+# 7. Setup MeiliSearch
+Note: This will delete all existing track documents
+```bash
+npx ts-node src/scripts/setupMeili.ts
+```
+
+
 # Install CPU only pytorch if your device doesn't have GPU
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
