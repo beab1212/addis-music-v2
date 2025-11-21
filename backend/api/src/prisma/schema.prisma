@@ -193,7 +193,7 @@ model Album {
 model Track {
   id           String     @id @default(uuid())
   title        String
-  durationSec  Int
+  durationSec  Float
   audioUrl     String
   artistId     String
   albumId      String?
