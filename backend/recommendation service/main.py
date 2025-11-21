@@ -1,23 +1,41 @@
-"""
-"""
 import asyncio
 from workers.metadata_worker import metadata_embedding_worker
 from workers.sonic_worker import sonic_embedding_worker
 
-
 async def main():
+    """
+    Main function that coordinates the execution of embedding tasks.
+
+    This function gathers and runs multiple asynchronous tasks concurrently, 
+    including the metadata embedding worker and the sonic embedding worker.
+    It waits for all tasks to complete before exiting.
+
+    Tasks:
+        - `metadata_embedding_worker`: Handles the creation and storage of metadata embeddings.
+        - `sonic_embedding_worker`: Handles the creation and storage of sonic/audio embeddings.
+
+    It leverages asyncio to run these tasks concurrently for improved efficiency.
+
+    Returns:
+        None
+    """
+    # Define the tasks to be executed concurrently
     tasks = [
         metadata_embedding_worker(),
         sonic_embedding_worker(),
     ]
 
-    # Wait for all tasks to complete
+    # Wait for all tasks to complete and handle them concurrently
     await asyncio.gather(*tasks)
 
-if __name__ == "__main__":
-    # Run the main function with asyncio
-    asyncio.run(main())
 
+if __name__ == "__main__":
+    """
+    This checks if the script is being run directly and then runs the `main` function 
+    using asyncio to handle asynchronous execution of embedding workers.
+    """
+    # Run the main function using asyncio
+    asyncio.run(main())
 
 
 
@@ -55,6 +73,30 @@ if __name__ == "__main__":
 
 # if __name__ == "__main__":
 #     asyncio.run(metadata_embedding_worker())
+
+
+
+# import asyncio
+# from workers.sonic_worker import sonic_embedding_worker
+
+# if __name__ == "__main__":
+#     asyncio.run(sonic_embedding_worker())
+
+
+
+
+# # http://127.0.0.1:9000/addis-music/music/1763578002140-771026425-426c0f7b-4277-404c-af92-6c3416e9ee81.mp3
+
+# from utils.download_audio_from_s3 import download_audio_from_s3, get_audio_duration
+# from config.config import settings
+
+
+# audio_stream = download_audio_from_s3(settings.s3_storage.s3_bucket_name, "music/1763657989527-972775464-c581c553-47cc-49f8-a035-5fe48b322810.mp3")
+# audio_duration = get_audio_duration(audio_stream)
+
+# print("Audio Duration: ", audio_duration)
+
+
 
 
 
