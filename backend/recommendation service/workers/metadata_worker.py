@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from bullmq import Worker
 from libs.redis import connection_url
 from libs.db.queries import update_track_metadata_embedding, get_full_track_details
@@ -8,29 +9,45 @@ from embeddings.data_embedder import embed_text
 
 async def process_audio_metadata_embedding_job(job, token):
     """
-    Process a job to create and store metadata embedding for a track.
+    Processes a job to create and store a metadata embedding for a track.
+
+    This function retrieves track details using a track ID, generates an embedding from the track metadata,
+    and updates the track with the generated metadata embedding.
+
+    Parameters:
+        job (dict): The job object containing job data (e.g., trackId).
+        token (str): The token used for authentication or authorization. (Currently unused, but can be extended)
+
+    Returns:
+        dict: A status dictionary indicating the result of the operation.
+            - {"status": "done"} if the process was successful.
+            - {"status": "no track ID"} if no track ID is found.
+            - {"status": "error", "message": <error message>} if an error occurred during processing.
     """
+
     track_id = job.data.get("trackId")
 
     if not track_id:
-        print(f"[Job {job.id}] No track ID found")
+        logging.error(f"[Job {job.id}] No track ID found")
         return {"status": "no track ID"}
-    
+
     try:
-        # Convert metadata to text and embed
         track_details = get_full_track_details(track_id)
+
         embedding_text = metadata_to_embedding_text(track_details)
+
+        # Generate the embedding vector by embedding the text
         embedding_vector = embed_text(embedding_text).tolist()
 
         update_track_metadata_embedding(track_id, embedding_vector)
 
-        print(f"[Job {job.id}] Metadata embedding updated for track {track_id}")
+        logging.info(f"[Job {job.id}] Metadata embedding updated for track {track_id}")
         return {"status": "done"}
 
     except Exception as e:
-        print(f"[Job {job.id}] Error embedding track {track_id}: {e}")
+        # Log any error and return the error status
+        logging.error(f"[Job {job.id}] Error embedding track {track_id}: {e}")
         return {"status": "error", "message": str(e)}
-
 
 
 async def metadata_embedding_worker():
