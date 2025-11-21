@@ -107,7 +107,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 # Add vector columns for embeddings (1536 dimensions)
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
-ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(1536);
+ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(512);
 ```
 
 #### Example
