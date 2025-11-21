@@ -7,24 +7,29 @@ import { useRouter } from 'next/navigation';
 import { PlaylistCard } from '@/components/PlaylistCard';
 import { mockSongs } from '@/utils/mockData';
 import { SongCard } from '@/components/SongCard';
+import { useEffect } from 'react';
 
 export default function Profile() {
   const { user, logout } = useAuthStore();
   const { playlists } = usePlaylistStore();
   const navigate = useRouter();
 
-  if (!user) {
-    navigate.push('/');
-    return null;
-  }
+  // if (!user) {
+  //   navigate.push('/');
+  //   return null;
+  // }
 
-  const userPlaylists = playlists.filter((p) => p.createdBy === user.id);
-  const likedSongs = mockSongs.filter((s) => user.likedSongs.includes(s.id));
+  const userPlaylists: Array<any> = [];
+  const likedSongs: Array<any> = [];
 
   const handleLogout = () => {
     logout();
     navigate.push('/');
   };
+
+  useEffect(() => {
+    console.log("User: ", user);
+  }, [user])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -33,21 +38,21 @@ export default function Profile() {
           <div className="absolute inset-0 bg-black/10" />
           <div className="relative flex flex-col md:flex-row items-center gap-6">
             <img
-              src={user.photoUrl}
-              alt={user.username}
+              src={user?.photoUrl}
+              alt={user?.username}
               className="w-32 h-32 rounded-full border-4 border-white shadow-2xl object-cover"
             />
             <div className="flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                <h1 className="text-4xl font-bold text-white">{user.username}</h1>
-                {user.isPremium && (
+                <h1 className="text-4xl font-bold text-white">{user?.username}</h1>
+                {user?.isPremium && (
                   <div className="bg-yellow-400 text-gray-900 rounded-full p-1.5">
                     <Crown size={20} />
                   </div>
                 )}
               </div>
-              <p className="text-white/90 mb-4">{user.email}</p>
-              <p className="text-white/80">{user.bio}</p>
+              <p className="text-white/90 mb-4">{user?.email}</p>
+              <p className="text-white/80">{user?.bio}</p>
             </div>
             <div className="flex gap-2">
               <motion.button
@@ -69,7 +74,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {!user.isPremium && (
+        {!user?.isPremium && (
           <motion.div
             whileHover={{ scale: 1.02 }}
             className="bg-linear-to-r from-yellow-400 via-orange-500 to-pink-500 rounded-2xl p-6 mb-8 cursor-pointer"
@@ -99,7 +104,7 @@ export default function Profile() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
             <p className="text-gray-600 dark:text-gray-400 mb-2">Following</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {user.followedArtists.length}
+              {user?.followedArtists?.length}
             </p>
           </div>
         </div>
