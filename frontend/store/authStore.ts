@@ -9,7 +9,7 @@ interface AuthState {
   authMode: 'signin' | 'signup';
 
   login: (email: string, password: string, provider: string | null) => Promise<any | null>;
-  signup: (username: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   setSession: (session: any | null) => void;
   // updateUser: (updates: Partial<User>) => void;
@@ -66,10 +66,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
     },
 
 
-    signup: async (username: string, email: string, password: string) => {
+    signup: async (name: string, email: string, password: string) => {
       // await new Promise(resolve => setTimeout(resolve, 1000));
       const { data, error } = await authClient.signUp.email({
-          name: "John Doe", // required
+          name: name, // required
           email: email, // required
           password: password, // required
           callbackURL: "http://localhost:3000/",

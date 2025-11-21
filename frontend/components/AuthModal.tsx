@@ -12,7 +12,7 @@ export const AuthModal = () => {
   const { addToast } = useToastStore();
 
   const [formData, setFormData] = useState({
-    username: '',
+    name: '',
     email: '',
     password: '',
   });
@@ -28,13 +28,13 @@ export const AuthModal = () => {
         await login(formData.email, formData.password, null);
         addToast('Welcome back!', 'success');
       } else {
-        await signup(formData.username, formData.email, formData.password);
+        await signup(formData.name, formData.email, formData.password);
         addToast('Account created successfully! Please check your email for verification.', 'success');
         setTimeout(() => {
           setAuthMode('signin');
         }, 1000);
       }
-      setFormData({ username: '', email: '', password: '' });
+      setFormData({ name: '', email: '', password: '' });
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : typeof error === 'string' ? error : 'Authentication failed. Please try again.';
@@ -86,15 +86,15 @@ export const AuthModal = () => {
               {authMode === 'signup' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Username
+                    Name
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-white"
-                    placeholder="Enter your username"
+                    placeholder="Enter your name"
                   />
                 </div>
               )}
