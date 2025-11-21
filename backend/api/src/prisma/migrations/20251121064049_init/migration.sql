@@ -134,7 +134,7 @@ CREATE TABLE "Album" (
 CREATE TABLE "Track" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "durationSec" INTEGER NOT NULL,
+    "durationSec" DOUBLE PRECISION NOT NULL,
     "audioUrl" TEXT NOT NULL,
     "artistId" TEXT NOT NULL,
     "albumId" TEXT,
