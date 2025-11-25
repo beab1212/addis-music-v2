@@ -3,10 +3,12 @@ import  { v4 as uuidv4 } from "uuid";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { uploadTrackSchema } from '../validators/trackValidator';
+import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { uploadImageToCloudinary } from '../libs/cloudinary';
 import { uploadAudioToS3 } from '../libs/s3Client';
 import { addTrackToMeiliIndex } from '../libs/meili';
 import { metadataEmbeddingQueue, sonicEmbeddingQueue } from '../jobs/audioQueue';
+
 
 
 export const trackController = {
@@ -87,6 +89,174 @@ export const trackController = {
         res.status(201).json({
             message: 'Track uploaded successfully',
             track: newTrack
+        });
+    },
+    
+    getTrackById: async (req: Request, res: Response) => {
+        const trackId  = uuidSchema.parse(req.params);
+        
+        const track = await prisma.track.findUnique({
+            where: { id: trackId },
+            include: {
+                artist: true,
+                album: true,
+                genre: true,
+            },
+        });
+
+        if (!track) {
+            throw new CustomErrors.NotFoundError('Track not found');
+        }
+
+        res.status(200).json({
+            success: true,
+            data: { track }
+        });
+    },
+
+    updateTrackDetails: async (req: Request, res: Response) => {
+        const trackId = uuidSchema.parse(req.params.id);
+        const { title, artistId, albumId, genreId, tags, releaseDate, description, credit } = uploadTrackSchema.parse(req.body);
+
+        const existingTrack = await prisma.track.findUnique({
+            where: { id: trackId },
+        });
+
+        if (!existingTrack) {
+            throw new CustomErrors.NotFoundError('Track not found');
+        }
+
+        const [existingArtist, existingAlbum, existingGenre] = await Promise.all([
+            prisma.artist.findFirst({ where: { id: artistId } }),
+            albumId ? prisma.album.findFirst({ where: { id: albumId } }) : null,
+            genreId ? prisma.genre.findFirst({ where: { id: genreId } }) : null,
+        ]);
+
+        if (!existingArtist) {
+            throw new CustomErrors.NotFoundError('Artist not found');
+        }
+
+        if (albumId && !existingAlbum) {
+            throw new CustomErrors.NotFoundError('Album not found');
+        }
+
+        if (genreId && !existingGenre) {
+            throw new CustomErrors.NotFoundError('Genre not found');
+        }
+
+
+        const updatedTrack = await prisma.track.update({
+            where: { id: trackId },
+            data: {
+                title,
+                albumId: albumId || undefined,
+                genreId: genreId || undefined,
+                tags: tags || [],
+                releaseDate: releaseDate ? releaseDate : undefined,
+                description: description || undefined,
+                credit: credit || undefined,
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            data: { track: updatedTrack }
+        });
+    },
+
+    updateTrackCover: async (req: Request, res: Response) => {
+        // const trackId = uuidSchema.parse(req.params.id);
+
+        // const existingTrack = await prisma.track.findUnique({
+        //     where: { id: trackId },
+        // });
+
+        // if (!existingTrack) {
+        //     throw new CustomErrors.NotFoundError('Track not found');
+        // }
+
+        // if (!req.file) {
+        //     throw new CustomErrors.BadRequestError('Cover image file is required');
+        // }
+
+        // const coverPath = await uploadImageToCloudinary(req.file.path);
+
+        // const updatedTrack = await prisma.track.update({
+        //     where: { id: trackId },
+        //     data: {
+        //         coverUrl: coverPath,
+        //     },
+        // });
+
+        // res.status(200).json({
+        //     success: true,
+        //     data: { track: updatedTrack }
+        // });
+
+        res.status(501).json({
+            success: false,
+            message: 'Not implemented'
+        });
+    },
+
+    deleteTrack: async (req: Request, res: Response) => {
+        const trackId = uuidSchema.parse(req.params.id);
+
+        const existingTrack = await prisma.track.findUnique({
+            where: { id: trackId },
+        });
+
+        if (!existingTrack) {
+            throw new CustomErrors.NotFoundError('Track not found');
+        }
+
+        // delete cloud files if needed (audio, cover) -- TODO
+        // cover image
+
+        // audio file
+
+        // delete track record with hls segments
+
+        await prisma.track.delete({
+            where: { id: trackId },
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Track deleted successfully'
+        });
+    },
+
+    searchTracks: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);   
+        const offset = (page - 1) * limit;
+
+        // make the searchability more advanced later
+
+        const [tracks, total] = await Promise.all([
+            prisma.track.findMany({
+                where: {
+                    title: { contains: q, mode: 'insensitive' },
+                },
+                skip: offset,
+                take: limit,
+                include: {
+                    artist: true,
+                    album: true,
+                    genre: true,
+                },
+            }),
+            prisma.track.count({
+                where: {
+                    title: { contains: q, mode: 'insensitive' },
+                },
+            }),
+        ]);
+
+        res.status(200).json({ 
+            success: true,
+            data: { tracks },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
         });
     }
 }
