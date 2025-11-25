@@ -9,7 +9,7 @@ backend/api/sqlite.db
 
 backend/api/temp/*
 backend/temp/*
-backend/media service/*
+# backend/media service/*
 
 
 Design/*
