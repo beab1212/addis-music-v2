@@ -4,6 +4,7 @@ from libs.s3_client import client
 import datetime
 import tempfile
 from config.config import settings
+import shutil
 
 HLS_BUCKET_NAME = settings.s3_storage.hls_bucket_name or "hls-playlist"
 SOURCE_BUCKET = settings.s3_storage.s3_bucket_name
@@ -58,6 +59,9 @@ def generate_hls(audio_id: str, is_add: bool = False):
     except subprocess.CalledProcessError as e:
         print(f"Error generating HLS: {e}")
         return {"status": "error", "message": f"Failed to generate HLS: {e}"}
+    finally:
+        # Clean up the temporary audio file
+        os.remove(input_file)
 
     # Upload segments and playlist to MinIO
     try:
@@ -79,6 +83,14 @@ def generate_hls(audio_id: str, is_add: bool = False):
     except Exception as e:
         print(f"Error uploading HLS segments to MinIO: {e}")
         return {"status": "error", "message": f"Failed to upload HLS segments: {e}"}
+    finally:
+        # delete output_dir directory and its contents
+        try:
+            shutil.rmtree(output_dir, ignore_errors=True)
+            print(f"Removed temporary HLS directory {output_dir}")
+        except Exception as e:
+            print(f"Error removing output directory {output_dir}: {e}")
+        
 
 
     return {"status": "success", "message": "HLS segments uploaded"}
