@@ -282,7 +282,7 @@ CREATE TABLE "AdTarget" (
 CREATE TABLE "AdTrack" (
     "id" TEXT NOT NULL,
     "adId" TEXT NOT NULL,
-    "trackId" TEXT NOT NULL,
+    "audioUrl" TEXT NOT NULL,
 
     CONSTRAINT "AdTrack_pkey" PRIMARY KEY ("id")
 );
@@ -430,9 +430,6 @@ ALTER TABLE "AdTarget" ADD CONSTRAINT "AdTarget_adId_fkey" FOREIGN KEY ("adId") 
 
 -- AddForeignKey
 ALTER TABLE "AdTrack" ADD CONSTRAINT "AdTrack_adId_fkey" FOREIGN KEY ("adId") REFERENCES "Advertisement"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "AdTrack" ADD CONSTRAINT "AdTrack_trackId_fkey" FOREIGN KEY ("trackId") REFERENCES "Track"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AdImpression" ADD CONSTRAINT "AdImpression_adId_fkey" FOREIGN KEY ("adId") REFERENCES "Advertisement"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
