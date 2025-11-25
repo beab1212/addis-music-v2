@@ -7,10 +7,11 @@ router = APIRouter()
 
 class SignResponse(BaseModel):
     success: bool
-    data: dict = Field(..., example={
-        "music/65614671-2214-4818-b3d1-454e-be39-c82afdd2748e/playlist.m3u8": "https://signed-url-example.com/playlist.m3u8",
-        "music/65614671-2214-4818-b3d1-454e-be39-c82afdd2748e/segment1.ts": "https://signed-url-example.com/segment1.ts",
-    })
+    data: list[str] = Field(..., example=[
+        "https://signed-url-example.com/audio/segment_000.ts?signature=abc123",
+        "https://signed-url-example.com/audio/segment_001.ts?signature=def456",
+        "https://signed-url-example.com/audio/segment_002.ts?signature=ghi789"
+    ])
 
 
 @router.get("/", response_model=SignResponse)
@@ -33,5 +34,5 @@ def get_signed_url(
 
     return SignResponse(
         success=True,
-        data=signed_urls
+        data=list(signed_urls.values())
     )
