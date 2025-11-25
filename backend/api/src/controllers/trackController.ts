@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
+import  { v4 as uuidv4 } from "uuid";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { uploadTrackSchema } from '../validators/trackValidator';
 import { uploadImageToCloudinary } from '../libs/cloudinary';
 import { uploadAudioToS3 } from '../libs/s3Client';
 import { addTrackToMeiliIndex } from '../libs/meili';
+import { metadataEmbeddingQueue, sonicEmbeddingQueue } from '../jobs/audioQueue';
 
 
 export const trackController = {
@@ -39,10 +41,15 @@ export const trackController = {
         }
 
 
+        const audioId = uuidv4();
+
         audioPath = (req.files as any).audio[0].path;
+
+        console.log("Audio info: ", (req.files as any).audio);
+        
         
         // upload to s3 bucket
-        audioPath = await uploadAudioToS3(audioPath as string);
+        audioPath = await uploadAudioToS3(audioPath as string, audioId, (req.files as any).audio[0].mimetype);
 
         // check if cover image exists
         if ((req.files as any).cover) {
@@ -50,13 +57,10 @@ export const trackController = {
             coverPath = await uploadImageToCloudinary(coverPath as string);
         }
 
-        // TODO: queue sonic, metadata embedding and LUFS tasks with
-
-
-
         // Create the track record
         const newTrack = await prisma.track.create({
             data: {
+                id: audioId,
                 title,
                 audioUrl: audioPath!,
                 coverUrl: coverPath || undefined,
@@ -73,6 +77,11 @@ export const trackController = {
 
         // add to Meilisearch index
         addTrackToMeiliIndex(newTrack.id);
+
+        // TODO: queue sonic, metadata embedding and LUFS tasks with
+        await metadataEmbeddingQueue.add('metadata-embedding', { trackId: newTrack.id });
+        await sonicEmbeddingQueue.add('sonic-embedding', { trackId: newTrack.id });
+
 
         // Return the response
         res.status(201).json({
