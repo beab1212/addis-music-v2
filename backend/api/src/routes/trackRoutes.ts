@@ -19,4 +19,8 @@ router.post(
     checkFileSize,
   trackController.uploadTrack
 );
+router.get('/:trackId', trackController.getTrackById);
+// TODO - implement other track-related routes (e.g., update, delete, list)
+
+
 export default router;
