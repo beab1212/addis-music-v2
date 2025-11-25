@@ -20,6 +20,7 @@ import playHistoryRoute from "./routes/playHistoryRoutes";
 import artistFollowRoute from "./routes/artistFollowRoutes";
 import userFollowRoute from "./routes/userFollowRouter";
 import trackRoute from "./routes/trackRoutes";
+import streamRoute from "./routes/streamRoutes";
 
 
 const app = express();
@@ -33,8 +34,12 @@ app.use("/api/auth", authRoute);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+app.use("/stream", streamRoute);
+
 const api = Router();
 app.use("/api", api);
+
 
 api.use("/system",systemRoute);
 api.use("/user", userRoute);
@@ -50,6 +55,7 @@ api.use("/play-history", playHistoryRoute);
 api.use("/artist-follows", artistFollowRoute);
 api.use("/user-follows", userFollowRoute);
 api.use("/tracks", trackRoute);
+
 
 app.use(errorHandler);
 
