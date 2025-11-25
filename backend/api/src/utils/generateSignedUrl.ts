@@ -5,7 +5,7 @@ export const generateSignedUrl = async (audioId: string, isAdd: boolean = false,
     
     // Generate the presigned URL
     try {
-        const response = await mediaServer.get('/generatePresignedUrl', { params: { 
+        const response = await mediaServer.get('/signed_url', { params: { 
             audio_id: audioId, 
             is_add: isAdd, 
             expiration: expiresInSeconds } });
