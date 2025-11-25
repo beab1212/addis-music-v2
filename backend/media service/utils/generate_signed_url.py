@@ -67,6 +67,11 @@ def generate_signed_urls_for_folder(audio_id, bucket_name = HLS_BUCKET_NAME,  ex
         if 'Contents' in response:
             for obj in response['Contents']:
                 object_key = obj['Key']
+
+                # Skip master.m3u8
+                if object_key.endswith("master.m3u8") or object_key.endswith(".m3u8"):
+                    continue
+
                 signed_url = generate_signed_url(bucket_name, object_key, expiration)
                 if signed_url:
                     signed_urls[object_key] = signed_url
