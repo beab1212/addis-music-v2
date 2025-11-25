@@ -13,23 +13,24 @@ export const s3Client = new S3Client({
     forcePathStyle: true,       // IMPORTANT for MinIO compatibility
 });
 
-export const uploadAudioToS3 = async (filePath: string, isAdd: boolean = false) => {
+export const uploadAudioToS3 = async (filePath: string, audioId: string, mimeType: string, isAdd: boolean = false) => {
     const fileStream = fs.createReadStream(filePath);
 
     const path = isAdd ? 'add' : 'music';
 
     const uploadParams = {
         Bucket: config.s3Storage.bucketName,
-        Key: `${path}/${filePath.split('/').pop()}`, // use multer generated file name
+        // Key: `${path}/${filePath.split('/').pop()}`, // use multer generated file name
+        Key: `${path}/${audioId}`, // use audioId as file name
         Body: fileStream,
-        ContentType: 'audio/mp3', // adjust based on your audio type
+        ContentType: mimeType,
     };
 
     try {
         const data = await s3Client.send(new PutObjectCommand(uploadParams));
         // delete the file locally after upload if needed
         fs.unlinkSync(filePath);
-        return `${config.s3Storage.endpoint}/${config.s3Storage.bucketName}/${uploadParams.Key}`;
+        return `${config.s3Storage.bucketName}/${uploadParams.Key}`;
     } catch (err) {
         console.error("Error uploading audio to S3:", err);
         throw err;
