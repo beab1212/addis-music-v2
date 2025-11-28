@@ -1,7 +1,14 @@
+"""
+Minimal DB helpers for the recommendation service.
+
+Uses a psycopg2 connection `conn` from .db for simple Track/Artist/Album/Genre queries/updates.
+"""
+
 import psycopg2
 from .db import conn
 from psycopg2.extras import RealDictCursor
 import datetime
+from libs.db.queries import get_full_track_details, update_track_metadata_embedding
 
 def get_full_track_details(track_id: str):
     """
