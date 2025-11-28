@@ -6,7 +6,7 @@ This module provides:
 - `weighted_blend` for computing a weighted linear combination of up to three vectors.
 """
 
-from typing import List
+from typing import List, Optional
 
 
 def average_vector(vectors: List[List[float]]) -> List[float]:
@@ -41,46 +41,50 @@ def average_vector(vectors: List[List[float]]) -> List[float]:
 
 
 def weighted_blend(
-    a: List[float],
-    b: List[float],
-    c: List[float],
-    w1: float,
-    w2: float,
-    w3: float
+    a: Optional[List[float]] = None,
+    b: Optional[List[float]] = None,
+    c: Optional[List[float]] = None,
+    w1: float = 0.0,
+    w2: float = 0.0,
+    w3: float = 0.0
 ) -> List[float]:
     """
-    Compute the weighted linear combination of three vectors.
+    Compute the weighted linear combination of up to three vectors.
 
     Each output element is computed as:
         result[i] = w1 * a[i] + w2 * b[i] + w3 * c[i]
 
-    Vectors may differ in length; missing values are treated as 0.
+    - If fewer than three vectors are provided, only the provided ones are used.
+    - Vectors may differ in length; missing values are treated as 0.
+    - The result length is equal to the longest provided vector.
 
     Args:
-        a (List[float]): First vector.
-        b (List[float]): Second vector.
-        c (List[float]): Third vector.
+        a (Optional[List[float]]): First vector (default None).
+        b (Optional[List[float]]): Second vector (default None).
+        c (Optional[List[float]]): Third vector (default None).
         w1 (float): Weight for vector `a`.
         w2 (float): Weight for vector `b`.
         w3 (float): Weight for vector `c`.
 
     Returns:
-        List[float]:
-            The resulting weighted vector.  
-            Its length matches the length of `a`; any shorter vectors contribute
-            0 beyond their length.
+        List[float]: The resulting weighted vector.
 
     Example:
-        >>> weighted_blend([1, 2], [3, 4], [5, 6], 0.5, 0.3, 0.2)
-        [2.6, 3.6]
+        >>> weighted_blend([1, 2], [3, 4], None, 0.5, 0.5, 0.0)
+        [2.0, 3.0]
     """
-    dim: int = len(a)
-    result: List[float] = []
+    vectors = [a or [], b or [], c or []]
+    weights = [w1, w2, w3]
 
-    for i in range(dim):
-        ai: float = a[i] if i < len(a) else 0.0
-        bi: float = b[i] if i < len(b) else 0.0
-        ci: float = c[i] if i < len(c) else 0.0
-        result.append(w1 * ai + w2 * bi + w3 * ci)
+    # Determine the maximum length of the vectors
+    max_len = max(len(v) for v in vectors)
+
+    result: List[float] = []
+    for i in range(max_len):
+        value = sum(
+            weight * vec[i] if i < len(vec) else 0.0
+            for vec, weight in zip(vectors, weights)
+        )
+        result.append(value)
 
     return result
