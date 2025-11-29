@@ -49,9 +49,6 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- Create a new user for the app
 CREATE USER addismusic WITH PASSWORD 'dbpassword';
 
--- Create a database owned by the new user
-CREATE DATABASE addisdb OWNER addismusic;
-
 -- Give permission to create databases
 GRANT CREATE ON DATABASE postgres TO addismusic
 
@@ -65,12 +62,7 @@ GRANT CREATE ON DATABASE postgres TO addismusic
 \q
 ```
 
-# 5. Connect to Your Database
-```bash
-psql -h localhost -U addismusic -d addisdb
-```
-
-# 6. Sync Database Schema
+# 5. Sync Database Schema
 ```bash
 npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma
 ```
@@ -125,7 +117,7 @@ const results = await prisma.$queryRaw`
 `;
 ```
 
-# 7. Setup MeiliSearch
+# 6. Setup MeiliSearch
 Note: This will delete all existing track documents
 ```bash
 npx ts-node src/scripts/setupMeili.ts
@@ -149,6 +141,57 @@ pip install psycopg2-binary sentence-transformers numpy
 
 
 
+
+<!-- New setup update -->
+Create a migration like this:
+```bash
+npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma --create-only
+```
+
+Then customize the migration file:
+```bash
+CREATE EXTENSION IF NOT EXISTS vector;
+
+# on Track schema
+"embeddingVector" VECTOR(384);
+"sonicEmbeddingVector" VECTOR(512);
+
+# on UserProfile schema
+"embeddingVector" VECTOR(384);
+
+# on Artist schema
+"embeddingVector" VECTOR(384);
+
+# on Album schema
+"embeddingVector" VECTOR(384);
+
+# on Playlist schema
+"embeddingVector" VECTOR(384);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Temporary
 
 npx @better-auth/cli migrate --config ./src/libs/auth.ts
@@ -162,6 +205,10 @@ docker pull getmeili/meilisearch
 ```
 or
 https://github.com/meilisearch/meilisearch/releases
+
+
+https://www.prisma.io/blog/orm-6-13-0-ci-cd-workflows-and-pgvector-for-prisma-postgres
+https://www.prisma.io/docs/postgres/database/postgres-extensions#:~:text=Prisma%20Postgres%20supports%20PostgreSQL%20extensions,pgvector
 
 
 
