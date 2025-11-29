@@ -40,7 +40,7 @@ async def process_audio_metadata_embedding_job(job):
 async def process_audio_embedding_job(job):
     """
     """
-    track_id = job.data.get("trackId")
+    track_id = job.data.get("track_id", None)
     
     if not track_id:
         logging.error(f"[Job {job.id}] No track ID found")
@@ -168,8 +168,8 @@ async def process_search_query_embedding_job(job):
         return {"status": "no query text"}
     try:
         embedding_vector = embed_text(query_text).tolist()
-        
         return {"status": "done", "data": embedding_vector}
+
     except Exception as e:
         logging.error(f"[Job {job.id}] Error processing search query embedding: {e}")
         return {"status": "error", "message": str(e)}
