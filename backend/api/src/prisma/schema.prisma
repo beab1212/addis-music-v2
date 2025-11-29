@@ -208,10 +208,6 @@ model Track {
   popularity   Int        @default(0)
   createdAt    DateTime   @default(now())
 
-  // Embeddings (store as Bytes or Json for now)
-  metaDataEmbedding Json?
-  sonicEmbedding    Json?
-
   artist       Artist     @relation(fields: [artistId], references: [id])
   album        Album?     @relation(fields: [albumId], references: [id])
   genre        Genre?     @relation(fields: [genreId], references: [id])
