@@ -1,24 +1,34 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from routers.personalization_routes import router as personalization_router
-from routers.embedding_routes import router as embedding_router
+import asyncio
+from workers.embedding_worker import embedding_worker
 
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Adjust as needed for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+async def main():
+    """
+    Main function that coordinates the execution of embedding tasks.
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+    This function gathers and runs multiple asynchronous tasks concurrently, 
+    including the metadata embedding worker and the sonic embedding worker.
+    It waits for all tasks to complete before exiting.
 
-app.include_router(personalization_router, prefix="/personalization", tags=["Personalization"])
-app.include_router(embedding_router, prefix="/embeddings", tags=["Embeddings"])
+    Tasks:
+        - `embedding_worker`: Handles the creation and storage of embeddings.
+    It leverages asyncio to run these tasks concurrently for improved efficiency.
+
+    Returns:
+        None
+    """
+    # Define the tasks to be executed concurrently
+    tasks = [
+        embedding_worker(),
+    ]
+    # Wait for all tasks to complete and handle them concurrently
+    await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
-    app.run(port=8001)
+    """
+    This checks if the script is being run directly and then runs the `main` function 
+    using asyncio to handle asynchronous execution of embedding workers.
+    """
+    # Run the main function using asyncio
+    asyncio.run(main())
