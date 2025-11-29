@@ -1,6 +1,8 @@
 import asyncio
 from workers.metadata_worker import metadata_embedding_worker
 from workers.sonic_worker import sonic_embedding_worker
+from api.main import app
+
 
 async def main():
     """
@@ -23,6 +25,7 @@ async def main():
     tasks = [
         metadata_embedding_worker(),
         sonic_embedding_worker(),
+        app.run(port=8001)  # Run the FastAPI app on port 8001
     ]
 
     # Wait for all tasks to complete and handle them concurrently
