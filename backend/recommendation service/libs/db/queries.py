@@ -140,7 +140,7 @@ def update_track_embedding_and_duration(track_id: str, embedding_vector, track_d
 
 ALLOWED_RECORDS = ["Track", "Album", "Artist", "UserPreference", "Playlist"]
 
-def update_embedding(album_id: str, embedding_vector, record: str = None):
+def update_embedding(record_id: str, embedding_vector, record: str = None):
     """
     Updates the embedding vector for a given album.
     """
@@ -148,14 +148,14 @@ def update_embedding(album_id: str, embedding_vector, record: str = None):
         return {"error": "Invalid record type"}
 
     query = f"""
-    UPDATE {record}
+    UPDATE "{record}"
     SET "embeddingVector" = %s
     WHERE id = %s;
     """
 
     try:
         with conn.cursor() as cur:
-            cur.execute(query, (embedding_vector, album_id))
+            cur.execute(query, (embedding_vector, record_id))
             conn.commit()
             return {"status": "success"}
     except Exception as e:
