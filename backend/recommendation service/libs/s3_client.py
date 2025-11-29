@@ -8,12 +8,11 @@ sets the client to `None`.
 """
 
 import boto3
-from boto3.client import S3Client  # type: ignore
 from config.config import settings
 
 try:
     # Initialize the S3 client
-    client: S3Client = boto3.client(
+    client = boto3.client(
         's3',
         endpoint_url=settings.s3_storage.s3_endpoint,
         aws_access_key_id=settings.s3_storage.s3_access_key_id,
@@ -23,4 +22,4 @@ try:
 except Exception as error:
     # If initialization fails, print error and set client to None
     print("Failed to create S3 client: ", error)
-    client: S3Client | None = None
+    client = None
