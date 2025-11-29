@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq';
+import { Queue, QueueEvents } from 'bullmq';
 import config from '../config/config';
 import { redisClient } from '../libs/redis';
 
@@ -6,7 +6,5 @@ import { redisClient } from '../libs/redis';
 const createQueue = (name: string) => new Queue(name, { connection: redisClient });
 
 // Queues
-export const audioEmbeddingQueue = createQueue('audio-embedding');
-export const lufsNormalizationQueue = createQueue('lufs-normalization');
-export const metadataEmbeddingQueue = createQueue('metadata-embedding');
-export const sonicEmbeddingQueue = createQueue('sonic-embedding');
+export const embeddingQueue = createQueue('embedding');
+export const embeddingQueueEvents = new QueueEvents('embedding', { connection: redisClient });
