@@ -1,7 +1,13 @@
 import asyncio
 from workers.metadata_worker import metadata_embedding_worker
 from workers.sonic_worker import sonic_embedding_worker
-from api.main import app
+
+
+def runserver():
+    import uvicorn
+    print("Starting the backend server...")
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8001, reload=True)
+    print("Backend server stopped.")
 
 
 async def main():
@@ -25,7 +31,7 @@ async def main():
     tasks = [
         metadata_embedding_worker(),
         sonic_embedding_worker(),
-        app.run(port=8001)  # Run the FastAPI app on port 8001
+        runserver(),
     ]
 
     # Wait for all tasks to complete and handle them concurrently
