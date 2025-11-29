@@ -93,26 +93,6 @@ def get_full_track_details(track_id: str):
         return {"error": str(e)}
 
 
-def update_track_metadata_embedding(track_id: str, embedding_vector):
-    """
-    Updates the metaDataEmbeddingVector for a given track.
-    """
-    query = """
-    UPDATE "Track"
-    SET "metaDataEmbeddingVector" = %s
-    WHERE id = %s;
-    """
-
-    try:
-        with conn.cursor() as cur:
-            cur.execute(query, (embedding_vector, track_id))
-            conn.commit()
-            return {"status": "success"}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-
 def get_track(track_id: str):
     """
     Returns track as a dict.
@@ -152,6 +132,30 @@ def update_track_embedding_and_duration(track_id: str, embedding_vector, track_d
     try:
         with conn.cursor() as cur:
             cur.execute(query, (embedding_vector, track_duration, track_id))
+            conn.commit()
+            return {"status": "success"}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+ALLOWED_RECORDS = ["Track", "Album", "Artist", "UserPreference", "Playlist"]
+
+def update_embedding(album_id: str, embedding_vector, record: str = None):
+    """
+    Updates the embedding vector for a given album.
+    """
+    if record not in ALLOWED_RECORDS:
+        return {"error": "Invalid record type"}
+
+    query = f"""
+    UPDATE {record}
+    SET "embeddingVector" = %s
+    WHERE id = %s;
+    """
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (embedding_vector, album_id))
             conn.commit()
             return {"status": "success"}
     except Exception as e:
