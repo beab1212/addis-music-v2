@@ -8,5 +8,6 @@ export const redisClient = new Redis({
   db: config.redis.db,
   username: config.redis.username,
   password: config.redis.password,
+  maxRetriesPerRequest: null,
 });
 
