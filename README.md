@@ -108,6 +108,11 @@ CREATE EXTENSION IF NOT EXISTS vector;
 # Add vector columns for embeddings (1536 dimensions)
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(512);
+
+ALTER TABLE "UserProfile" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
+ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
+ALTER TABLE "Album" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
+ALTER TABLE "Playlist" ADD COLUMN IF NOT EXISTS "metaDataEmbeddingVector" vector(384);
 ```
 
 #### Example
@@ -187,3 +192,12 @@ Then start it:
 ```bash
 minio server /var/www/minio-data --console-address ":9001"
 ```
+
+
+
+
+```bash
+uvicorn main:app --reload
+uvicorn main:app --reload --port 8001
+```
+
