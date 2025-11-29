@@ -147,8 +147,6 @@ CREATE TABLE "Track" (
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "popularity" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "metaDataEmbedding" JSONB,
-    "sonicEmbedding" JSONB,
 
     CONSTRAINT "Track_pkey" PRIMARY KEY ("id")
 );
