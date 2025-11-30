@@ -1,23 +1,34 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import Hls from 'hls.js';
+import { usePlayerStore } from '@/store/playerStore';
 
-interface HLSPlayerProps {
-  src: string;
-  autoPlay?: boolean;
-  onTimeUpdate?: (time: number) => void;
-  onDurationChange?: (duration: number) => void;
-  volume?: number;
-  isPlaying?: boolean;
-}
 
-export const HLSPlayer = ({ src, autoPlay, onTimeUpdate, onDurationChange, volume = 70, isPlaying }: HLSPlayerProps) => {
+export const HLSPlayer = memo(() => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const {
+    currentSong,
+    isPlaying,
+    volume,
+    isShuffle,
+    repeatMode,
+    queue,
+    currentTime,
+    togglePlayPause,
+    playNext,
+    playPrevious,
+    toggleShuffle,
+    setRepeatMode,
+    setVolume,
+    setCurrentSong,
+    setCurrentTime,
+    setDuration,
+  } = usePlayerStore();
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !src) return;
+    if (!audio || !currentSong?.id) return;
 
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -26,11 +37,13 @@ export const HLSPlayer = ({ src, autoPlay, onTimeUpdate, onDurationChange, volum
       });
       hlsRef.current = hls;
 
-      hls.loadSource(src);
+      hls.loadSource(`http://localhost:5000/stream/${"a80bbca2-e7ae-444e-b692-ef21ee32dad1"}/master.m3u8`);
       hls.attachMedia(audio);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (autoPlay) audio.play();
+        // if (autoPlay) audio.play();
+        if (true) audio.play();
+
       });
 
       hls.on(Hls.Events.ERROR, (_, data) => {
@@ -43,10 +56,12 @@ export const HLSPlayer = ({ src, autoPlay, onTimeUpdate, onDurationChange, volum
         hls.destroy();
       };
     } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-      audio.src = src;
-      if (autoPlay) audio.play();
+      audio.src = `http://localhost:5000/stream/${currentSong.id}/master.m3u8`;
+      // if (autoPlay) audio.play();
+      if (true) audio.play();
+
     }
-  }, [src, autoPlay]);
+  }, [currentSong, "autoPlay"]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -65,11 +80,18 @@ export const HLSPlayer = ({ src, autoPlay, onTimeUpdate, onDurationChange, volum
     }
   }, [volume]);
 
+  useEffect(() => {
+    if (audioRef.current && Math.abs(audioRef.current.currentTime - currentTime) > 1) {
+      audioRef.current.currentTime = currentTime;
+    }
+  }, [currentTime]);
+  
+
   return (
     <audio
       ref={audioRef}
-      onTimeUpdate={(e) => onTimeUpdate?.(e.currentTarget.currentTime)}
-      onDurationChange={(e) => onDurationChange?.(e.currentTarget.duration)}
+      onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+      onDurationChange={(e) => setDuration(e.currentTarget.duration)}
     />
   );
-};
+});
