@@ -50,11 +50,11 @@ export const MiniPlayer = () => {
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="fixed inset-x-0 bottom-0 z-50"
     >
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-t from-orange-500/10 to-transparent blur-3xl -z-10" />
+      <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-t from-orange-500/10 to-transparent blur-3xl -z-10" />
 
       <div className="bg-white/75 dark:bg-black/75 backdrop-blur-2xl border-t border-white/20 dark:border-white/10 shadow-2xl">
         <div 
-          className="absolute top-0 left-0 h-0.5 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500"
+          className="absolute top-0 left-0 h-0.5 bg-linear-to-t from-orange-500 via-pink-500 to-purple-500"
           style={{ width: `${progress}%`, boxShadow: '0 0 8px rgba(251,146,60,0.6)' }}
         />
 
@@ -109,7 +109,7 @@ export const MiniPlayer = () => {
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}
                 onClick={togglePlayPause}
-                className="bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-full p-3.5 shadow-lg hover:shadow-orange-500/50 transition-all relative overflow-hidden"
+                className="bg-linear-to-r from-orange-500 to-pink-500 text-white rounded-full p-3.5 shadow-lg hover:shadow-orange-500/50 transition-all relative overflow-hidden"
               >
                 {isPlaying ? (
                   <Pause size={23} fill="white" />
@@ -184,7 +184,7 @@ export const MiniPlayer = () => {
             <div className="flex-1 relative">
               <div className="h-1 bg-gray-300/60 dark:bg-gray-700/60 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-orange-500 to-pink-500"
+                  className="h-full bg-linear-to-r from-orange-500 to-pink-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>
