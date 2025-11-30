@@ -4,7 +4,7 @@ import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Heart, Mo
 import { usePlayerStore } from '@/store/playerStore';
 import { formatDuration, getColorFromImage } from '@/utils/helpers';
 import { useRouter } from 'next/navigation';
-import { HLSPlayer } from '@/components/HLSPlayer';
+
 
 export default function Player() {
   const navigate = useRouter();
@@ -54,14 +54,6 @@ export default function Player() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      <HLSPlayer
-        src={`http://localhost:5000/stream/${currentSong.id}/master.m3u8`}
-        autoPlay={isPlaying}
-        volume={volume}
-        isPlaying={isPlaying}
-        onTimeUpdate={setCurrentTime}
-        onDurationChange={setDuration}
-      />
       <div className={`absolute inset-0 bg-linear-to-br ${gradientClass} opacity-20 dark:opacity-30`} />
       <motion.div
         initial={{ scale: 1 }}
