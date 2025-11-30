@@ -41,7 +41,7 @@ export const Sidebar = () => {
         pt-16
         hidden md:flex flex-col
         ${collapsed ? 'w-20' : 'w-72'}
-        bg-white dark:bg-gray-900 
+        bg-white dark:bg-black 
         border-r border-gray-200 dark:border-gray-700
         pt-16 pb-24 fixed left-0 top-0 bottom-0
         z-20 transition-all duration-300
