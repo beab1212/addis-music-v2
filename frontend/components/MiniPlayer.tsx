@@ -80,8 +80,8 @@ export const MiniPlayer = () => {
               </div>
             </div>
 
-            {/* PERFECTLY SPACED CONTROLS */}
-            <div className="flex items-center gap-5"> {/* ← This is the magic */}
+            {/* Controls */}
+            <div className="flex items-center gap-5">
               <motion.button
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.95 }}
