@@ -18,6 +18,7 @@
     "better-auth": "^1.3.34",
     "framer-motion": "^12.23.24",
     "hls.js": "^1.6.15",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.552.0",
     "next": "16.0.0",
     "react": "19.2.0",
