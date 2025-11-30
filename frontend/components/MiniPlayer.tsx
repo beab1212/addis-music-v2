@@ -28,6 +28,7 @@ export const MiniPlayer = () => {
     playNext,
     playPrevious,
     toggleShuffle,
+    setCurrentTime,
     setRepeatMode,
     setVolume,
   } = usePlayerStore();
@@ -194,7 +195,10 @@ export const MiniPlayer = () => {
                 max="100"
                 value={progress}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                onChange={() => {}}
+                onChange={(e) => {
+                  const newTime = (Number(e.currentTarget.value) / 100) * currentSong.duration;
+                  setCurrentTime(newTime);
+                }}
               />
             </div>
             <span>{formatDuration(currentSong.duration)}</span>
