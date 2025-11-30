@@ -1,8 +1,15 @@
-export const formatDuration = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
+export function formatDuration(currentTime: number): string {
+  let hours = Math.floor(currentTime / 3600); // Get the hours (1 hour = 3600 seconds)
+  let minutes = Math.floor((currentTime % 3600) / 60); // Get the minutes
+  let seconds = Math.floor(currentTime % 60); // Get the seconds (rounded down)
+
+  // Format hours, minutes, and seconds as needed
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; // HH:MM:SS
+  } else {
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`; // MM:SS
+  }
+}
 
 
 export function getLowResCloudinaryUrl(url: string, options?: { width?: number; height?: number; blur?: number; quality?: number }) {
