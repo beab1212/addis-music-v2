@@ -17,7 +17,7 @@ export const ArtistCard = ({ artist }: ArtistCardProps) => {
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={() => navigate.push(`/app/artist/${artist.id}`)}
-      className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow cursor-pointer group"
+      className="bg-white dark:bg-gray-950 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow cursor-pointer group"
     >
       <div className="relative aspect-square overflow-hidden">
         <img
@@ -38,7 +38,7 @@ export const ArtistCard = ({ artist }: ArtistCardProps) => {
           {artist.genres.slice(0, 2).map((genre) => (
             <span
               key={genre}
-              className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full"
+              className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full"
             >
               {genre}
             </span>
