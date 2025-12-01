@@ -3,6 +3,17 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createArtistSchema } from "../validators/artistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
+import { embeddingQueue } from "../jobs/audioQueue";
+import { Artist } from "@prisma/client";
+
+const artistMetadata = async (artist: Artist) => {
+    return [
+        `Name: ${artist.name}`,
+        artist.bio && `Bio: ${artist.bio}`,
+        `Verified: ${artist.isVerified ? 'Yes' : 'No'}`,
+        artist.genres.length > 0 && `Genres: ${artist.genres.join(', ')}`
+    ].filter(Boolean).join('\n')
+}
 
 export const artistController = {
     createArtist: async (req: Request, res: Response) => {
@@ -19,6 +30,14 @@ export const artistController = {
                 imageUrl,
                 genres: [...new Set(genres)],
             },
+        });
+
+        const metadata = await artistMetadata(newArtist);
+
+        embeddingQueue.add('embedding', { 
+            type: 'artist',
+            artist_id: newArtist.id,
+            artist_metadata: metadata,
         });
 
         res.status(201).json({ success: true, data: { artist: newArtist } });
@@ -68,6 +87,14 @@ export const artistController = {
         const updatedArtist = await prisma.artist.update({
             where: { id: artistId },
             data: updatedData,
+        });
+
+        const metadata = await artistMetadata(updatedArtist);
+
+        embeddingQueue.add('embedding', { 
+            type: 'artist',
+            artist_id: updatedArtist.id,
+            artist_metadata: metadata,
         });
 
         res.status(200).json({ success: true, data: { artist: updatedArtist } });

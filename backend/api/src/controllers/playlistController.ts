@@ -3,6 +3,15 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createPlaylistSchema } from "../validators/playlistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
+import { embeddingQueue } from "../jobs/audioQueue";
+import { Playlist } from "@prisma/client";
+
+const playlistMetadata = async (playlist: Playlist) => {
+    return [
+        `Title: ${playlist.title}`,
+        playlist.description && `Description: ${playlist.description}`,
+    ].filter(Boolean).join('\n')
+};
 
 export const playlistController = {
     createPlaylist: async (req: Request, res: Response) => {
@@ -17,6 +26,14 @@ export const playlistController = {
                 isPublic,
                 ...(req.file && { coverUrl: req.file.path }),
             },
+        });
+
+        const metadata = await playlistMetadata(newPlaylist);
+
+        embeddingQueue.add('embedding', { 
+            type: 'user_playlist',
+            playlist_id: newPlaylist.id,
+            playlist_metadata: metadata,
         });
 
         res.status(201).json({
@@ -70,6 +87,14 @@ export const playlistController = {
         const updatedPlaylist = await prisma.playlist.update({
             where: { id },
             data: { title, description, isPublic, ...(req.file && { coverUrl: req.file.path }) },
+        });
+
+        const metadata = await playlistMetadata(updatedPlaylist);
+
+        embeddingQueue.add('embedding', { 
+            type: 'user_playlist',
+            playlist_id: updatedPlaylist.id,
+            playlist_metadata: metadata,
         });
 
         res.status(200).json({
@@ -159,20 +184,20 @@ export const playlistController = {
         const [total, playlists] = await Promise.all([
             prisma.playlist.count({
                 where: {
-                    OR: isAdmin ? [] 
-                    : [
-                        { isPublic: true },
-                        { userId: userId }, // private but owned by current user
-                    ],
+                    OR: isAdmin ? []
+                        : [
+                            { isPublic: true },
+                            { userId: userId }, // private but owned by current user
+                        ],
                 },
             }),
             prisma.playlist.findMany({
                 where: {
-                    OR: isAdmin ? [] 
-                    : [
-                        { isPublic: true },
-                        { userId: userId }, // private but owned by current user
-                    ],
+                    OR: isAdmin ? []
+                        : [
+                            { isPublic: true },
+                            { userId: userId }, // private but owned by current user
+                        ],
                 },
                 skip: (page - 1) * limit,
                 take: limit,

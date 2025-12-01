@@ -3,6 +3,23 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createAlbumSchema } from "../validators/albumValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
+import { embeddingQueue } from "../jobs/audioQueue";
+import { Album, Prisma } from "@prisma/client";
+
+
+const albumMetadata = async (album: Album) => {
+    const artist = await prisma.artist.findUnique({ where: { id: album.artistId } });
+    const genre = album.genreId ? await prisma.genre.findUnique({ where: { id: album.genreId } }) : null;
+
+    return [
+        `Title: ${album.title}`,
+        `Artist: ${artist?.name}`,
+        `Release Date: ${album.releaseDate}`,
+        genre && `Genre: ${genre.name}`,
+        album.description && `Description: ${album.description}`,
+        album.credit && `Credit: ${album.credit}`
+    ].filter(Boolean).join('\n')
+}
 
 export const albumController = {
     createAlbum: async (req: Request, res: Response) => {
@@ -29,6 +46,14 @@ export const albumController = {
                 description,
                 credit,
             },
+        });
+
+        const metadata = await albumMetadata(newAlbum);
+
+        embeddingQueue.add('embedding', { 
+            type: 'album',
+            album_id: newAlbum.id,
+            album_metadata: metadata,
         });
 
         res.status(201).json({ success: true, data: { album: newAlbum } });
@@ -97,6 +122,14 @@ export const albumController = {
         const updatedAlbum = await prisma.album.update({
             where: { id: albumId },
             data: updatedData,
+        });
+
+        const metadata = await albumMetadata(updatedAlbum);
+
+        embeddingQueue.add('embedding', { 
+            type: 'album',
+            album_id: updatedAlbum.id,
+            album_metadata: metadata,
         });
 
         res.status(200).json({ success: true, data: { album: updatedAlbum } });
