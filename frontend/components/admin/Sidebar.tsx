@@ -27,7 +27,7 @@ export const Sidebar = () => {
   const [hovered, setHovered] = useState<string | null>(null);
 
   const adminLinks = [
-    { to: '/admin', icon: BarChart3, label: 'Analytics' },
+    { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/tracks', icon: Music, label: 'Tracks' },
     { to: '/admin/albums', icon: Album, label: 'Albums' },
