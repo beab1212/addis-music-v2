@@ -145,6 +145,7 @@ export const albumController = {
                 skip,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
+                include: { artist: true, genre: true },
             }),
             prisma.album.count(),
         ]);
