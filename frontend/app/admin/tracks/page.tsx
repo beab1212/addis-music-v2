@@ -60,7 +60,7 @@ export default function TracksManagement() {
           </button>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg p-6 mb-6">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -69,12 +69,12 @@ export default function TracksManagement() {
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchTracks()}
               placeholder="Search tracks..."
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-gray-900 dark:text-white"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-gray-900 dark:text-white"
             />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
@@ -88,7 +88,7 @@ export default function TracksManagement() {
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {tracks.map((track) => (
                 <Fragment key={track.id}>
-                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-900">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
