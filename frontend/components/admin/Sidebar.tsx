@@ -21,9 +21,14 @@ const Tooltip = ({ label }: { label: string }) => (
   </div>
 );
 
-export const Sidebar = () => {
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+
+export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const location = usePathname() ?? '/admin';
-  const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
 
   const adminLinks = [
