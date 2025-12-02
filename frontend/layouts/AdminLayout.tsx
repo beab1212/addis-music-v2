@@ -1,5 +1,5 @@
 'use client';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { MiniPlayer } from '@/components/MiniPlayer';
@@ -12,16 +12,18 @@ interface MainLayoutProps {
 }
 
 export const AdminLayout = ({ children }: MainLayoutProps) => {
+  const [collapsed, setCollapsed] = useState(false);
   useTheme();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300">     
       <Navbar />
-      <Sidebar />
-      <main className="md:ml-64 pt-16 pb-24">
-        {children}
-      </main>
-      <MiniPlayer />
+      <div className='flex'>
+        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+        <main className={`pt-16 pb-24 transition-all duration-300 flex-1 ${collapsed ? 'md:ml-20' : 'md:ml-72'}`}>
+          {children}
+        </main>
+      </div>
       <Toast />
       <AuthModal />
     </div>
