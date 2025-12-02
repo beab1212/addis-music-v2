@@ -1,6 +1,6 @@
 "use client";
 import { ReactNode } from "react";
-import { MainLayout } from "@/layouts/MainLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
 import { useSyncSession } from "@/hooks/useSyncSession";
 import Protected from "@/components/Protected";
 import { HLSPlayer } from "@/components/HLSPlayer";
@@ -9,10 +9,10 @@ import { HLSPlayer } from "@/components/HLSPlayer";
 export default function AppLayout({ children }: { children: ReactNode }) {
     useSyncSession();
     return (
-        <MainLayout>
+        <AdminLayout>
             {/* Add HLSPlayer for playback */}
             <HLSPlayer />
             <Protected>{children}</Protected>
-        </MainLayout>
+        </AdminLayout>
     );
 }
