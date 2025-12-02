@@ -67,8 +67,8 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
         <div className="mb-4 px-2">
           {!collapsed && (
             <>
-              <h2 className="text-lg font-bold">Admin</h2>
-              <p className="text-sm text-gray-500">Manage site data</p>
+              <h2 className="text-lg font-bold dark:text-gray-100">Admin</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Manage site data</p>
             </>
           )}
         </div>
