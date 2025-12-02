@@ -7,10 +7,10 @@ export default function Admin() {
   const router = useRouter();
 
   const sections = [
-    { title: 'Analytics', icon: BarChart3, href: '/app/admin/analytics', color: 'from-blue-500 to-cyan-500' },
-    { title: 'Users', icon: Users, href: '/app/admin/users', color: 'from-orange-500 to-pink-500' },
-    { title: 'Tracks', icon: Music, href: '/app/admin/tracks', color: 'from-purple-500 to-pink-500' },
-    { title: 'Albums', icon: Album, href: '/app/admin/albums', color: 'from-green-500 to-teal-500' },
+    { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', color: 'from-blue-500 to-cyan-500' },
+    { title: 'Users', icon: Users, href: '/admin/users', color: 'from-orange-500 to-pink-500' },
+    { title: 'Tracks', icon: Music, href: '/admin/tracks', color: 'from-purple-500 to-pink-500' },
+    { title: 'Albums', icon: Album, href: '/admin/albums', color: 'from-green-500 to-teal-500' },
   ];
 
   return (
@@ -29,7 +29,7 @@ export default function Admin() {
               onClick={() => router.push(section.href)}
               className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg cursor-pointer"
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${section.color} flex items-center justify-center mb-4`}>
+              <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${section.color} flex items-center justify-center mb-4`}>
                 <section.icon size={24} className="text-white" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">{section.title}</h3>
