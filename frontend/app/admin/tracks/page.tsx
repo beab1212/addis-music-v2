@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Music, Search, Edit, Trash2, Plus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import { getLowResCloudinaryUrl } from '@/utils/helpers';
+import { get } from 'http';
 
 export default function TracksManagement() {
   const [tracks, setTracks] = useState<any[]>([]);
@@ -17,7 +19,7 @@ export default function TracksManagement() {
   const fetchTracks = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/tracks?page=${page}&limit=${limit}&q=${search}`);
+      const res = await api.get(`/tracks?page=${page}&limit=${limit}`);
       setTracks(res.data.data.tracks || []);
       setTotal(res.data.pagination?.total || 0);
     } catch (error) {
@@ -86,7 +88,7 @@ export default function TracksManagement() {
                 <tr key={track.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={track.coverUrl} alt={track.title} className="w-10 h-10 rounded object-cover" />
+                      <img src={getLowResCloudinaryUrl(track.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 40 })} alt={track.title} className="w-10 h-10 rounded object-cover" />
                       <span className="font-medium text-gray-900 dark:text-white">{track.title}</span>
                     </div>
                   </td>
