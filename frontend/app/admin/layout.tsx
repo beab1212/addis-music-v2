@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <AdminLayout>
             {/* Add HLSPlayer for playback */}
             <HLSPlayer />
-            <Protected>{children}</Protected>
+            <Protected allowedRoles={["admin"]}>{children}</Protected>
         </AdminLayout>
     );
 }
