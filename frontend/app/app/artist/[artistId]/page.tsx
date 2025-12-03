@@ -64,7 +64,7 @@ export default function ArtistDetail() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="relative h-96 rounded-3xl overflow-hidden mb-8">
           <img
-            src={getLowResCloudinaryUrl(artist.imageUrl, { width: 1200, blur: 0 }) || 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg?auto=compress&cs=tinysrgb&w=800'}
+            src={getLowResCloudinaryUrl(artist.imageUrl || 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg?auto=compress&cs=tinysrgb&w=800', { width: 1200, blur: 0 })}
             alt={artist.name}
             className="w-full h-full object-cover"
           />
