@@ -19,7 +19,9 @@ router.post(
     checkFileSize,
   trackController.uploadTrack
 );
-router.get('/:trackId', trackController.getTrackById);
+router.get('/:id', trackController.getTrackById);
+router.get('/', trackController.getAllTracks);
+
 // TODO - implement other track-related routes (e.g., update, delete, list)
 
 
