@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Search, User, Crown } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 
 export const Navbar = () => {
   const navigate = useRouter();
@@ -33,7 +34,7 @@ export const Navbar = () => {
 
             {isAuthenticated ? (
               <>
-                {!user?.isPremium && (
+                {(!user?.isPremium && user.role !== 'admin') && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -52,7 +53,7 @@ export const Navbar = () => {
                   className="flex items-center gap-2"
                 >
                   <img
-                    src={user?.photoUrl}
+                    src={user?.photoUrl || 'https://img.freepik.com/premium-vector/person-with-blue-shirt-that-says-name-person_1029948-7040.jpg?semt=ais_hybrid&w=740&q=80'}
                     alt={user?.username}
                     className="w-10 h-10 rounded-full object-cover border-2 border-orange-500"
                   />
