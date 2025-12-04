@@ -40,11 +40,27 @@ export default function TracksManagement() {
   };
 
 
+  useEffect(() => {
+    // Delay setting the debouncedQuery state
+    const timer = setTimeout(() => {
+      fetchTracks(search);
+    }, 500); // 500ms debounce delay
 
-  const fetchTracks = async () => {
+    // Clean up the previous timer on each render
+    return () => clearTimeout(timer);
+  }, [search]);
+
+
+
+  const fetchTracks = async (searchQuery: string | null = null) => {
     setLoading(true);
     try {
-      const res = await api.get(`/tracks?page=${page}&limit=${limit}`);
+      let res = null;
+      if (searchQuery !== null && searchQuery.trim() !== '') {
+        res = await api.get(`/tracks/search?q=${searchQuery.trim()}&page=${page}&limit=${limit}`);
+      } else {
+        res = await api.get(`/tracks?page=${page}&limit=${limit}`);
+      }
       setTracks(res.data.data.tracks || []);
       setTotal(res.data?.pagination?.totalPages || 0);      
     } catch (error) {
