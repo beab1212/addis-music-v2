@@ -5,6 +5,7 @@ import { Music, Search, Edit, Trash2, Plus, ChevronDown, ChevronUp } from 'lucid
 import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { getLowResCloudinaryUrl, capitalizeFirst, formatDuration } from '@/utils/helpers';
+import TrackModal from '@/components/admin/modal/TrackModal';
 
 export default function TracksManagement() {
   const [tracks, setTracks] = useState<any[]>([]);
@@ -13,15 +14,39 @@ export default function TracksManagement() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+
   const { addToast } = useToastStore();
   const limit = 20;
+
+
+  // Modal save logic
+  const handleSaveTrack = async (trackId: string) => {
+    console.log("Confirmed track ID:", trackId);
+
+    // You can add API integration here later
+
+    setOpenModal(false);
+    addToast('Track ID processed successfully', 'success');
+  };
+
+  // Modal open logic
+  const openTrackModal = (trackId: string) => {
+    setSelectedTrackId(trackId);
+    setOpenModal(true);
+  };
+
+
 
   const fetchTracks = async () => {
     setLoading(true);
     try {
       const res = await api.get(`/tracks?page=${page}&limit=${limit}`);
       setTracks(res.data.data.tracks || []);
-      setTotal(res.data.pagination?.total || 0);
+      setTotal(res.data?.pagination?.totalPages || 0);      
     } catch (error) {
       addToast('Failed to fetch tracks', 'error');
     } finally {
@@ -54,7 +79,9 @@ export default function TracksManagement() {
             <Music size={32} className="text-orange-500" />
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Tracks Management</h1>
           </div>
-          <button className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold shadow-lg hover:bg-orange-600">
+          <button className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold shadow-lg hover:bg-orange-600"
+            onClick={() => openTrackModal("new")}
+          >
             <Plus size={20} />
             Add Track
           </button>
@@ -107,7 +134,9 @@ export default function TracksManagement() {
                     <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{formatDuration(track.durationSec)}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
+                        <button className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                          onClick={() => openTrackModal(track.id)}
+                        >
                           <Edit size={18} />
                         </button>
                         <button onClick={() => handleDelete(track.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
@@ -206,6 +235,14 @@ export default function TracksManagement() {
           </div>
         </div>
       </motion.div>
+
+      {/* Always render TrackModal */}
+      <TrackModal
+        open={openModal}
+        trackId={selectedTrackId ?? ''}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveTrack}
+      />
     </div>
   );
 }
