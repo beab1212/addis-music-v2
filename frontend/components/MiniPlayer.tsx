@@ -34,8 +34,9 @@ export const MiniPlayer = () => {
   } = usePlayerStore();
 
   if (!currentSong) return null;
+  
 
-  const progress = currentSong.duration > 0 ? (currentTime / currentSong.duration) * 100 : 0;
+  const progress = currentSong.durationSec > 0 ? (currentTime / currentSong.durationSec) * 100 : 0;
 
   const handleRepeatToggle = () => {
     const modes: ('off' | 'one' | 'all')[] = ['off', 'one', 'all'];
@@ -196,12 +197,12 @@ export const MiniPlayer = () => {
                 value={progress}
                 className="absolute inset-0 opacity-0 cursor-pointer w-full"
                 onChange={(e) => {
-                  const newTime = (Number(e.currentTarget.value) / 100) * currentSong.duration;
+                  const newTime = (Number(e.currentTarget.value) / 100) * currentSong.durationSec;
                   setCurrentTime(newTime);
                 }}
               />
             </div>
-            <span>{formatDuration(currentSong.duration)}</span>
+            <span>{formatDuration(currentSong.durationSec)}</span>
           </div>
         </div>
       </div>
