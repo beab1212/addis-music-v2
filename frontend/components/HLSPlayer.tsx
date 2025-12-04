@@ -37,7 +37,7 @@ export const HLSPlayer = memo(() => {
       });
       hlsRef.current = hls;
 
-      hls.loadSource(`http://localhost:5000/stream/${"a80bbca2-e7ae-444e-b692-ef21ee32dad1"}/master.m3u8`);
+      hls.loadSource(`http://localhost:5000/stream/${currentSong.id}/master.m3u8`);
       hls.attachMedia(audio);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
