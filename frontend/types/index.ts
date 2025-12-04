@@ -5,7 +5,7 @@ export interface Song {
   artistId: string;
   albumId: string;
   album: string;
-  duration: number;
+  durationSec: number;
   coverUrl: string;
   audioUrl: string;
   genre: string;
