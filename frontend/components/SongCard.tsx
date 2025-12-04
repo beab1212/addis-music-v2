@@ -1,12 +1,11 @@
 'use client';
 import { motion } from 'framer-motion';
 import { Play, MoreVertical } from 'lucide-react';
-import { Song } from '@/types';
-import { formatNumber } from '@/utils/helpers';
+import { formatNumber, getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 import { usePlayerStore } from '@/store/playerStore';
 
 interface SongCardProps {
-  song: Song;
+  song: any;
 }
 
 export const SongCard = ({ song }: SongCardProps) => {
@@ -25,7 +24,7 @@ export const SongCard = ({ song }: SongCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={song.coverUrl}
+          src={getLowResCloudinaryUrl(song.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
           alt={song.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
@@ -41,10 +40,12 @@ export const SongCard = ({ song }: SongCardProps) => {
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{song.title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{song.artist}</p>
+        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{capitalizeFirst(song.title)}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{capitalizeFirst(song?.artist?.name)}</p>
         <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-gray-500 dark:text-gray-500">{formatNumber(song.plays)} plays</span>
+          {/* <span className="text-xs text-gray-500 dark:text-gray-500">{formatNumber(song.plays)} plays</span> */}
+          <span className="text-xs text-gray-500 dark:text-gray-500">1.5M plays</span>
+
           <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             <MoreVertical size={16} />
           </button>
