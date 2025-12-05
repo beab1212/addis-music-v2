@@ -6,6 +6,8 @@ import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { useRouter } from 'next/navigation';
 import { getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
+import ArtistModal from '@/components/admin/modal/ArtistModal';
+
 
 export default function ArtistsManagement() {
   const [artists, setArtists] = useState<any[]>([]);
@@ -18,12 +20,48 @@ export default function ArtistsManagement() {
   const router = useRouter();
   const limit = 20;
 
-  const fetchArtists = async () => {
+
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+
+  // Modal open logic
+  const openArtistModal = (artistId: string) => {
+    setSelectedArtistId(artistId);
+    setOpenModal(true);
+  };
+
+  // Modal save logic
+  const handleSaveArtist = async (artistId: string) => {
+    console.log("Confirmed artist ID:", artistId);
+
+    // You can add API integration here later
+
+    setOpenModal(false);
+    // addToast('Artist ID processed successfully', 'success');
+  };
+
+  useEffect(() => {
+      // Delay setting the debouncedQuery state
+      const timer = setTimeout(() => {
+        fetchArtists(search);
+      }, 500); // 500ms debounce delay
+  
+      // Clean up the previous timer on each render
+      return () => clearTimeout(timer);
+    }, [search]);
+
+  const fetchArtists = async (searchQuery: string | null = null) => {
     setLoading(true);
     try {
-      const res = await api.get(`/artists?page=${page}&limit=${limit}&q=${encodeURIComponent(search)}`);
+      let res = null;
+      if (searchQuery !== null && searchQuery.trim() !== '') {
+        res = await api.get(`/artists/search?page=${page}&limit=${limit}&q=${encodeURIComponent(searchQuery)}`);
+      } else {
+        res = await api.get(`/artists?page=${page}&limit=${limit}`);
+      }
       setArtists(res.data.data.artists || []);
-      setTotal(res.data.pagination?.total || 0);
+      setTotal(res.data.pagination?.totalPages || 0);
     } catch (error) {
       addToast('Failed to fetch artists', 'error');
     } finally {
@@ -58,7 +96,7 @@ export default function ArtistsManagement() {
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Artists Management</h1>
           </div>
           <button
-            onClick={() => router.push('/app/admin/artists/create')}
+            onClick={() => openArtistModal('new')}
             className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold shadow-lg hover:bg-orange-600"
           >
             <Plus size={20} />
@@ -120,7 +158,7 @@ export default function ArtistsManagement() {
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => router.push(`/app/admin/artists/${artist.id}/edit`)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
+                        <button onClick={() => openArtistModal(artist.id)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg">
                           <Edit size={18} />
                         </button>
                         <button onClick={() => handleDelete(artist.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
@@ -186,6 +224,14 @@ export default function ArtistsManagement() {
           </div>
         </div>
       </motion.div>
+
+      {/* Always render ArtistModal */}
+      <ArtistModal
+        open={openModal}
+        artistId={selectedArtistId ?? ''}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveArtist}
+      />
     </div>
   );
 }
