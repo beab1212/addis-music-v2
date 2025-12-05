@@ -5,6 +5,7 @@ import { Tag, Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { getLowResCloudinaryUrl } from '@/utils/helpers';
+import GenreModal from '@/components/admin/modal/GenreModal';
 
 export default function GenresManagement() {
   const [genres, setGenres] = useState<any[]>([]);
@@ -17,11 +18,47 @@ export default function GenresManagement() {
   const { addToast } = useToastStore();
   const limit = 20;
 
-  const fetchGenres = async () => {
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedGenreId, setSelectedGenreId] = useState<string | null>(null);
+
+  // Modal save logic
+  const handleSaveGenre = async (genreId: string) => {
+    console.log("Confirmed genre ID:", genreId);
+
+    // You can add API integration here later
+
+    setModalOpen(false);
+    // addToast('Genre ID processed successfully', 'success');
+  };
+
+  // Modal open logic
+  const openGenreModal = (genreId: string) => {
+    setSelectedGenreId(genreId);
+    setOpenModal(true);
+  };
+
+
+  useEffect(() => {
+      // Delay setting the debouncedQuery state
+      const timer = setTimeout(() => {
+        fetchGenres(search);
+      }, 500); // 500ms debounce delay
+  
+      // Clean up the previous timer on each render
+      return () => clearTimeout(timer);
+    }, [search]);
+
+
+  const fetchGenres = async (searchQuery: string | null = null) => {
     setLoading(true);
     try {
-      const q = encodeURIComponent(search || '');
-      const res = await api.get(`/genres?page=${page}&limit=${limit}&q=${q}`);
+      let res = null;
+      if (searchQuery !== null && searchQuery.trim() !== '') {
+        res = await api.get(`/genres/search?q=${searchQuery.trim()}&page=${page}&limit=${limit}`);
+      } else {
+        res = await api.get(`/genres?page=${page}&limit=${limit}`);
+      }
       setGenres(res.data.data.genres || []);
       setTotal(res.data.pagination?.total || 0);
     } catch (err) {
@@ -75,7 +112,9 @@ export default function GenresManagement() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Genres</h1>
           </div>
           <div className="flex gap-2">
-            <button onClick={openAdd} className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md">
+            <button className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-md"
+              onClick={() => openGenreModal('new')}
+            >
               <Plus size={16} /> Add Genre
             </button>
           </div>
@@ -118,7 +157,7 @@ export default function GenresManagement() {
 
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex items-center gap-2">
-                        <button onClick={() => openEdit(g)} className="p-2 text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                        <button onClick={() => openGenreModal(g.id)} className="p-2 text-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20">
                           <Edit size={16} />
                         </button>
                         <button onClick={() => handleDelete(g.id)} className="p-2 text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
@@ -146,6 +185,14 @@ export default function GenresManagement() {
           </div>
         </div>
       </motion.div>
+
+      {/* Always render GenreModal */}
+      <GenreModal
+        open={openModal}
+        genreId={selectedGenreId ?? ''}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveGenre}
+      />
     </div>
   );
 }
