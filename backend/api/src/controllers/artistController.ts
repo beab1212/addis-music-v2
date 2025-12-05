@@ -67,9 +67,9 @@ export const artistController = {
 
     updateArtist: async (req: Request, res: Response) => {
         const artistId = uuidSchema.parse(req.params.id);
-        const { name, bio } = createArtistSchema.parse(req.body);
+        const { name, bio, isVerified } = createArtistSchema.parse(req.body);
 
-        const updatedData: any = { name, bio };
+        const updatedData: any = { name, bio, isVerified };
 
         const existingArtist = await prisma.artist.findUnique({
             where: { id: artistId },
