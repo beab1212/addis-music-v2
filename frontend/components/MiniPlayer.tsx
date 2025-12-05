@@ -12,7 +12,7 @@ import {
   Expand 
 } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
-import { formatDuration } from '../utils/helpers';
+import { formatDuration, getLowResCloudinaryUrl, capitalizeFirst } from '../utils/helpers';
 import { useRouter } from 'next/navigation';
 
 export const MiniPlayer = () => {
@@ -68,16 +68,16 @@ export const MiniPlayer = () => {
               onClick={() => router.push('/app/player')}
             >
               <img
-                src={currentSong.coverUrl}
+                src={getLowResCloudinaryUrl(currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 48, height: 48 })}
                 alt={currentSong.title}
                 className="w-12 h-12 rounded-xl shadow-md object-cover ring-2 ring-white/30 group-hover:ring-orange-400/60 transition-all group-hover:scale-105"
               />
               <div className="min-w-0">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
-                  {currentSong.title}
+                  {capitalizeFirst(currentSong.title)}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                  {currentSong.artist}
+                  {capitalizeFirst(currentSong?.artist?.name || '')}
                 </p>
               </div>
             </div>
