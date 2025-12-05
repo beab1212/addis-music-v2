@@ -123,7 +123,7 @@ export default function ArtistsManagement() {
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Artist</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Country</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Verified</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Genres</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Followers</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
@@ -148,7 +148,7 @@ export default function ArtistsManagement() {
                       </div>
                     </td>
 
-                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{artist.country ?? 'N/A'}</td>
+                    <td className="px-6 py-4 text-gray-700 dark:text-gray-300">{artist.isVerified ? 'Yes' : 'No'}</td>
 
                     <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                       {(artist.genres ?? []).slice(0, 3).map((g: any) => (typeof g === 'string' ? g : g.name)).join(', ') || 'N/A'}
