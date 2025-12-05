@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
 import { useRouter } from 'next/navigation';
 import { getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
+import AlbumModal from '@/components/admin/modal/AlbumModal';
 
 export default function AlbumsManagement() {
   const [albums, setAlbums] = useState<any[]>([]);
@@ -18,18 +19,54 @@ export default function AlbumsManagement() {
   const router = useRouter();
   const limit = 20;
 
-  const fetchAlbums = async () => {
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
+
+  // Modal open logic
+  const openAlbumModal = (albumId: string) => {
+    setSelectedAlbumId(albumId);
+    setOpenModal(true);
+  };
+
+  // Modal save logic
+  const handleSaveAlbum = async (albumId: string) => {
+    console.log("Confirmed album ID:", albumId);
+
+    // You can add API integration here later
+
+    setOpenModal(false);
+    // addToast('Album ID processed successfully', 'success');
+  };
+
+
+  const fetchAlbums = async (searchQuery: string | null = null) => {
     setLoading(true);
     try {
-      const res = await api.get(`/albums?page=${page}&limit=${limit}&q=${encodeURIComponent(search)}`);
+      let res = null;
+      if (searchQuery !== null && searchQuery.trim() !== '') {
+        res = await api.get(`/albums/search?q=${searchQuery.trim()}&page=${page}&limit=${limit}`);
+      } else {
+        res = await api.get(`/albums?page=${page}&limit=${limit}`);
+      }
       setAlbums(res.data.data.albums || []);
-      setTotal(res.data.pagination?.total || 0);
+      setTotal(res.data.pagination?.totalPages || 0);
     } catch (error) {
       addToast('Failed to fetch albums', 'error');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+      // Delay setting the debouncedQuery state
+      const timer = setTimeout(() => {
+        fetchAlbums(search);
+      }, 500); // 500ms debounce delay
+  
+      // Clean up the previous timer on each render
+      return () => clearTimeout(timer);
+    }, [search]); 
 
   useEffect(() => {
     fetchAlbums();
@@ -57,7 +94,7 @@ export default function AlbumsManagement() {
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Albums Management</h1>
           </div>
           <button
-            onClick={() => router.push('/app/admin/albums/create')}
+            onClick={() => openAlbumModal("new")}
             className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-full font-semibold shadow-lg hover:bg-orange-600"
           >
             <Plus size={20} />
@@ -123,7 +160,7 @@ export default function AlbumsManagement() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => router.push(`/app/admin/albums/${album.id}/edit`)}
+                          onClick={() => openAlbumModal(album.id)}
                           className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
                         >
                           <Edit size={18} />
@@ -201,6 +238,14 @@ export default function AlbumsManagement() {
           </div>
         </div>
       </motion.div>
+
+      {/* Always render AlbumModal */}
+      <AlbumModal
+        open={openModal}
+        albumId={selectedAlbumId ?? ''}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveAlbum}
+      />
     </div>
   );
 }
