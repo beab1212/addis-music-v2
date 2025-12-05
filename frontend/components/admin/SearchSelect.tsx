@@ -12,6 +12,7 @@ export default function SearchSelect({
   selected,
   fieldName,
   placeholder = "Search...",
+  isMulti = false,
   className = "",
 }: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function SearchSelect({
     inputRef.current?.focus();
   };
 
-  const displayValue = selected ? selected[fieldName] : query;
+  const displayValue = !isMulti && selected ? selected[fieldName] : query;
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
@@ -81,11 +82,11 @@ export default function SearchSelect({
           value={displayValue ?? ""}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(true)}
-          placeholder={selected ? "" : placeholder}
+          placeholder={!isMulti && selected ? "" : placeholder}
           className="w-full bg-transparent outline-none text-gray-900 dark:text-gray-100 placeholder-gray-500"
         />
 
-        {selected && (
+        {!isMulti && selected && (
           <button
             type="button"
             onClick={(e) => {
