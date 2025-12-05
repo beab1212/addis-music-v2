@@ -13,7 +13,7 @@ export const createAlbumSchema = z.object({
       message: "Release date must be a valid date",
     })
     .transform((val) => new Date(val)), // converts string to Date object
-  genreId: z.string().uuid("Invalid genre ID").optional(),
-  description: z.string().max(500, "Description must be at most 500 characters").optional(),
-  credit: z.string().max(300, "Credit must be at most 300 characters").optional(),
+  genreId: z.string().uuid("Invalid genre ID").optional().nullable(),
+  description: z.string().max(500, "Description must be at most 500 characters").optional().nullable(),
+  credit: z.string().max(300, "Credit must be at most 300 characters").optional().nullable(),
 });
