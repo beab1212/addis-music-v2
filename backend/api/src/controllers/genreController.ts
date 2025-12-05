@@ -3,7 +3,7 @@ import { Genre } from '@prisma/client';
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createGenreSchema } from '../validators/genreValidator';
-import { uuidSchema } from '../validators';
+import { uuidSchema, searchSchema } from '../validators';
 
 export const genreController = {
     createGenre: async (req: Request, res: Response) => {
@@ -88,5 +88,41 @@ export const genreController = {
         });
 
         res.status(200).json({ success: true, message: 'Genre deleted successfully' });
+    },
+
+    searchGenres: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);   
+                const offset = (page - 1) * limit;
+
+        const [total, genres] = await Promise.all([
+            prisma.genre.count({
+                where: {
+                    name: {
+                        contains: q,
+                        mode: 'insensitive',
+                    },
+                },
+            }),
+            prisma.genre.findMany({
+                where: {
+                    name: {
+                        contains: q,
+                        mode: 'insensitive',
+                    },
+                },
+                skip: offset,
+                take: limit,
+            }),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: { genres },
+            pagination: {
+                total,
+                page,
+                limit,
+            },
+        });
     },
 }
