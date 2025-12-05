@@ -1,21 +1,12 @@
 'use client';
-
+import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  Shuffle, 
-  Repeat, 
-  Volume2, 
-  Expand 
-} from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Volume2, Expand } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
 import { formatDuration, getLowResCloudinaryUrl, capitalizeFirst } from '../utils/helpers';
 import { useRouter } from 'next/navigation';
 
-export const MiniPlayer = () => {
+const MiniPlayer = memo(() => {
   const router = useRouter();
   const {
     currentSong,
@@ -34,9 +25,8 @@ export const MiniPlayer = () => {
   } = usePlayerStore();
 
   if (!currentSong) return null;
-  
 
-  const progress = currentSong.durationSec > 0 ? (currentTime / currentSong.durationSec) * 100 : 0;
+  const progress = (currentSong.durationSec > 0) ? (currentTime / currentSong.durationSec) * 100 : 0;
 
   const handleRepeatToggle = () => {
     const modes: ('off' | 'one' | 'all')[] = ['off', 'one', 'all'];
@@ -44,6 +34,11 @@ export const MiniPlayer = () => {
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setRepeatMode(nextMode);
   };
+
+  const artImageUrl = getLowResCloudinaryUrl(
+    currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg',
+    { width: 48, height: 48 }
+  );
 
   return (
     <motion.div
@@ -53,13 +48,11 @@ export const MiniPlayer = () => {
       className="fixed inset-x-0 bottom-0 z-50"
     >
       <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-t from-orange-500/10 to-transparent blur-3xl -z-10" />
-
       <div className="bg-white/75 dark:bg-black/75 backdrop-blur-2xl border-t border-white/20 dark:border-white/10 shadow-2xl">
         <div 
           className="absolute top-0 left-0 h-0.5 bg-linear-to-t from-orange-500 via-pink-500 to-purple-500"
           style={{ width: `${progress}%`, boxShadow: '0 0 8px rgba(251,146,60,0.6)' }}
         />
-
         <div className="max-w-7xl mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between">
             {/* Track Info */}
@@ -68,7 +61,7 @@ export const MiniPlayer = () => {
               onClick={() => router.push('/app/player')}
             >
               <img
-                src={getLowResCloudinaryUrl(currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 48, height: 48 })}
+                src={artImageUrl}
                 alt={currentSong.title}
                 className="w-12 h-12 rounded-xl shadow-md object-cover ring-2 ring-white/30 group-hover:ring-orange-400/60 transition-all group-hover:scale-105"
               />
@@ -155,57 +148,11 @@ export const MiniPlayer = () => {
                 )}
               </motion.button>
             </div>
-
-            {/* Volume + Expand (Desktop) */}
-            <div className="hidden md:flex items-center gap-4 text-gray-500">
-              <Volume2 size={16} />
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={volume}
-                onChange={(e) => setVolume(Number(e.target.value))}
-                className="w-20 h-1 rounded-full accent-orange-500 cursor-pointer"
-                style={{
-                  background: `linear-gradient(to right, #fb923c ${volume}%, #374151 ${volume}%)`,
-                }}
-              />
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => router.push('/app/player')}
-                className="p-1.5 hover:text-gray-900 dark:hover:text-white"
-              >
-                <Expand size={16} />
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Compact Progress */}
-          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
-            <span>{formatDuration(currentTime)}</span>
-            <div className="flex-1 relative">
-              <div className="h-1 bg-gray-300/60 dark:bg-gray-700/60 rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-linear-to-r from-orange-500 to-pink-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                onChange={(e) => {
-                  const newTime = (Number(e.currentTarget.value) / 100) * currentSong.durationSec;
-                  setCurrentTime(newTime);
-                }}
-              />
-            </div>
-            <span>{formatDuration(currentSong.durationSec)}</span>
           </div>
         </div>
       </div>
     </motion.div>
   );
-};
+});
+
+export default MiniPlayer;
