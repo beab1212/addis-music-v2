@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { Play, MoreVertical } from 'lucide-react';
 import { formatNumber, getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 import { usePlayerStore } from '@/store/playerStore';
+import { memo } from 'react';
 
 interface SongCardProps {
   song: any;
 }
 
-export const SongCard = ({ song }: SongCardProps) => {
+export const SongCard = memo(({ song }: SongCardProps) => {
   const { setCurrentSong, setQueue } = usePlayerStore();
 
   const handlePlay = () => {
@@ -53,4 +54,4 @@ export const SongCard = ({ song }: SongCardProps) => {
       </div>
     </motion.div>
   );
-};
+});
