@@ -9,9 +9,17 @@ export const createArtistSchema = z.object({
         .max(500, "Bio must be at most 500 characters")
         .optional().nullable(),
     isVerified: z
-        .union([z.literal("true"), z.literal("false")])  // Allowing "true" and "false" strings
-        .transform(val => val === "true" ? true : val === "false" ? false : null) // Coerce the value to boolean or null
-        .optional()
+        .union([
+            z.literal("true"),    // String literal "true"
+            z.literal("false"),   // String literal "false"
+            z.boolean(),           // Boolean true/false
+        ])
+        .transform((val) => {
+            if (val === "true") return true;    // Convert "true" string to boolean true
+            if (val === "false") return false;  // Convert "false" string to boolean false
+            return val === true || val === false ? val : null;  // Return boolean or null
+        })
+        .optional()  // Optional, so it can be omitted
         .nullable(),
 
     genres: z.array(z.string().min(2, "Genre must be at least 2 characters").max(30, "Genre must be at most 30 characters")).max(5, "Genres must be at most 5").optional().nullable(),
