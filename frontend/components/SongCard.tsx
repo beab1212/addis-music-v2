@@ -10,7 +10,8 @@ interface SongCardProps {
 }
 
 export const SongCard = memo(({ song }: SongCardProps) => {
-  const { setCurrentSong, setQueue } = usePlayerStore();
+  const setCurrentSong = usePlayerStore((state) => state.setCurrentSong);
+  const setQueue = usePlayerStore((state) => state.setQueue);
 
   const handlePlay = () => {
     setCurrentSong(song);
