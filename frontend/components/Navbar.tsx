@@ -34,7 +34,7 @@ export const Navbar = () => {
 
             {isAuthenticated ? (
               <>
-                {(!user?.isPremium && user.role !== 'admin') && (
+                {(!user?.subscription && user.role !== 'admin') && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
