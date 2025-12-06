@@ -202,6 +202,7 @@ model Track {
   trackNumber  Int?
   releaseDate  DateTime   @default(now())
   description  String?
+  credit       String?
 
   tags         String[]   @default([])
   popularity   Int        @default(0)

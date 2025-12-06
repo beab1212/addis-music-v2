@@ -143,6 +143,7 @@ CREATE TABLE "Track" (
     "trackNumber" INTEGER,
     "releaseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "description" TEXT,
+    "credit" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "popularity" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
