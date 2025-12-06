@@ -18,21 +18,22 @@ import { memo } from 'react';
 
 export const MiniPlayer = memo(() => {
   const router = useRouter();
-  const {
-    currentSong,
-    isPlaying,
-    volume,
-    isShuffle,
-    repeatMode,
-    currentTime,
-    togglePlayPause,
-    playNext,
-    playPrevious,
-    toggleShuffle,
-    setCurrentTime,
-    setRepeatMode,
-    setVolume,
-  } = usePlayerStore();
+  // Directly select the specific values you need from the store
+  const currentSong = usePlayerStore(state => state.currentSong);
+  const isPlaying = usePlayerStore(state => state.isPlaying);
+  const volume = usePlayerStore(state => state.volume);
+  const isShuffle = usePlayerStore(state => state.isShuffle);
+  const repeatMode = usePlayerStore(state => state.repeatMode);
+  const currentTime = usePlayerStore(state => state.currentTime);
+  
+  // Get the dispatch functions outside of the render loop
+  const togglePlayPause = usePlayerStore(state => state.togglePlayPause);
+  const playNext = usePlayerStore(state => state.playNext);
+  const playPrevious = usePlayerStore(state => state.playPrevious);
+  const toggleShuffle = usePlayerStore(state => state.toggleShuffle);
+  const setCurrentTime = usePlayerStore(state => state.setCurrentTime);
+  const setRepeatMode = usePlayerStore(state => state.setRepeatMode);
+  const setVolume = usePlayerStore(state => state.setVolume);
 
   if (!currentSong) return null;
   
