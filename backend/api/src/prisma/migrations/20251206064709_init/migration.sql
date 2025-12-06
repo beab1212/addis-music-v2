@@ -143,7 +143,6 @@ CREATE TABLE "Track" (
     "trackNumber" INTEGER,
     "releaseDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "description" TEXT,
-    "credit" TEXT,
     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "popularity" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -240,6 +239,7 @@ CREATE TABLE "Payment" (
     "currency" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "status" "PaymentStatus" NOT NULL,
+    "checkoutUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
