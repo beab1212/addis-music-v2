@@ -19,4 +19,22 @@ mediaServer.interceptors.response.use(
     }
 );
 
-export { mediaServer };
+
+
+const axiosClient: AxiosInstance = axios.create({
+    timeout: 10_000,
+    headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+    },
+});
+
+axiosClient.interceptors.response.use(
+    (response: AxiosResponse) => response,
+    (error: AxiosError) => {
+        // You can add custom error handling logic here
+        return Promise.reject(error);
+    }
+);
+
+export { mediaServer, axiosClient };
