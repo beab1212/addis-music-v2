@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { admin } from "better-auth/plugins";
+import { admin, customSession } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { z } from "zod";
 // @ts-ignore
@@ -74,6 +74,36 @@ export const auth = betterAuth({
 		}
 	},
     plugins: [
+        customSession(async ({ user, session }) => {
+            // const roles = findUserRoles(session.session.userId);
+            // return {
+            //     roles,
+            //     user: {
+            //         ...user,
+            //         newField: "newField",
+            //     },
+            //     session
+            // };
+            console.log("customSession plugin executed: ",);
+            console.log("User: ", user);
+            console.log("Session: ", session);
+
+            const subscription = await prisma.subscription.findFirst({
+                where: {
+                    userId: user.id,
+                },
+            });
+            
+            return {
+                role: "",
+                user: {
+                    role: "",
+                    ...user,
+                    subscription: subscription || null,
+                },
+                session
+            };
+        }),
         admin() 
     ]
 });
