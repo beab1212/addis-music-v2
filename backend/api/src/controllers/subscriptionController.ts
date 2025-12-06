@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { subscriptionSchema } from '../validators/subscriptionValidator';
+import { uuidSchema } from "../validators";
+import { acceptPayment, verifyPayment } from "../utils/payment_helpers";
+import { v4 as uuid4 } from "uuid";
 
 const subscriptionPlan = {
     FAMILY: 'family',
@@ -14,6 +17,34 @@ const subscriptionPlanTypes = {
     QUARTERLY: 'quarterly',
     ANNUAL: 'annual',
 }
+
+const getEndDateAndPrice = (startDate: Date, planType: string, plan: string): { endDate: Date; price: number } => {
+    const endDate = new Date(startDate);
+    let price = 0;
+
+    if (plan !== subscriptionPlan.PREMIUM) {
+        throw new CustomErrors.BadRequestError('Pricing is only defined for PREMIUM plan');
+    }
+
+    switch (planType) {
+        case subscriptionPlanTypes.MONTHLY:
+            endDate.setMonth(endDate.getMonth() + 1);
+            price = 100; // Monthly price
+            break;
+        case subscriptionPlanTypes.QUARTERLY:
+            endDate.setMonth(endDate.getMonth() + 3);
+            price = 250; // Quarterly price
+            break;
+        case subscriptionPlanTypes.ANNUAL:
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            price = 800; // Annual price
+            break;
+        default:
+            throw new Error('Invalid plan type');
+    }
+    return { endDate, price };
+}
+
 
 const allowedCurrencies = ['USD', 'ETB'];
 
@@ -34,35 +65,72 @@ export const subscriptionController = {
       where: { userId, status: 'ACTIVE' },
     });
 
-    if (existingSubscription) {
+    if (existingSubscription && existingSubscription.status === 'PENDING') {
+      throw new CustomErrors.ConflictError('User already has a pending subscription');
+    }
+
+    if (existingSubscription && existingSubscription.status === 'ACTIVE') {
       throw new CustomErrors.ConflictError('User already has an active subscription');
     }
 
     const upperPlan = plan.toUpperCase();
+    const { endDate, price } = getEndDateAndPrice(new Date(), planType, plan);
 
-    // const newSubscription = await prisma.subscription.create({
-    //   data: {
-    //     userId,
-    //     plan: plan.toUpperCase() as keyof typeof subscriptionPlan,
-    //     status: 'PENDING',
-    //     startDate: new Date(),
-    //     endDate: null,
-    //   },
-    // });
+    const paymentId = uuid4();
 
-    // create a payment record associated with the subscription
-    // calculate amount based on plan and planType
-    let amount = 0;
-    
-    // create a payment record associated with the subscription
+    const initPayment = await acceptPayment({
+      amount: price,
+      user: req.user!,
+      paymentId: paymentId,
+    });
 
+    if (!initPayment) {
+      throw new CustomErrors.ConflictError('Failed to initialize payment');
+    }
 
-    // and redirect user to payment gateway
+    const newSubscription = await prisma.subscription.create({
+      data: {
+        userId,
+        plan: plan.toUpperCase() as keyof typeof subscriptionPlan,
+        status: 'PENDING',
+        startDate: new Date(),
+        endDate: endDate,
+      },
+    });
+
+    const newPayment = await prisma.payment.create({
+      data: {
+        id: paymentId,
+        userId,
+        subscriptionId: newSubscription.id,
+        amount: price,
+        currency: 'ETB',
+        status: 'PENDING',
+        provider: 'CHAPA',
+        checkoutUrl: initPayment?.data.checkoutUrl || '',
+      },
+    });
 
     res.status(201).json({
       success: true,
       message: `${upperPlan} subscription created successfully`,
-      data: { subscription: "newSubscription" },
+      data: { subscription: newSubscription, checkoutUrl: newPayment.checkoutUrl },
     });
   },
+
+  chapaCallback: async (req: Request, res: Response) => {
+    const paymentId = uuidSchema.parse(req.params.paymentId);
+
+    console.log("Payment Id: ", paymentId);
+    
+
+    const paymentVerification = await verifyPayment({ paymentId });
+    
+    if (!paymentVerification) {
+      throw new CustomErrors.ConflictError('Failed to verify payment');
+    }
+
+    
+    res.status(200).send();
+  }
 };
