@@ -57,6 +57,13 @@ interface Config {
     },
 
     tempPath: string;
+
+    chapa: {
+        apiKey: string;
+        callbackUrl: string;
+        returnUrl: string;
+    };
+
 }
 
 const config: Config = {
@@ -118,6 +125,12 @@ const config: Config = {
     },
     
     tempPath: process.env.TEMP_PATH || '/tmp/addis-music',
+
+    chapa: {
+        apiKey: process.env.CHAPA_API_KEY || '',
+        callbackUrl: process.env.CHAPA_CALLBACK_URL || 'http://localhost:5000/api/v1/payments/chapa/callback',
+        returnUrl: process.env.CHAPA_RETURN_URL || 'http://localhost:3000/app',
+    },
 };
 
 export default config;
