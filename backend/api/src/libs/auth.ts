@@ -75,15 +75,6 @@ export const auth = betterAuth({
 	},
     plugins: [
         customSession(async ({ user, session }) => {
-            // const roles = findUserRoles(session.session.userId);
-            // return {
-            //     roles,
-            //     user: {
-            //         ...user,
-            //         newField: "newField",
-            //     },
-            //     session
-            // };
             console.log("customSession plugin executed: ",);
             console.log("User: ", user);
             console.log("Session: ", session);
