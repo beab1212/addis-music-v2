@@ -82,6 +82,7 @@ export const auth = betterAuth({
             const subscription = await prisma.subscription.findFirst({
                 where: {
                     userId: user.id,
+                    status: "ACTIVE",
                 },
             });
             
