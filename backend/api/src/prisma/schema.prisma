@@ -202,7 +202,6 @@ model Track {
   trackNumber  Int?
   releaseDate  DateTime   @default(now())
   description  String?
-  credit       String?
 
   tags         String[]   @default([])
   popularity   Int        @default(0)
@@ -324,6 +323,7 @@ model Payment {
   currency       String
   provider       String           // e.g. "Tellebirr", "Chapa"
   status         PaymentStatus
+  checkoutUrl    String?
   createdAt      DateTime         @default(now())
 
   user           User             @relation(fields: [userId], references: [id])
