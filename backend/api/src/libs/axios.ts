@@ -22,7 +22,6 @@ mediaServer.interceptors.response.use(
 
 
 const axiosClient: AxiosInstance = axios.create({
-    timeout: 10_000,
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
