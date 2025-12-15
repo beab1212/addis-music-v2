@@ -163,9 +163,6 @@ export default function GenresManagement() {
                         <button onClick={() => handleDelete(g.id)} className="p-2 text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">
                           <Trash2 size={16} />
                         </button>
-                        <button onClick={() => window.open(`/app/genres/${g.slug}`, '_blank')} className="p-2 text-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900">
-                          View
-                        </button>
                       </div>
                     </td>
                   </tr>
