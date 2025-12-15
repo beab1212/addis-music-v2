@@ -43,7 +43,7 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
     const [tagOptions, setTagOptions] = useState<Array<{ id: string; name: string }>>([]);
 
     // State for track art and audio file
-    const [trackArt, setTrackArt] = useState<string | null>(null);
+    const [trackArt, setTrackArt] = useState<File | null>(null);
     const [audioFile, setAudioFile] = useState<File | null>(null);
 
     const [loadingRelations, setLoadingRelations] = useState(false);
@@ -55,7 +55,8 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
     // Handle track art change
     const handleTrackArtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setTrackArt(URL.createObjectURL(e.target.files[0])); // Create a URL for the image
+            setTrackArt(e.target.files[0]); // Create a URL for the image
+            console.log("Selected track art file:", e.target.files[0]);
         }
     };
 
@@ -63,6 +64,7 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
     const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setAudioFile(e.target.files[0]); // Store the selected audio file
+            console.log("Selected track art file:", e.target.files[0]);
         }
     };
 
@@ -207,11 +209,16 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
         try {
             if (trackId === "new") {
                 // creating new track
-                if (audioFile) payload.append("audio", audioFile);
                 if (trackArt) payload.append("cover", trackArt);
-                
-                api.post("/tracks/upload", payload).then(async (response) => {
-                    addToast( "Track created successfully", "success");                    
+                if (audioFile) payload.append("audio", audioFile);
+
+                api.post("/tracks/upload", payload, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },timeout: 0,
+
+                }).then(async (response) => {
+                    addToast( "Track created successfully", "success");
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Track creation failed", "error");
                 });
@@ -379,7 +386,7 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
                                 {trackArt ? (
                                 <div className="relative w-full h-full">
                                     <img
-                                    src={trackArt}
+                                    src={URL.createObjectURL(trackArt)}
                                     alt="Track artwork"
                                     className="w-full h-full object-cover"
                                     />
