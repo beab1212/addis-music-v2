@@ -19,8 +19,18 @@ router.post(
     checkFileSize,
   trackController.uploadTrack
 );
+router.post(
+  '/:id',
+  requireAuth,
+  authorize(['admin']),
+  trackController.updateTrackDetails
+);
+
+router.get('/search', trackController.searchTracks);
 router.get('/:id', trackController.getTrackById);
 router.get('/', trackController.getAllTracks);
+router.delete('/:id', requireAuth, authorize(['admin']), trackController.deleteTrack);
+
 
 // TODO - implement other track-related routes (e.g., update, delete, list)
 
