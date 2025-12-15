@@ -46,7 +46,7 @@ export const SongCard = memo(({ song }: SongCardProps) => {
         <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{capitalizeFirst(song?.artist?.name)}</p>
         <div className="flex items-center justify-between mt-2">
           {/* <span className="text-xs text-gray-500 dark:text-gray-500">{formatNumber(song.plays)} plays</span> */}
-          <span className="text-xs text-gray-500 dark:text-gray-500">1.5M plays</span>
+          <span className="text-xs text-gray-500 dark:text-gray-500">{song.playCount} plays</span>
 
           <button className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
             <MoreVertical size={16} />
