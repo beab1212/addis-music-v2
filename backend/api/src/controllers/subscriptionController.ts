@@ -7,42 +7,42 @@ import { acceptPayment, verifyPayment } from "../utils/payment_helpers";
 import { v4 as uuid4 } from "uuid";
 
 const subscriptionPlan = {
-    FAMILY: 'family',
-    PREMIUM: 'premium',
-    FREE: 'free',
+  FAMILY: 'family',
+  PREMIUM: 'premium',
+  FREE: 'free',
 }
 
 const subscriptionPlanTypes = {
-    MONTHLY: 'monthly',
-    QUARTERLY: 'quarterly',
-    ANNUAL: 'annual',
+  MONTHLY: 'monthly',
+  QUARTERLY: 'quarterly',
+  ANNUAL: 'annual',
 }
 
 const getEndDateAndPrice = (startDate: Date, planType: string, plan: string): { endDate: Date; price: number } => {
-    const endDate = new Date(startDate);
-    let price = 0;
+  const endDate = new Date(startDate);
+  let price = 0;
 
-    if (plan !== subscriptionPlan.PREMIUM) {
-        throw new CustomErrors.BadRequestError('Pricing is only defined for PREMIUM plan');
-    }
+  if (plan !== subscriptionPlan.PREMIUM) {
+    throw new CustomErrors.BadRequestError('Pricing is only defined for PREMIUM plan');
+  }
 
-    switch (planType) {
-        case subscriptionPlanTypes.MONTHLY:
-            endDate.setMonth(endDate.getMonth() + 1);
-            price = 100; // Monthly price
-            break;
-        case subscriptionPlanTypes.QUARTERLY:
-            endDate.setMonth(endDate.getMonth() + 3);
-            price = 250; // Quarterly price
-            break;
-        case subscriptionPlanTypes.ANNUAL:
-            endDate.setFullYear(endDate.getFullYear() + 1);
-            price = 800; // Annual price
-            break;
-        default:
-            throw new Error('Invalid plan type');
-    }
-    return { endDate, price };
+  switch (planType) {
+    case subscriptionPlanTypes.MONTHLY:
+      endDate.setMonth(endDate.getMonth() + 1);
+      price = 100; // Monthly price
+      break;
+    case subscriptionPlanTypes.QUARTERLY:
+      endDate.setMonth(endDate.getMonth() + 3);
+      price = 250; // Quarterly price
+      break;
+    case subscriptionPlanTypes.ANNUAL:
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      price = 800; // Annual price
+      break;
+    default:
+      throw new Error('Invalid plan type');
+  }
+  return { endDate, price };
 }
 
 
@@ -88,15 +88,30 @@ export const subscriptionController = {
       throw new CustomErrors.ConflictError('Failed to initialize payment');
     }
 
-    const newSubscription = await prisma.subscription.create({
-      data: {
-        userId,
-        plan: plan.toUpperCase() as keyof typeof subscriptionPlan,
-        status: 'PENDING',
-        startDate: new Date(),
-        endDate: endDate,
-      },
-    });
+    let newSubscription = null;
+
+    if (existingSubscription && existingSubscription.status === 'EXPIRED') {
+      newSubscription = await prisma.subscription.update({
+        where: { id: existingSubscription.id },
+        data: {
+          plan: plan.toUpperCase() as keyof typeof subscriptionPlan,
+          status: 'PENDING',
+          startDate: new Date(),
+          endDate: endDate,
+        },
+      })
+    } else {
+      newSubscription = await prisma.subscription.create({
+        data: {
+          userId,
+          plan: plan.toUpperCase() as keyof typeof subscriptionPlan,
+          status: 'PENDING',
+          startDate: new Date(),
+          endDate: endDate,
+        },
+      });
+    }
+
 
     const newPayment = await prisma.payment.create({
       data: {
@@ -107,30 +122,65 @@ export const subscriptionController = {
         currency: 'ETB',
         status: 'PENDING',
         provider: 'CHAPA',
-        checkoutUrl: initPayment?.data.checkoutUrl || '',
+        checkoutUrl: initPayment?.data.checkout_url || '',
       },
     });
 
     res.status(201).json({
       success: true,
       message: `${upperPlan} subscription created successfully`,
-      data: { subscription: newSubscription, checkoutUrl: newPayment.checkoutUrl },
+      data: { subscription: newSubscription, checkoutUrl: initPayment?.data.checkout_url || '' },
     });
   },
 
   chapaCallback: async (req: Request, res: Response) => {
     const paymentId = uuidSchema.parse(req.params.paymentId);
 
-    console.log("Payment Id: ", paymentId);
-    
-
     const paymentVerification = await verifyPayment({ paymentId });
-    
+
+    if (!paymentVerification || paymentVerification.status !== 'success') {
+      throw new CustomErrors.ConflictError('Payment verification failed');
+    }
+
+    if (paymentVerification.data.status !== 'success') {
+      throw new CustomErrors.ConflictError('Payment was not successful');
+    }
+
+    const tx_ref = paymentVerification.data?.tx_ref.split('_')[1];
+
+    const paymentRecord = await prisma.payment.findUnique({
+      where: { id: tx_ref },
+    });
+
+    if (!paymentRecord) {
+      throw new CustomErrors.NotFoundError('Payment record not found');
+    }
+
+    // Update payment status
+    const updatedPayment = await prisma.payment.update({
+      where: { id: tx_ref, status: 'PENDING' },
+      data: { status: 'SUCCESS' },
+    });
+
+    // update subscription status if payment is successful
+    if (!paymentRecord.subscriptionId) {
+      throw new CustomErrors.NotFoundError('Subscription ID not found on payment record');
+    }
+
+    const updatedResult = await prisma.subscription.update({
+      where: { id: paymentRecord.subscriptionId, status: 'PENDING' },
+      data: { status: 'ACTIVE' },
+    });
+
+    if (!updatedResult) {
+      throw new CustomErrors.ConflictError('No pending subscription found to activate');
+    }
+
     if (!paymentVerification) {
       throw new CustomErrors.ConflictError('Failed to verify payment');
     }
 
-    
+
     res.status(200).send();
   }
 };
