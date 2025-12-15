@@ -107,8 +107,6 @@ export const streamController = {
 
         // build m3u8 content
         const m3u8Content = await buildM3U8Content(playlist);
-
-        console.log("Build m3u8Content: ", m3u8Content);
         
 
         // Return the playlist content to the client
