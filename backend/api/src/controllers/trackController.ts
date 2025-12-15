@@ -7,8 +7,7 @@ import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { uploadImageToCloudinary } from '../libs/cloudinary';
 import { uploadAudioToS3 } from '../libs/s3Client';
 import { addTrackToMeiliIndex } from '../libs/meili';
-import { metadataEmbeddingQueue, sonicEmbeddingQueue } from '../jobs/audioQueue';
-
+import { embeddingQueue } from '../jobs/audioQueue';
 
 
 export const trackController = {
@@ -81,9 +80,8 @@ export const trackController = {
         addTrackToMeiliIndex(newTrack.id);
 
         // TODO: queue sonic, metadata embedding and LUFS tasks with
-        await metadataEmbeddingQueue.add('metadata-embedding', { trackId: newTrack.id });
-        await sonicEmbeddingQueue.add('sonic-embedding', { trackId: newTrack.id });
-
+        embeddingQueue.add('embedding', { type: 'track_audio', track_id: newTrack.id });
+        embeddingQueue.add('embedding', { type: 'track', track_id: newTrack.id });
 
         // Return the response
         res.status(201).json({
@@ -93,7 +91,7 @@ export const trackController = {
     },
     
     getTrackById: async (req: Request, res: Response) => {
-        const trackId  = uuidSchema.parse(req.params);
+        const trackId  = uuidSchema.parse(req.params.id);
         
         const track = await prisma.track.findUnique({
             where: { id: trackId },
@@ -114,12 +112,35 @@ export const trackController = {
         });
     },
 
+    getAllTracks: async (req: Request, res: Response) => {
+        const { page, limit } = paginationSchema.parse(req.query);
+        const skip = (page - 1) * limit;
+        const [tracks, total] = await Promise.all([
+            prisma.track.findMany({
+                skip,
+                take: limit,
+                include: {
+                    artist: true,
+                    album: true,
+                    genre: true,
+                },
+            }),
+            prisma.track.count(),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: { tracks },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    },
+
     updateTrackDetails: async (req: Request, res: Response) => {
-        const trackId = uuidSchema.parse(req.params.id);
+        const id = uuidSchema.parse(req.params.id);
         const { title, artistId, albumId, genreId, tags, releaseDate, description, credit } = uploadTrackSchema.parse(req.body);
 
         const existingTrack = await prisma.track.findUnique({
-            where: { id: trackId },
+            where: { id: id },
         });
 
         if (!existingTrack) {
@@ -144,9 +165,8 @@ export const trackController = {
             throw new CustomErrors.NotFoundError('Genre not found');
         }
 
-
         const updatedTrack = await prisma.track.update({
-            where: { id: trackId },
+            where: { id: id },
             data: {
                 title,
                 albumId: albumId || undefined,
@@ -157,6 +177,8 @@ export const trackController = {
                 credit: credit || undefined,
             },
         });
+
+        await embeddingQueue.add('embedding', { type: 'track', track_id: updatedTrack.id });
 
         res.status(200).json({
             success: true,
