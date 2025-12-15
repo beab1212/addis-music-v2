@@ -74,7 +74,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {!user?.isPremium && (
+        {user?.subscription?.status !== 'ACTIVE' && (
           <motion.div
             whileHover={{ scale: 1.02 }}
             className="bg-linear-to-r from-yellow-400 via-orange-500 to-pink-500 rounded-2xl p-6 mb-8 cursor-pointer"
@@ -89,6 +89,20 @@ export default function Profile() {
             </div>
           </motion.div>
         )}
+        { user?.subscription?.status === 'ACTIVE' && (
+          <motion.div
+            className="bg-green-500/20 border border-green-500 rounded-2xl p-6 mb-8"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-green-900 mb-2">Premium Active</h3>
+                <p className="text-green-900/90">Thank you for being a premium member!</p>
+              </div>
+              <Crown size={48} className="text-green-900" />
+            </div>
+          </motion.div>
+        ) }
+
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">

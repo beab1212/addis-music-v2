@@ -1,14 +1,21 @@
 'use client';
+
 import { motion } from 'framer-motion';
 import { Crown, Check } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToastStore } from '@/store/toastStore';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+import PlanSelectionModal from '@/components/PlanSelectionModal'; // Import PlanSelectionModal
 
 export default function Premium() {
-  const { user, updateUser } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { addToast } = useToastStore();
   const navigate = useRouter();
+
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   const plans = [
     {
@@ -21,11 +28,11 @@ export default function Premium() {
         'Limited skips',
         'Shuffle play',
       ],
-      current: !user?.isPremium,
+      current: !user?.subscription,
     },
     {
       name: 'Premium',
-      price: '$9.99',
+      price: '$100',
       period: 'month',
       features: [
         'Ad-free listening',
@@ -36,11 +43,11 @@ export default function Premium() {
         'Admin dashboard access',
       ],
       recommended: true,
-      current: user?.isPremium,
+      current: user?.subscription?.plan === 'PREMIUM',
     },
     {
       name: 'Family',
-      price: '$14.99',
+      price: '$150',
       period: 'month',
       features: [
         'All Premium features',
@@ -48,18 +55,44 @@ export default function Premium() {
         'Family Mix playlist',
         'Parental controls',
       ],
+      current: user?.subscription?.plan === 'FAMILY',
+      disabled: true, // UI-only demo
     },
   ];
 
   const handleSubscribe = (planName: string) => {
-    if (planName === 'Premium') {
-      updateUser({ isPremium: true });
-      addToast('Successfully upgraded to Premium!', 'success');
-      navigate.push('/profile');
-    } else {
-      addToast('This is a UI-only demo', 'info');
+    if (planName === 'Free') {
+      addToast('Free plan selected', 'info');
+      return;
     }
+
+    setSelectedPlan(planName);
+    setShowModal(true);  // Show the modal to select the billing period
   };
+
+  const handlePlanSelection = (plan: string, period: string) => {
+    setShowModal(false);  // Close modal after selecting the plan period
+    console.log("selected plans: ", plan, period);
+
+    api.post('/subscriptions', {
+      plan: plan.toLocaleLowerCase(),
+      planType: period.toLocaleLowerCase(),
+    })
+      .then((res) => {
+        addToast(`You have successfully selected the ${period} plan for ${plan}`, 'success');
+        // redirect to checkout url
+        window.location.href = res.data?.data?.checkoutUrl;
+        console.log("CheckOut URL: ", res.data?.data.checkoutUrl)
+      })
+      .catch((error) => {
+        console.error("Error creating subscription: ", error);
+        addToast(error.response?.data?.message || 'Failed to create subscription', 'error');
+      });
+  };
+
+  useEffect(() => {
+    console.log("User: ", user);
+  }, [user]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -83,7 +116,7 @@ export default function Premium() {
               key={plan.name}
               whileHover={{ scale: 1.02, y: -5 }}
               className={`relative bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg ${
-                plan.recommended ? 'ring-4 ring-orange-500' : ''
+                plan.recommended ? 'ring-4 ring-orange-500' : ''} ${plan.disabled ? 'opacity-50 cursor-not-allowed' : ''}
               }`}
             >
               {plan.recommended && (
@@ -110,7 +143,7 @@ export default function Premium() {
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-start gap-3">
-                    <Check size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
+                    <Check size={20} className="text-green-500 **:shrink-0 mt-0.5" />
                     <span className="text-gray-700 dark:text-gray-300">{feature}</span>
                   </li>
                 ))}
@@ -120,7 +153,7 @@ export default function Premium() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleSubscribe(plan.name)}
-                disabled={plan.current}
+                disabled={plan.current || plan?.disabled}
                 className={`w-full py-3 rounded-full font-semibold transition-colors ${
                   plan.current
                     ? 'bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
@@ -135,37 +168,14 @@ export default function Premium() {
           ))}
         </div>
 
-        <div className="bg-linear-to-br from-orange-500 to-pink-500 rounded-3xl p-8 text-white">
-          <h2 className="text-3xl font-bold mb-4">Why Premium?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Ad-Free Experience</h3>
-              <p className="text-white/90">
-                Enjoy uninterrupted music without any ads. Listen to your favorite songs without
-                interruption.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">High Quality Audio</h3>
-              <p className="text-white/90">
-                Experience music the way it was meant to be heard with high-quality streaming.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Offline Downloads</h3>
-              <p className="text-white/90">
-                Download your favorite songs and playlists to listen offline anytime, anywhere.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Unlimited Access</h3>
-              <p className="text-white/90">
-                Play any song, anytime. Skip as many times as you want and enjoy unlimited listening.
-              </p>
-            </div>
-          </div>
-        </div>
+        {/* PlanSelectionModal */}
+        <PlanSelectionModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onSelectPlan={handlePlanSelection}
+          selectedPlan={selectedPlan!}
+        />
       </motion.div>
     </div>
   );
-};
+}
