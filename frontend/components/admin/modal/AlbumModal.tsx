@@ -39,7 +39,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
 
 
     // State for album art and audio file
-    const [albumArt, setAlbumArt] = useState<string | null>(null);
+    const [albumArt, setAlbumArt] = useState<File | null>(null);
 
 
     const [loadingRelations, setLoadingRelations] = useState(false);
@@ -51,7 +51,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
     // Handle Album art change
     const handleAlbumArtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setAlbumArt(URL.createObjectURL(e.target.files[0])); // Create a URL for the image
+            setAlbumArt(e.target.files[0]); // Create a URL for the image
         }
     };
 
@@ -153,7 +153,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
                 // creating new album
                 if (albumArt) payload.append("cover", albumArt);
 
-                api.post("/albums", payload).then(async (response) => {
+                api.post("/albums", payload, { timeout: 10000 }).then(async (response) => {
                     addToast( "Album created successfully", "success");
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Album creation failed", "error");
@@ -297,7 +297,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
                                     {albumArt ? (
                                         <div className="relative w-full h-full">
                                             <img
-                                                src={albumArt}
+                                                src={URL.createObjectURL(albumArt)}
                                                 alt="Album artwork"
                                                 className="w-full h-full object-cover"
                                             />
