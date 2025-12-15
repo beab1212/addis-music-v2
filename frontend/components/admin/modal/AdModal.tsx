@@ -39,7 +39,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
     const [tagOptions, setTagOptions] = useState<Array<{ id: string; name: string }>>([]);
 
     // State for ad art and audio file
-    const [adArt, setAdArt] = useState<string | null>(null);
+    const [adArt, setAdArt] = useState<File | null>(null);
     const [audioFile, setAudioFile] = useState<File | null>(null);
 
     const [loadingRelations, setLoadingRelations] = useState(false);
@@ -51,7 +51,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
     // Handle ad art change
     const handleAdArtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setAdArt(URL.createObjectURL(e.target.files[0])); // Create a URL for the image
+            setAdArt(e.target.files[0]); // Create a URL for the image
         }
     };
 
@@ -142,7 +142,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
                 if (audioFile) payload.append("audio", audioFile);
                 if (adArt) payload.append("cover", adArt);
 
-                api.post("/ads/upload", payload).then(async (response) => {
+                api.post("/ads/upload", payload, { timeout: 10000 }).then(async (response) => {
                     addToast( "Ad created successfully", "success");                    
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Ad creation failed", "error");
@@ -319,7 +319,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
                                 {adArt ? (
                                 <div className="relative w-full h-full">
                                     <img
-                                    src={adArt}
+                                    src={URL.createObjectURL(adArt)}
                                     alt="Ad artwork"
                                     className="w-full h-full object-cover"
                                     />
