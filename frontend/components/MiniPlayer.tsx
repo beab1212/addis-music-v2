@@ -8,13 +8,16 @@ import {
   SkipForward, 
   Shuffle, 
   Repeat, 
-  Volume2, 
+  Volume2,
+  VolumeX as VolumeMute,
+  Heart,
   Expand 
 } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
 import { formatDuration, getLowResCloudinaryUrl, capitalizeFirst } from '../utils/helpers';
 import { useRouter } from 'next/navigation';
 import { memo } from 'react';
+import { api } from '@/lib/api';
 
 export const MiniPlayer = memo(() => {
   const router = useRouter();
@@ -25,6 +28,8 @@ export const MiniPlayer = memo(() => {
   const isShuffle = usePlayerStore(state => state.isShuffle);
   const repeatMode = usePlayerStore(state => state.repeatMode);
   const currentTime = usePlayerStore(state => state.currentTime);
+  const muted = usePlayerStore(state => state.muted);
+  const isLiked = usePlayerStore(state => state.isLiked);
   
   // Get the dispatch functions outside of the render loop
   const togglePlayPause = usePlayerStore(state => state.togglePlayPause);
@@ -34,9 +39,12 @@ export const MiniPlayer = memo(() => {
   const setCurrentTime = usePlayerStore(state => state.setCurrentTime);
   const setRepeatMode = usePlayerStore(state => state.setRepeatMode);
   const setVolume = usePlayerStore(state => state.setVolume);
+  const toggleMute = usePlayerStore(state => state.toggleMute);
+  const toggleIsLiked = usePlayerStore(state => state.toggleIsLiked);
+
 
   if (!currentSong) return null;
-  
+
 
   const progress = currentSong.durationSec > 0 ? (currentTime / currentSong.durationSec) * 100 : 0;
 
@@ -66,7 +74,7 @@ export const MiniPlayer = memo(() => {
           <div className="flex items-center justify-between">
             {/* Track Info */}
             <div 
-              className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group"
+              className="flex items-center gap-3 flex-1x min-w-0 cursor-pointer group"
               onClick={() => router.push('/app/player')}
             >
               <img
@@ -85,7 +93,7 @@ export const MiniPlayer = memo(() => {
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-5 justify-center flex-1">
               <motion.button
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.95 }}
@@ -158,9 +166,13 @@ export const MiniPlayer = memo(() => {
               </motion.button>
             </div>
 
-            {/* Volume + Expand (Desktop) */}
+            {/* Volume + Like (Desktop) */}
             <div className="hidden md:flex items-center gap-4 text-gray-500">
-              <Volume2 size={16} />
+              {muted ? (
+                <VolumeMute size={16} onClick={toggleMute} />
+              ) : (
+                <Volume2 size={16} onClick={toggleMute} />
+              )}
               <input
                 type="range"
                 min="0"
@@ -174,10 +186,10 @@ export const MiniPlayer = memo(() => {
               />
               <motion.button
                 whileTap={{ scale: 0.9 }}
-                onClick={() => router.push('/app/player')}
+                onClick={toggleIsLiked}
                 className="p-1.5 hover:text-gray-900 dark:hover:text-white"
               >
-                <Expand size={16} />
+                <Heart size={16} className={isLiked ? 'text-red-500' : ''} />
               </motion.button>
             </div>
           </div>
