@@ -12,6 +12,7 @@ interface SongCardProps {
 export const SongCard = memo(({ song }: SongCardProps) => {
   const setCurrentSong = usePlayerStore((state) => state.setCurrentSong);
   const setQueue = usePlayerStore((state) => state.setQueue);
+  const currentSong = usePlayerStore((state) => state.currentSong);
 
   const handlePlay = () => {
     setCurrentSong(song);
@@ -30,12 +31,12 @@ export const SongCard = memo(({ song }: SongCardProps) => {
           alt={song.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <div className={`absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center ${currentSong?.id === song.id ? 'opacity-100' : ''}`}>
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={handlePlay}
-            className="bg-orange-500 text-white rounded-full p-4 shadow-xl hover:bg-orange-600 transition-colors"
+            className={`bg-orange-500 text-white rounded-full p-4 shadow-xl hover:bg-orange-600 transition-colors`}
           >
             <Play size={24} fill="white" />
           </motion.button>

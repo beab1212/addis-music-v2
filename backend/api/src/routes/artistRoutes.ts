@@ -11,7 +11,10 @@ const router = Router();
 router.post("/", requireAuth, authorize("admin"), uploadImage.single('image'), artistController.createArtist);
 router.get("/", requireAuth, artistController.getAllArtists);
 router.get("/search", requireAuth, artistController.searchArtists);
+router.get("/semantic-search", requireAuth, artistController.semanticSearchArtists);
 router.get("/:id", requireAuth, artistController.getArtistById);
+router.get("/:id/tracks", requireAuth, artistController.getArtistTracks);
+router.get("/:id/albums", requireAuth, artistController.getArtistAlbums);
 router.put("/:id", requireAuth, authorize("admin"), uploadImage.single('image'), artistController.updateArtist);
 router.delete("/:id", requireAuth, authorize("admin"), artistController.deleteArtist);
 

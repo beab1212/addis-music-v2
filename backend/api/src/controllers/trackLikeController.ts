@@ -59,6 +59,42 @@ export const trackLikeController = {
         });
     },
 
+    toggleLikeTrack: async (req: Request, res: Response) => {
+        const trackId = uuidSchema.parse(req.params.trackId);
+        const userId = req.user?.id as string;
+
+        const existingLike = await prisma.trackLike.findFirst({
+            where: {
+                trackId,
+                userId,
+            },
+        });
+
+        if (existingLike) {
+            await prisma.trackLike.delete({
+                where: { id: existingLike.id },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: 'Track unliked successfully',
+            });
+        } else {
+            const newLike = await prisma.trackLike.create({
+                data: {
+                    trackId,
+                    userId,
+                },
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: 'Track liked successfully',
+                data: { like: newLike },
+            });
+        }
+    },
+
     getLikedTracks: async (req: Request, res: Response) => {
         const pagination = paginationSchema.parse(req.query);
         const { page = 1, limit = 10 } = pagination;
@@ -87,4 +123,22 @@ export const trackLikeController = {
 
         });
     },
+    getIsTrackLiked: async (req: Request, res: Response) => {
+        const trackId = uuidSchema.parse(req.params.trackId);
+        const userId = req.user?.id as string;
+
+        const existingLike = await prisma.trackLike.findFirst({
+            where: {
+                trackId,
+                userId,
+            },
+        });
+
+        const isLiked = !!existingLike;
+
+        res.status(200).json({
+            success: true,
+            data: { isLiked },
+        });
+    }
 }

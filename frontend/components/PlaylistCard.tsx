@@ -4,9 +4,10 @@ import { Play } from 'lucide-react';
 import { Playlist } from '@/types';
 import { useRouter } from 'next/navigation';
 import { usePlayerStore } from '@/store/playerStore';
+import { capitalizeFirst } from '@/utils/helpers';
 
 interface PlaylistCardProps {
-  playlist: Playlist;
+  playlist: any;
 }
 
 export const PlaylistCard = ({ playlist }: PlaylistCardProps) => {
@@ -46,9 +47,9 @@ export const PlaylistCard = ({ playlist }: PlaylistCardProps) => {
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{playlist.name}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{playlist.description}</p>
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">{playlist.songs.length} songs</p>
+        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{capitalizeFirst(playlist?.title)}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{playlist?.description.slice(0, 50)}...</p>
+        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">{playlist?.songs?.length || 5} songs</p>
       </div>
     </motion.div>
   );

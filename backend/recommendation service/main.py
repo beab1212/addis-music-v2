@@ -1,5 +1,6 @@
 import asyncio
 from workers.embedding_worker import embedding_worker
+from workers.personalization_worker import personalization_worker
 
 
 async def main():
@@ -20,6 +21,7 @@ async def main():
     # Define the tasks to be executed concurrently
     tasks = [
         embedding_worker(),
+        personalization_worker(),
     ]
     # Wait for all tasks to complete and handle them concurrently
     await asyncio.gather(*tasks)

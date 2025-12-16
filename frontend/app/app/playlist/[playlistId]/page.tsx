@@ -3,20 +3,37 @@ import { useParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Play, Edit, Trash2, MoreVertical } from 'lucide-react';
-import { usePlaylistStore } from '@/store/playlistStore';
 import { usePlayerStore } from '@/store/playerStore';
 import { useToastStore } from '@/store/toastStore';
-import { formatDuration } from '@/utils/helpers';
+import { formatDuration, getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
+import { api } from '@/lib/api';
+import { useEffect, useState } from 'react';
+import { useAuthStore } from '@/store/authStore';
 
 export default function PlaylistDetail() {
   const params = useParams();
+  const { isAuthenticated, user, openAuthModal } = useAuthStore();
   const id = params?.playlistId as string;
   const navigate = useRouter();
-  const { getPlaylistById, removeSongFromPlaylist, deletePlaylist } = usePlaylistStore();
   const { setQueue, setCurrentSong } = usePlayerStore();
+  const currentSong = usePlayerStore((state) => state.currentSong);
   const { addToast } = useToastStore();
 
-  const playlist = getPlaylistById(id as string);
+  const [playlist, setPlaylist] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchPlaylist = async () => {
+      try {
+        const response = await api.get(`/playlists/${id}`);
+        setPlaylist(response.data.data.playlist);
+      } catch (error) {
+        // addToast('Failed to load playlist', 'error');
+      }
+    };
+
+    fetchPlaylist();
+  }, [id]);
+
 
   if (!playlist) {
     return (
@@ -27,7 +44,7 @@ export default function PlaylistDetail() {
   }
 
   const handlePlay = () => {
-    if (playlist.songs.length > 0) {
+    if (playlist.tracks.length > 0) {
       setQueue(playlist.songs);
       setCurrentSong(playlist.songs[0]);
       addToast('Playing playlist', 'success');
@@ -35,7 +52,7 @@ export default function PlaylistDetail() {
   };
 
   const handleDelete = () => {
-    deletePlaylist(playlist.id);
+    // deletePlaylist(playlist.id);
     addToast('Playlist deleted', 'success');
     navigate.push('/app/library');
   };
@@ -54,13 +71,13 @@ export default function PlaylistDetail() {
             className="w-64 h-64 rounded-2xl shadow-2xl object-cover"
           />
           <div className="flex flex-col justify-end">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">PLAYLIST</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 uppercase">{capitalizeFirst(playlist.title)}</p>
             <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
               {playlist.name}
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mb-4">{playlist.description}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {playlist.songs.length} songs
+              {playlist?.tracks?.length} songs
             </p>
           </div>
         </div>
@@ -74,60 +91,54 @@ export default function PlaylistDetail() {
           >
             <Play size={24} fill="white" />
           </motion.button>
+
           <button
             onClick={() => navigate.push(`/app/playlist/${playlist.id}/edit`)}
-            className="p-3 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className={`p-3 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${user?.id !== playlist?.userId ? 'hidden' : ''}`}
           >
             <Edit size={20} />
           </button>
           <button
             onClick={handleDelete}
-            className="p-3 rounded-full bg-white dark:bg-gray-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            className={`p-3 rounded-full bg-white dark:bg-gray-800 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors ${user?.id !== playlist?.userId ? 'hidden' : ''}`}
           >
             <Trash2 size={20} />
           </button>
+
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
             <div className="col-span-1">#</div>
-            <div className="col-span-6">Title</div>
-            <div className="col-span-3">Album</div>
+            <div className="col-span-7">Title</div>
             <div className="col-span-2 text-right">Duration</div>
           </div>
-          {playlist.songs.map((song, index) => (
+          {playlist.tracks.map((song: any, index: number) => (
             <motion.div
               key={song.id}
               whileHover={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}
-              className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer group"
+              className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
               onClick={() => {
-                setQueue(playlist.songs);
+                setQueue(playlist.tracks);
                 setCurrentSong(song);
               }}
             >
-              <div className="col-span-1 text-gray-600 dark:text-gray-400">{index + 1}</div>
-              <div className="col-span-6 flex items-center gap-3">
-                <img src={song.coverUrl} alt={song.title} className="w-12 h-12 rounded object-cover" />
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{song.title}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{song.artist}</p>
+              <div className="col-span-1 text-gray-600 dark:text-gray-400">
+                <div className='flex flex-row gap-4 items-center'>
+                  {index + 1}
+                  <img
+                    src={getLowResCloudinaryUrl(song.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
+                    alt={song.title}
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
                 </div>
               </div>
-              <div className="col-span-3 flex items-center text-gray-600 dark:text-gray-400">
-                {song.album}
+              <div className="col-span-7">
+                <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{capitalizeFirst(song.title)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{capitalizeFirst(song.artist?.name || playlist.artist?.name || 'Unknown')}</p>
               </div>
-              <div className="col-span-2 flex items-center justify-between">
-                <span className="text-gray-600 dark:text-gray-400">{formatDuration(song.duration)}</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeSongFromPlaylist(playlist.id, song.id);
-                    addToast('Song removed from playlist', 'success');
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <MoreVertical size={16} />
-                </button>
+              <div className="col-span-2 text-right text-gray-600 dark:text-gray-400">
+                {formatDuration(song.durationSec || 0)}
               </div>
             </motion.div>
           ))}

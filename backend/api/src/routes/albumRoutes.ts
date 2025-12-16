@@ -10,7 +10,9 @@ const router = Router();
 router.post("/", requireAuth, authorize("admin"), uploadImage.single('cover'), albumController.createAlbum);
 router.get("/", requireAuth, albumController.getAllAlbums);
 router.get("/search", requireAuth, albumController.searchAlbums);
+router.get("/semantic-search", requireAuth, albumController.semanticSearchAlbums);
 router.get("/:id", requireAuth, albumController.getAlbumById);
+router.get("/:id/track", requireAuth, albumController.getAlbumTrack);
 router.delete("/:id", requireAuth, authorize("admin"), albumController.deleteAlbum);
 router.put("/:id", requireAuth, authorize("admin"), uploadImage.single('cover'), albumController.updateAlbum);
 

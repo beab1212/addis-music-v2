@@ -2,16 +2,15 @@
 import { motion } from 'framer-motion';
 import { Edit, LogOut, Crown } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
-import { usePlaylistStore } from '@/store/playlistStore';
 import { useRouter } from 'next/navigation';
 import { PlaylistCard } from '@/components/PlaylistCard';
 import { mockSongs } from '@/utils/mockData';
 import { SongCard } from '@/components/SongCard';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function Profile() {
   const { user, logout } = useAuthStore();
-  const { playlists } = usePlaylistStore();
   const navigate = useRouter();
 
   // if (!user) {
@@ -19,8 +18,24 @@ export default function Profile() {
   //   return null;
   // }
 
+  const [likedSongs, setLikedSongs] = useState([]);
+
+  useEffect(() => {
+    // Fetch liked songs from API or use mock data
+    const fetchLikedSongs = async () => {
+      try {
+        const response = await api.get('/track-likes/liked-tracks');
+        setLikedSongs(response.data.data.tracks);
+      } catch (error) {
+        console.error('Error fetching liked songs:', error);
+      }
+    };
+
+    fetchLikedSongs();
+  }, []);
+
   const userPlaylists: Array<any> = [];
-  const likedSongs: Array<any> = [];
+
 
   const handleLogout = () => {
     logout();
@@ -140,7 +155,7 @@ export default function Profile() {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Liked Songs</h2>
           {likedSongs.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {likedSongs.map((song) => (
+              {likedSongs.map((song: any) => (
                 <SongCard key={song.id} song={song} />
               ))}
             </div>

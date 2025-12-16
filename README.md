@@ -102,6 +102,7 @@ ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);
 ALTER TABLE "Track" ADD COLUMN IF NOT EXISTS "sonicEmbeddingVector" vector(512);
 
 ALTER TABLE "UserProfile" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);
+ALTER TABLE "UserPreference" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);
 ALTER TABLE "Artist" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);
 ALTER TABLE "Album" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);
 ALTER TABLE "Playlist" ADD COLUMN IF NOT EXISTS "embeddingVector" vector(384);

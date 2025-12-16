@@ -97,5 +97,23 @@ export const artistFollowController = {
                 },
             },
         });
+    },
+    getFollowStatus: async (req: Request, res: Response) => {
+        const artistId = uuidSchema.parse(req.params.artistId);
+        const userId = req.user?.id as string;
+
+        const existingFollow = await prisma.artistFollow.findUnique({
+            where: {
+                userId_artistId: {
+                    userId,
+                    artistId,
+                },
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            data: { isFollowing: !!existingFollow }
+        });
     }
 };

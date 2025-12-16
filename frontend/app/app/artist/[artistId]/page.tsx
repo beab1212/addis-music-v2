@@ -18,18 +18,33 @@ export default function ArtistDetail() {
   const [artistSongs, setArtistSongs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const toggleFollow = async () => {
+    try {
+      if (isFollowing) {
+        await api.delete(`/artist-follows/${id}/unfollow`);
+      } else {
+        await api.post(`/artist-follows/${id}/follow`);
+      }
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error('Error toggling follow status:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [artistRes, albumsRes, songsRes] = await Promise.all([
+        const [artistRes, albumsRes, songsRes, followingRes] = await Promise.all([
           api.get(`/artists/${id}`).catch(() => ({ data: { data: null } })),
-          api.get(`/albums?artistId=${id}`).catch(() => ({ data: { data: [] } })),
-          api.get(`/songs?artistId=${id}`).catch(() => ({ data: { data: [] } }))
+          api.get(`/artists/${id}/albums`).catch(() => ({ data: { data: [] } })),
+          api.get(`/artists/${id}/tracks`).catch(() => ({ data: { data: [] } })),
+          api.get(`/artist-follows/${id}/status`).catch(() => ({ data: { data: { isFollowing: false } } }))
         ]);
 
         setArtist(artistRes.data.data.artist);
         setArtistAlbums(albumsRes.data.data.albums || []);
-        setArtistSongs(songsRes.data.data || []);
+        setArtistSongs(songsRes.data.data.tracks || []);
+        setIsFollowing(followingRes.data.data.isFollowing);
 
         console.log("Artist Data: ", artistRes.data.data);
         console.log("Artist Albums: ", albumsRes.data.data.albums);
@@ -42,6 +57,7 @@ export default function ArtistDetail() {
     };
     fetchData();
   }, [id]);
+
 
   if (loading) {
     return (
@@ -64,7 +80,7 @@ export default function ArtistDetail() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="relative h-96 rounded-3xl overflow-hidden mb-8">
           <img
-            src={getLowResCloudinaryUrl(artist.imageUrl || 'https://images.pexels.com/photos/1699161/pexels-photo-1699161.jpeg?auto=compress&cs=tinysrgb&w=800', { width: 1200, blur: 0 })}
+            src={getLowResCloudinaryUrl(artist.imageUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 1200, blur: 0 })}
             alt={artist.name}
             className="w-full h-full object-cover"
           />
@@ -94,7 +110,7 @@ export default function ArtistDetail() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsFollowing(!isFollowing)}
+            onClick={toggleFollow}
             className={`px-8 py-3 rounded-full font-semibold transition-colors ${
               isFollowing
                 ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'

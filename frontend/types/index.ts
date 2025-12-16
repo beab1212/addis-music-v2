@@ -1,10 +1,10 @@
 export interface Song {
   id: string;
   title: string;
-  artist: string;
+  artist: any;
   artistId: string;
   albumId: string;
-  album: string;
+  album: any;
   durationSec: number;
   coverUrl: string;
   audioUrl: string;
