@@ -8,6 +8,7 @@ import { uploadImageToCloudinary } from '../libs/cloudinary';
 import { uploadAudioToS3 } from '../libs/s3Client';
 import { addTrackToMeiliIndex } from '../libs/meili';
 import { embeddingQueue } from '../jobs/audioQueue';
+import { searchTracks } from '../prisma/vectorQueries';
 
 
 export const trackController = {
@@ -278,7 +279,20 @@ export const trackController = {
         res.status(200).json({ 
             success: true,
             data: { tracks },
-            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+            pagination: { page, limit, totalPages: Math.ceil(100 / limit) }
         });
-    }
+    },
+
+    semanticSearchTracks: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);   
+        const offset = (page - 1) * limit;
+
+        const tracks = await searchTracks(q, limit, offset);
+
+        res.status(200).json({ 
+            success: true,
+            data: { tracks },
+            // pagination: { page, limit, totalPages: Math.ceil(100 / limit) }
+        });
+    },
 }
