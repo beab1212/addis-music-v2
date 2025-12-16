@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 import { UserCheck } from 'lucide-react';
 import { Artist } from '@/types';
-import { formatNumber } from '@/utils/helpers';
+import { formatNumber, getLowResCloudinaryUrl } from '@/utils/helpers';
 import { useRouter } from 'next/navigation';
 
 interface ArtistCardProps {
@@ -21,7 +21,7 @@ export const ArtistCard = ({ artist }: ArtistCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={artist.imageUrl}
+           src={getLowResCloudinaryUrl(artist.imageUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 1200, blur: 0 })}
           alt={artist.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
