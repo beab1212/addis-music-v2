@@ -5,6 +5,7 @@ import { createPlaylistSchema } from "../validators/playlistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
 import { Playlist } from "@prisma/client";
+import { get } from "http";
 
 const playlistMetadata = async (playlist: Playlist) => {
     return [
@@ -18,19 +19,21 @@ export const playlistController = {
         const { title, description, isPublic } = createPlaylistSchema.parse(req.body);
         const userId = req.user?.id as string;
 
+        const coverUrl = req.file?.path;
+
         const newPlaylist = await prisma.playlist.create({
             data: {
                 title,
                 description,
                 userId,
-                isPublic,
-                ...(req.file && { coverUrl: req.file.path }),
+                isPublic: isPublic || false,
+                ...(coverUrl && { coverUrl }),
             },
         });
 
         const metadata = await playlistMetadata(newPlaylist);
 
-        embeddingQueue.add('embedding', { 
+        embeddingQueue.add('embedding', {
             type: 'user_playlist',
             playlist_id: newPlaylist.id,
             playlist_metadata: metadata,
@@ -49,7 +52,11 @@ export const playlistController = {
 
         const playlist = await prisma.playlist.findUnique({
             where: { id },
-            include: { items: true },
+            include: {
+                items: {
+                    include: { track: true},
+                },
+            },
         });
 
         if (!playlist?.isPublic && playlist?.userId !== userId && !isAdmin) {
@@ -60,9 +67,19 @@ export const playlistController = {
             throw new CustomErrors.NotFoundError('Playlist not found');
         }
 
+        // rename items to tracks for response new object
+        const tracks = playlist.items.map(item => item.track);
+
+        // create new playlist object with tracks instead of items without mutating or deleting properties
+        const { items: _items, ...playlistWithoutItems } = playlist as any;
+        const playlistWithTracks = {
+            ...playlistWithoutItems,
+            tracks: tracks,
+        };
+
         res.status(200).json({
             success: true,
-            data: { playlist }
+            data: { playlist: playlistWithTracks }
         });
     },
 
@@ -86,12 +103,12 @@ export const playlistController = {
 
         const updatedPlaylist = await prisma.playlist.update({
             where: { id },
-            data: { title, description, isPublic, ...(req.file && { coverUrl: req.file.path }) },
+            data: { title, description, isPublic: isPublic || false },
         });
 
         const metadata = await playlistMetadata(updatedPlaylist);
 
-        embeddingQueue.add('embedding', { 
+        embeddingQueue.add('embedding', {
             type: 'user_playlist',
             playlist_id: updatedPlaylist.id,
             playlist_metadata: metadata,
@@ -212,4 +229,22 @@ export const playlistController = {
         });
     },
 
+    getUserPlaylists: async (req: Request, res: Response) => {
+        const userId = req.user?.id as string;
+
+        const playlists = await prisma.playlist.findMany({
+            where: { userId },
+            include: {
+                items: {
+                    include: { track: true },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        res.status(200).json({
+            success: true,
+            data: { playlists }
+        });
+    },
 }

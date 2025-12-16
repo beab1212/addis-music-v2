@@ -27,6 +27,7 @@ router.post(
 );
 
 router.get('/search', trackController.searchTracks);
+router.get('/semantic-search', trackController.semanticSearchTracks);
 router.get('/:id', trackController.getTrackById);
 router.get('/', trackController.getAllTracks);
 router.delete('/:id', requireAuth, authorize(['admin']), trackController.deleteTrack);

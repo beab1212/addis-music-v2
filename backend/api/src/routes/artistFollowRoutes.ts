@@ -6,6 +6,7 @@ import { artistFollowController } from "../controllers/artistFollowController";
 const router = Router();
 
 
+router.get("/:artistId/status", requireAuth, artistFollowController.getFollowStatus);
 router.post("/:artistId/follow", requireAuth, artistFollowController.followArtist);
 router.delete("/:artistId/unfollow", requireAuth, artistFollowController.unfollowArtist);
 

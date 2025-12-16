@@ -6,10 +6,13 @@ import { mockSongs } from '@/utils/mockData';
 import { SongCard } from '@/components/SongCard';
 import { usePlayerStore } from '@/store/playerStore';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function LikedSongs() {
   const { user } = useAuthStore();
   const { setQueue, setCurrentSong } = usePlayerStore();
+  const [likedSongs, setLikedSongs] = useState([]);
   const navigate = useRouter();
 
   if (!user) {
@@ -17,7 +20,19 @@ export default function LikedSongs() {
     return null;
   }
 
-  const likedSongs = mockSongs.filter((s) => user.likedSongs.includes(s.id));
+  useEffect(() => {
+    // Fetch liked songs from API or use mock data
+    const fetchLikedSongs = async () => {
+      try {
+        const response = await api.get('/track-likes/liked-tracks');
+        setLikedSongs(response.data.data.tracks);
+      } catch (error) {
+        console.error('Error fetching liked songs:', error);
+      }
+    };
+
+    fetchLikedSongs();
+  }, [])
 
   const handlePlayAll = () => {
     if (likedSongs.length > 0) {
@@ -57,7 +72,7 @@ export default function LikedSongs() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {likedSongs.map((song) => (
+              {likedSongs?.map((song: any) => (
                 <SongCard key={song.id} song={song} />
               ))}
             </div>

@@ -6,7 +6,8 @@ import { ArtistCard } from '@/components/ArtistCard';
 import { PlaylistCard } from '@/components/PlaylistCard';
 import { AlbumCard } from '@/components/AlbumCard';
 import { mockSongs, mockArtists, mockPlaylists, mockAlbums } from '@/utils/mockData';
-import { useRef } from 'react';
+import { useRef, useEffect, useState, use } from 'react';
+import { api } from '@/lib/api';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,99 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 };
 
 export default function Home() {
+
+  const [trendingData, setTrendingData] = useState<any>(null);
+  const [featuredArtistsData, setFeaturedArtistsData] = useState<any>(null);
+  const [popularPlaylistsData, setPopularPlaylistsData] = useState<any>(null);
+  const [newAlbumsData, setNewAlbumsData] = useState<any>(null);
+  const [recommendedForYouData, setRecommendedForYouData] = useState<any>(null);
+  const [testData, setTestData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await api.get('/tracks');
+        setTestData(response.data?.data?.tracks || []);
+        console.log('Test Data:', response.data?.data?.tracks);
+      } catch (error) {
+        console.error('Error fetching test data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecommendedData = async () => {
+      try {
+        const response = await api.get('/personalization/for-you?page=1&limit=20');
+        setRecommendedForYouData(response.data?.data?.tracks || []);
+        console.log('Recommended Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching recommended data:', error);
+      }
+    };
+
+    fetchRecommendedData();
+  }, []);
+
+  useEffect(() => {
+    const fetchTrendingData = async () => {
+      try {
+        const response = await api.get('/personalization/trending-now');
+        setTrendingData(response.data?.data?.tracks || []);
+        console.log('Trending Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching trending data:', error);
+      }
+    };
+
+    fetchTrendingData();
+  }, []);
+
+  useEffect(() => {
+    const fetchNewAlbumsData = async () => {
+      try {
+        const response = await api.get('/personalization/new-albums');
+        setNewAlbumsData(response.data?.data?.albums || []);
+        console.log('New Albums Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching new albums data:', error);
+      }
+    };
+
+    fetchNewAlbumsData();
+  }, []);
+
+  useEffect(() => {
+    const fetchPopularPlaylistsData = async () => {
+      try {
+        const response = await api.get('/personalization/popular-playlists');
+        setPopularPlaylistsData(response.data?.data?.playlists || []);
+        console.log('Popular Playlists Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching popular playlists data:', error);
+      }
+    };
+
+    fetchPopularPlaylistsData();
+  }, []);
+
+  useEffect(() => {
+    const fetchFeaturedArtistsData = async () => {
+      try {
+        const response = await api.get('/personalization/featured-artists');
+        setFeaturedArtistsData(response.data?.data?.artists || []);
+        console.log('Featured Artists Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching featured artists data:', error);
+      }
+    };
+
+    fetchFeaturedArtistsData();
+  }, []);
+
+
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div
@@ -75,16 +169,25 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <Section title="Trending Now">
-        {mockSongs.slice(0, 6).map((song) => (
+      <Section title="Recommended for You">
+        {recommendedForYouData?.map((song: any) => (
           <div key={song.id} className="flex-shrink-0 w-56">
             <SongCard song={song} />
           </div>
         ))}
       </Section>
 
+      <Section title="Trending Now">
+        {trendingData?.map((song: any) => (
+          <div key={song.id} className="flex-shrink-0 w-56">
+            <SongCard song={song} />
+          </div>
+        ))}
+      </Section>
+      
+
       <Section title="Featured Artists">
-        {mockArtists.slice(0, 6).map((artist) => (
+        {featuredArtistsData?.map((artist: any) => (
           <div key={artist.id} className="flex-shrink-0 w-56">
             <ArtistCard artist={artist} />
           </div>
@@ -100,15 +203,16 @@ export default function Home() {
       </Section>
 
       <Section title="New Albums">
-        {mockAlbums.map((album) => (
+        {newAlbumsData?.map((album: any) => (
           <div key={album.id} className="flex-shrink-0 w-56">
             <AlbumCard album={album} />
           </div>
         ))}
       </Section>
 
-      <Section title="Recommended for You">
-        {mockSongs.slice(3, 9).map((song) => (
+
+      <Section title="Test Track Section">
+        {testData?.map((song: any) => (
           <div key={song.id} className="flex-shrink-0 w-56">
             <SongCard song={song} />
           </div>

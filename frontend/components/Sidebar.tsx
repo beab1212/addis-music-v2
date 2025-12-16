@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Home, Search, Library, PlusCircle, Heart, Settings, LayoutDashboard, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from "react";
-import { usePlaylistStore } from '../store/playlistStore';
 import { useAuthStore } from '../store/authStore';
 
 const Tooltip = ({ label }: { label: string }) => (
@@ -16,7 +15,6 @@ const Tooltip = ({ label }: { label: string }) => (
 
 export const Sidebar = () => {
   const location = usePathname();
-  const { playlists } = usePlaylistStore();
   const { isAuthenticated, user } = useAuthStore();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -154,7 +152,7 @@ export const Sidebar = () => {
                 </h3>
               )}
 
-              <div className="space-y-1">
+              {/* <div className="space-y-1">
                 {playlists.slice(0, 5).map((playlist) => (
                   <Link key={playlist.id} href={`/app/playlist/${playlist.id}`}>
                     <motion.div
@@ -176,7 +174,7 @@ export const Sidebar = () => {
                     </motion.div>
                   </Link>
                 ))}
-              </div>
+              </div> */}
             </div>
           </>
         )}
