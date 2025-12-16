@@ -69,9 +69,29 @@ const buildM3U8Content = async (playlist: string[]) => {
     return m3u8Content;
 };
 
+const setPlayHistory = async (userId: string, trackId: string) => {
+    const history = await prisma.playHistory.findFirst({
+        where: {
+            userId: userId,
+            trackId: trackId
+        },
+    });
+
+    if (!history) {
+        await prisma.playHistory.create({
+            data: {
+                userId: userId,
+                trackId: trackId,
+                playedAt: new Date()
+            }
+        });
+    }
+}
+
 
 export const streamController = {
     stream: async(req: Request, res: Response) => {
+        const userId = req.user?.id;
         const audioId = uuidSchema.parse(req.params?.audioId || "");
 
         // get subscription plan
@@ -107,7 +127,9 @@ export const streamController = {
 
         // build m3u8 content
         const m3u8Content = await buildM3U8Content(playlist);
-        
+
+        // TODO: use advanced playHistory latter
+        setPlayHistory(userId!, track.id);
 
         // Return the playlist content to the client
         res.setHeader('Content-Type', 'application/vnd.apple.mpegurl')

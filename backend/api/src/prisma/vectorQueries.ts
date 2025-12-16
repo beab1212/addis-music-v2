@@ -1,12 +1,6 @@
 import prisma from "../libs/db";
+import { queryEmbedding } from '../utils/helpers';
 
-
-const getPlayCountForTrack = async (trackId: string) => {
-  const playCount = await prisma.playHistory.count({
-    where: { trackId },
-  });
-  return playCount;
-}
 
 const trackAndArtistSelect = `
   t."id",
@@ -35,6 +29,25 @@ const trackAndArtistSelect = `
   a."createdAt" AS "artistCreatedAt",
 
   COUNT(ph."id")::INT AS "playCount"
+`;
+
+const albumAndArtistSelect = `
+  a."id",
+  a."title",
+  a."coverUrl",
+  a."releaseDate",
+  a."credit",
+  a."description",
+  a."createdAt",
+
+  ar."id" AS "artistId",
+  ar."name" AS "artistName",
+  ar."bio" AS "artistBio",
+  ar."isVerified" AS "artistIsVerified",
+  ar."imageUrl" AS "artistImageUrl",
+  ar."genres" AS "artistGenres",
+  ar."country" AS "artistCountry",
+  ar."createdAt" AS "artistCreatedAt"
 `;
 
 
@@ -359,4 +372,190 @@ export const popularPlaylists = async (
   return results;
 
 }
+
+
+// Featured Artists
+export const featuredArtists = async (
+  userMetaVector: number[] = [],
+  userAudioVector: number[] = [],
+  limit: number = 10,
+  offset: number = 0
+) => {
+
+  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      a."id",
+      a."name",
+      a."bio",
+      a."isVerified",
+      a."imageUrl",
+      a."genres",
+      a."country",
+      a."createdAt",
+      COUNT(af."id")::int AS followers,
+
+      ${
+        hasVectors
+          ? `
+          -- Calculate score based on embeddingVector
+          (1 - (a."embeddingVector" <-> CAST($1 AS vector))) AS "score"
+        `
+          : `
+          1.0 AS "score"  -- Default score when vectors are not available
+        `      
+      }
+
+    FROM "Artist" a
+    LEFT JOIN "ArtistFollow" af
+      ON af."artistId" = a."id"
+
+    GROUP BY 
+      a."id"
+
+    ORDER BY "score" DESC  -- Order by the score
+
+    LIMIT $2
+    OFFSET $3;
+  `,
+    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
+    limit,  // Add limit as parameter
+    offset  // Add offset as parameter
+  );
+
+  console.log("Featured artists: ", results);
+  
+
+  return results;
+
+}
+
+
+
+
+
+const MAX_COSINE_DISTANCE = 0.6; // tune this
+
+
+// for search queries
+export const searchTracks = async (query: string, limit: number = 20, offset: number = 0) => {
+  const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
+  const embedding = `[${searchEmbeddingResult.join(",")}]`;
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      ${trackAndArtistSelect},
+      (1 - (t."embeddingVector" <=> CAST($1 AS vector))) AS similarity
+
+    FROM "Track" t
+    JOIN "Artist" a 
+      ON t."artistId" = a."id"
+
+    LEFT JOIN "PlayHistory" ph
+      ON ph."trackId" = t."id"
+
+    WHERE
+      t."embeddingVector" <=> CAST($1 AS vector) <= $4
+
+    GROUP BY
+      t."id",
+      a."id"
+
+    ORDER BY similarity DESC
+    LIMIT $2
+    OFFSET $3;
+  `, embedding, limit, offset, MAX_COSINE_DISTANCE);
+
+
+  const organizedResults = organizeTracksWithArtist(results);
+  return organizedResults;
+};
+
+export const searchAlbums = async (query: string, limit: number = 20, offset: number = 0) => {
+  const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
+  const embedding = `[${searchEmbeddingResult.join(",")}]`;
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      ${albumAndArtistSelect},
+      (1 - (a."embeddingVector" <=> CAST($1 AS vector))) AS similarity
+
+    FROM "Album" a
+    JOIN "Artist" ar
+      ON a."artistId" = ar."id"
+    
+    WHERE
+      a."embeddingVector" <=> CAST($1 AS vector) <= $4
+
+    GROUP BY
+      a."id",
+      ar."id"
+
+    ORDER BY similarity DESC
+    LIMIT $2
+    OFFSET $3;
+  `, embedding, limit, offset, MAX_COSINE_DISTANCE);
+  
+  return organizeAlbumsWithArtist(results);
+};
+
+export const searchPlaylists = async (query: string, limit: number = 20, offset: number = 0) => {
+  const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
+  const embedding = `[${searchEmbeddingResult.join(",")}]`;
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      p."id",
+      p."title",
+      p."description",
+      p."coverUrl",
+      p."userId",
+      p."createdAt"
+
+    FROM "Playlist" p
+
+    ORDER BY 
+      (1 - (p."embeddingVector" <-> CAST($1 AS vector))) DESC
+
+    LIMIT $2
+    OFFSET $3;
+  `, embedding, limit, offset);
+  return results;
+};
+
+
+export const searchArtists = async (query: string, limit: number = 20, offset: number = 0) => {
+  const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
+  const embedding = `[${searchEmbeddingResult.join(",")}]`;
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      a."id",
+      a."name",
+      a."bio",
+      a."isVerified",
+      a."imageUrl",
+      a."genres",
+      a."country",
+      a."createdAt",
+      COUNT(af."id")::int AS followers,
+      (1 - (a."embeddingVector" <=> CAST($1 AS vector))) AS similarity
+
+    FROM "Artist" a
+    LEFT JOIN "ArtistFollow" af
+      ON af."artistId" = a."id"
+
+    WHERE
+      a."embeddingVector" <=> CAST($1 AS vector) <= $4
+
+    GROUP BY
+      a."id"
+
+    ORDER BY similarity DESC
+    LIMIT $2
+    OFFSET $3;
+  `, embedding, limit, offset, MAX_COSINE_DISTANCE);
+
+  return results;
+};
 
