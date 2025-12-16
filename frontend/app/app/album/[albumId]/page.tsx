@@ -14,7 +14,7 @@ export default function AlbumDetail() {
   const router = useRouter()
   const params = useParams();
   const id = params?.albumId as string;
-  const { setQueue, setCurrentSong } = usePlayerStore();
+  const { setQueue, setCurrentSong, currentSong } = usePlayerStore();
   const [album, setAlbum] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +64,7 @@ export default function AlbumDetail() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           <img
-            src={getLowResCloudinaryUrl(album.coverUrl, { width: 300, blur: 0 }) || 'https://images.pexels.com/photos/1616403/pexels-photo-1616403.jpeg?auto=compress&cs=tinysrgb&w=800'}
+            src={getLowResCloudinaryUrl(album.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
             alt={album.title}
             className="w-64 h-64 rounded-2xl shadow-2xl object-cover"
           />
@@ -91,10 +91,12 @@ export default function AlbumDetail() {
           </motion.button>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
             <div className="col-span-1">#</div>
-            <div className="col-span-9">Title</div>
+            <div className="col-span-1">Image</div>
+
+            <div className="col-span-7">Title</div>
             <div className="col-span-2 text-right">Duration</div>
           </div>
           {songs.map((song: any, index: number) => (
@@ -108,12 +110,19 @@ export default function AlbumDetail() {
               }}
             >
               <div className="col-span-1 text-gray-600 dark:text-gray-400">{index + 1}</div>
-              <div className="col-span-9">
-                <p className="font-semibold text-gray-900 dark:text-white">{song.title}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{song.artist || album.artistName || 'Unknown'}</p>
+              <div className="col-span-1">
+                <img
+                  src={getLowResCloudinaryUrl(album.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
+                  alt={song.title}
+                  className="w-12 h-12 rounded-xl object-cover"
+                />
+              </div>
+              <div className="col-span-7">
+                <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{song.title}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{song.artist?.name || album.artist?.name || 'Unknown'}</p>
               </div>
               <div className="col-span-2 text-right text-gray-600 dark:text-gray-400">
-                {formatDuration(song.duration || 0)}
+                {formatDuration(song.durationSec || 0)}
               </div>
             </motion.div>
           ))}

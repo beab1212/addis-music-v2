@@ -1,6 +1,13 @@
 import prisma from "../libs/db";
 
 
+const getPlayCountForTrack = async (trackId: string) => {
+  const playCount = await prisma.playHistory.count({
+    where: { trackId },
+  });
+  return playCount;
+}
+
 const trackAndArtistSelect = `
   t."id",
   t."title",
@@ -17,6 +24,7 @@ const trackAndArtistSelect = `
   t."tags",
   t."popularity",
   t."createdAt",
+
   a."id" AS "artistId",
   a."name" AS "artistName",
   a."bio" AS "artistBio",
@@ -24,7 +32,11 @@ const trackAndArtistSelect = `
   a."imageUrl" AS "artistImageUrl",
   a."genres" AS "artistGenres",
   a."country" AS "artistCountry",
-  a."createdAt" AS "artistCreatedAt",`;
+  a."createdAt" AS "artistCreatedAt",
+
+  COUNT(ph."id")::INT AS "playCount"
+`;
+
 
 const organizeTracksWithArtist = (tracks: any[]) => {
   return tracks.map((track) => ({
@@ -32,6 +44,7 @@ const organizeTracksWithArtist = (tracks: any[]) => {
     title: track.title,
     durationSec: track.durationSec,
     audioUrl: track.audioUrl,
+
     artist: {
       id: track.artistId,
       name: track.artistName,
@@ -42,6 +55,7 @@ const organizeTracksWithArtist = (tracks: any[]) => {
       country: track.artistCountry,
       createdAt: track.artistCreatedAt,
     },
+
     albumId: track.albumId,
     genreId: track.genreId,
     coverUrl: track.coverUrl,
@@ -50,11 +64,39 @@ const organizeTracksWithArtist = (tracks: any[]) => {
     description: track.description,
     credit: track.credit,
     tags: track.tags,
+
     popularity: track.popularity,
+    playCount: track.playCount, // ✅ NEW
+    score: track.score,
+
     createdAt: track.createdAt,
-    score: track.score, // Include the cosine similarity score
   }));
-}
+};
+
+const organizeAlbumsWithArtist = (albums: any[]) => {
+  return albums.map((album) => ({
+    id: album.id,
+    title: album.title,
+    coverUrl: album.coverUrl,
+    releaseDate: album.releaseDate,
+    credit: album.credit,
+    description: album.description,
+
+    artist: {
+      id: album.artistId,
+      name: album.artistName,
+      bio: album.artistBio,
+      isVerified: album.artistIsVerified,
+      imageUrl: album.artistImageUrl,
+      genres: album.artistGenres,
+      country: album.artistCountry,
+      createdAt: album.artistCreatedAt,
+    },
+
+    createdAt: album.createdAt,
+  }));
+};
+
 
 
 // The function to fetch similar tracks
@@ -89,21 +131,36 @@ export const getSimilarTracks = async (
 
   const results: any = await prisma.$queryRawUnsafe(`
     SELECT 
-     ${trackAndArtistSelect}
-    
-      ${userMetaVector.length > 0 && userAudioVector.length > 0 ? `
-      -- cosine similarity metadata
-        (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.6 +
-        -- cosine similarity audio
-        (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4 AS "score"
-    ` : userMetaVector.length > 0 ? `
-      1 - (t."embeddingVector" <-> CAST($1 AS vector)) AS "score"
-    ` : `
-      1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector)) AS "score"
-    `}
+      ${trackAndArtistSelect},
+
+      ${
+        userMetaVector.length > 0 && userAudioVector.length > 0
+          ? `
+          (
+            (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.6 +
+            (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4
+          ) AS "score"
+        `
+          : userMetaVector.length > 0
+          ? `
+          (1 - (t."embeddingVector" <-> CAST($1 AS vector))) AS "score"
+        `
+          : `
+          (1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector))) AS "score"
+        `
+      }
 
     FROM "Track" t
-    JOIN "Artist" a ON t."artistId" = a."id"  -- Join the Artist table
+    JOIN "Artist" a 
+      ON t."artistId" = a."id"
+
+    LEFT JOIN "PlayHistory" ph
+      ON ph."trackId" = t."id"
+
+    GROUP BY
+      t."id",
+      a."id"
+
     ORDER BY "score" DESC
     LIMIT $3
     OFFSET $4;
@@ -112,39 +169,130 @@ export const getSimilarTracks = async (
   return organizeTracksWithArtist(results);
 };
 
-
+// The function to fetch trending tracks
 export const getTrendingNow = async (
   userMetaVector: number[] = [],
   userAudioVector: number[] = [],
   limit: number = 10,
-  offset: number = 0) => {
+  offset: number = 0
+) => {
 
-  // if user has no vectors(history)
-  if (userMetaVector.length === 0 || userAudioVector.length === 0) {
-    const latestTracks = await prisma.track.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-    });
+  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
 
-    return latestTracks;
-  }
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      ${trackAndArtistSelect},
 
-  // const tradingTracks: any = await prisma.$queryRawUnsafe(`
-  //   SELECT 
-  //     ${trackAndArtistSelect}
-    
-  //     -- cosine similarity metadata
-  //       (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.6 +
-  //       -- cosine similarity audio
-  //       (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4 AS "score"
+      COUNT(ph."id")::INT AS "playCount",
 
-  //   FROM "Track" t
-  //   ORDER BY "score" DESC
-  //   LIMIT $3
-  //   OFFSET $4;
-  // `, userMetaVector, userAudioVector, limit, offset);
+      ${
+        hasVectors
+          ? `
+          (
+            -- similarity (secondary)
+            (
+              (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.4 +
+              (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4
+            )
+            +
+            -- popularity boost (primary)
+            LEAST(LOG(COUNT(ph."id") + 1), 5) * 0.2
+          ) AS "score"
+        `
+          : `
+          LEAST(LOG(COUNT(ph."id") + 1), 5) AS "score"
+        `
+      }
 
-  // return tradingTracks;
+    FROM "Track" t
+    JOIN "Artist" a
+      ON t."artistId" = a."id"
+
+    LEFT JOIN "PlayHistory" ph
+      ON ph."trackId" = t."id"
+      AND ph."playedAt" >= NOW() - INTERVAL '15 days'
+
+    GROUP BY
+      t."id",
+      a."id"
+
+    ORDER BY
+      "playCount" DESC,
+      "score" DESC
+
+    LIMIT $${hasVectors ? 3 : 1}
+    OFFSET $${hasVectors ? 4 : 2};
+  `,
+    ...(hasVectors ? [userMetaVector, userAudioVector] : []),
+    limit,
+    offset
+  );
+
+  return organizeTracksWithArtist(results);
+};
+
+
+// Recommended new albums
+export const getNewAlbums = async (
+  userMetaVector: number[] = [],
+  userAudioVector: number[] = [],
+  limit: number = 10,
+  offset: number = 0
+) => {
+
+  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
+
+ const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      a."id",
+      a."title",
+      a."coverUrl",
+      a."releaseDate",
+      a."credit",
+      a."description",
+
+      ar."id" AS "artistId",
+      ar."name" AS "artistName",
+      ar."bio" AS "artistBio",
+      ar."isVerified" AS "artistIsVerified",
+      ar."imageUrl" AS "artistImageUrl",
+      ar."genres" AS "artistGenres",
+      ar."country" AS "artistCountry",
+      ar."createdAt" AS "artistCreatedAt",
+
+      ${
+        hasVectors
+          ? `
+          -- Calculate score based only on embeddingVector
+          (1 - (a."embeddingVector" <-> CAST($1 AS vector))) AS "score"
+        `
+          : `
+          1.0 AS "score"  -- Default score when vectors are not available
+        `
+      }
+
+    FROM "Album" a
+    JOIN "Artist" ar
+      ON a."artistId" = ar."id"
+
+    -- No PlayHistory join anymore
+    GROUP BY
+      a."id", ar."id"
+
+    -- Apply ordering based on score (if vectors are used) and limit/offset for pagination
+    ORDER BY "score" DESC
+
+    LIMIT $2
+    OFFSET $3;
+  `,
+    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
+    limit,  // Add limit as parameter
+    offset  // Add offset as parameter
+  );
+
+  console.log("New Albums: ", results);
+  
+
+  return organizeAlbumsWithArtist(results);
 }
 
