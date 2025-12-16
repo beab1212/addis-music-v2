@@ -290,9 +290,73 @@ export const getNewAlbums = async (
     offset  // Add offset as parameter
   );
 
-  console.log("New Albums: ", results);
+  return organizeAlbumsWithArtist(results);
+}
+
+export const popularPlaylists = async (
+    userMetaVector: number[] = [],
+  userAudioVector: number[] = [],
+  limit: number = 10,
+  offset: number = 0
+) => {
+
+  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      p."id",
+      p."title",
+      p."description",
+      p."coverUrl",
+      p."userId",  -- User who created the playlist (not creatorId)
+      p."createdAt",
+
+      ${
+        hasVectors
+          ? `
+          -- Calculate score based on embeddingVector
+          (1 - (p."embeddingVector" <-> CAST($1 AS vector))) AS "vectorScore"
+          `
+          : `
+          1.0 AS "vectorScore"  -- Default score when vectors are not available
+        `      
+      },
+      
+      -- Calculate the combined score
+      (
+        -- Likes Score: Count the total likes on tracks in the playlist
+        COALESCE(SUM(CASE WHEN tl."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.5 +
+        
+        -- Play History Score: Count the total plays on tracks in the playlist
+        COALESCE(SUM(CASE WHEN ph."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.3 +
+
+        -- Vector Score: As calculated from the embedding vector (if available)
+        COALESCE((1 - (p."embeddingVector" <-> CAST($1 AS vector))), 1) * 0.2
+      ) AS "combinedScore"
+
+    FROM "Playlist" p
+    LEFT JOIN "PlaylistItem" pi ON p."id" = pi."playlistId"
+    LEFT JOIN "Track" t ON pi."trackId" = t."id"
+    LEFT JOIN "TrackLike" tl ON t."id" = tl."trackId"
+    LEFT JOIN "PlayHistory" ph ON t."id" = ph."trackId"
+
+    GROUP BY 
+      p."id"
+
+    ORDER BY "combinedScore" DESC  -- Order by the combined score
+
+    LIMIT $2
+    OFFSET $3;
+  `,
+    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
+    limit,  // Add limit as parameter
+    offset  // Add offset as parameter
+  );
+
+  console.log("Popular playlist: ", results);
   
 
-  return organizeAlbumsWithArtist(results);
+  return results;
+
 }
 
