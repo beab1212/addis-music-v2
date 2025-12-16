@@ -4,10 +4,10 @@ import { Play } from 'lucide-react';
 import { Album } from '@/types';
 import { formatDate } from '@/utils/helpers';
 import { useRouter } from 'next/navigation';
-import { use } from 'react';
+import { getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 
 interface AlbumCardProps {
-  album: Album;
+  album: any;
 }
 
 export const AlbumCard = ({ album }: AlbumCardProps) => {
@@ -22,7 +22,7 @@ export const AlbumCard = ({ album }: AlbumCardProps) => {
     >
       <div className="relative aspect-square overflow-hidden">
         <img
-          src={album.coverUrl}
+          src={getLowResCloudinaryUrl(album.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
           alt={album.title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
         />
@@ -37,8 +37,8 @@ export const AlbumCard = ({ album }: AlbumCardProps) => {
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{album.title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{album.artistName}</p>
+        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{capitalizeFirst(album.title)}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{capitalizeFirst(album.artistName)}</p>
         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">{formatDate(album.releaseDate)}</p>
       </div>
     </motion.div>
