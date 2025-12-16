@@ -137,7 +137,7 @@ export default function ArtistsManagement() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <img
-                          src={getLowResCloudinaryUrl(artist.photoUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 48, height: 48 })}
+                          src={getLowResCloudinaryUrl(artist.imageUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 48, height: 48 })}
                           alt={artist.name}
                           className="w-12 h-12 rounded-full object-cover"
                         />
@@ -183,7 +183,7 @@ export default function ArtistsManagement() {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex items-start gap-4">
                               <img
-                                src={getLowResCloudinaryUrl(artist.photoUrl|| 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 120, height: 120 })}
+                                src={getLowResCloudinaryUrl(artist.imageUrl|| 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 120, height: 120 })}
                                 alt={artist.name}
                                 className="w-28 h-28 rounded object-cover"
                               />
