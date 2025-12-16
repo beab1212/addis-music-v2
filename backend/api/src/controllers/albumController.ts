@@ -4,7 +4,8 @@ import { CustomErrors } from '../errors';
 import { createAlbumSchema } from "../validators/albumValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
-import { Album, Prisma } from "@prisma/client";
+import { Album } from "@prisma/client";
+import { searchAlbums } from "../prisma/vectorQueries";
 
 
 const albumMetadata = async (album: Album) => {
@@ -64,7 +65,7 @@ export const albumController = {
 
         const album = await prisma.album.findUnique({
             where: { id: albumId },
-            include: { tracks: true, artist: true, genre: true },
+            include: { artist: true, genre: true },
         });
 
         if (!album) {
@@ -72,6 +73,17 @@ export const albumController = {
         }
 
         res.status(200).json({ success: true, data: { album } });
+    },
+
+    getAlbumTrack: async(req: Request, res: Response) => {
+        const albumId = uuidSchema.parse(req.params.id);
+
+        const tracks = await prisma.track.findMany({
+            where: { albumId },
+            include: { artist: true }
+        })
+
+        res.status(200).json({ success: true, data: { tracks } });
     },
 
     deleteAlbum: async (req: Request, res: Response) => {
@@ -190,4 +202,18 @@ export const albumController = {
             pagination: { page, limit, totalPages: Math.ceil(total / limit) }
         });
     },
+
+    semanticSearchAlbums: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);
+
+        const offset = (page - 1) * limit;
+
+        const albums = await searchAlbums(q, limit, offset);
+
+        res.status(200).json({
+            success: true,
+            data: { albums },
+            // pagination: { page, limit, totalPages: Math.ceil(100 / limit) }
+        });
+    }
 }

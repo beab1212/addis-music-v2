@@ -5,6 +5,8 @@ import { createArtistSchema } from "../validators/artistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
 import { Artist } from "@prisma/client";
+import { searchArtists } from "../prisma/vectorQueries";
+import { get } from "http";
 
 const artistMetadata = async (artist: Artist) => {
     return [
@@ -134,6 +136,67 @@ export const artistController = {
         });
     },
 
+    getArtistTracks: async (req: Request, res: Response) => {
+        const { page, limit } = paginationSchema.parse(req.query);
+        const offset = (page - 1) * limit;
+
+        const artistId = uuidSchema.parse(req.params.id);
+
+        const [total, tracks] = await Promise.all([
+            prisma.track.count({ where: { artistId } }),
+            prisma.track.findMany({
+                where: { artistId },
+                skip: offset,
+                take: limit,
+                include: {
+                    artist: true,
+                    album: true,
+                    genre: true,
+                },
+            }),
+        ]);
+
+        // add playCount to each track
+        for (const track of tracks) {
+            const playCount = await prisma.playHistory.count({
+                where: { trackId: track.id },
+            });
+            (track as any).playCount = playCount;
+        }
+
+        res.status(200).json({
+            success: true,
+            data: { tracks },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    },
+
+    getArtistAlbums: async (req: Request, res: Response) => {
+        const { page, limit } = paginationSchema.parse(req.query);
+        const offset = (page - 1) * limit;
+
+        const artistId = uuidSchema.parse(req.params.id);
+
+        const [total, albums] = await Promise.all([
+            prisma.album.count({ where: { artistId } }),
+            prisma.album.findMany({
+                where: { artistId },
+                skip: offset,
+                take: limit,
+                include: {
+                    artist: true,
+                    genre: true,
+                },
+            }),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: { albums },
+            pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    },
+
     searchArtists: async (req: Request, res: Response) => {
         const { q, page, limit } = searchSchema.parse(req.query);   
         const offset = (page - 1) * limit;
@@ -165,4 +228,18 @@ export const artistController = {
             pagination: { page, limit, totalPages: Math.ceil(total / limit) }
         });
     },
+
+    semanticSearchArtists: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);
+
+        const offset = (page - 1) * limit;
+
+        const artists = await searchArtists(q, limit, offset);
+
+        res.status(200).json({
+            success: true,
+            data: { artists },
+            // pagination: { page, limit, totalPages: Math.ceil(100 / limit) } // TODO: fix total count
+        });
+    }
 };
