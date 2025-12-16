@@ -35,6 +35,9 @@ export const HLSPlayer = memo(() => {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
+        xhrSetup: (xhr) => {
+          xhr.withCredentials = true; // sends cookies
+        },
       });
       hlsRef.current = hls;
 
