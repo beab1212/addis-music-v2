@@ -7,7 +7,7 @@ import { formatDuration, formatDate } from '@/utils/helpers';
 import { usePlayerStore } from '@/store/playerStore';
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { getLowResCloudinaryUrl } from '@/utils/helpers';
+import { getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 
 
 export default function AlbumDetail() {
@@ -16,6 +16,7 @@ export default function AlbumDetail() {
   const id = params?.albumId as string;
   const { setQueue, setCurrentSong, currentSong } = usePlayerStore();
   const [album, setAlbum] = useState<any>(null);
+  const [albumTrack, setAlbumTrack] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,8 +32,24 @@ export default function AlbumDetail() {
         setLoading(false);
       }
     };
-    fetchAlbum();
+    fetchAlbum(); 
   }, [id]);
+
+  useEffect(() => {
+    const fetchAlbumTrack = async () => {
+      try {
+        const res = await api.get(`/albums/${id}/track`).catch(() => ({ data: { data: null } }));
+        setAlbumTrack(res.data.data.tracks);
+        console.log("Album Track Data: ", res.data.data.tracks);
+        
+      } catch (error) {
+        console.error('Failed to fetch album track:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAlbumTrack();
+  }, [id])
 
   if (loading) {
     return (
@@ -50,12 +67,10 @@ export default function AlbumDetail() {
     );
   }
 
-  const songs = album.tracks || album.songs || [];
-
   const handlePlay = () => {
-    if (songs.length > 0) {
-      setQueue(songs);
-      setCurrentSong(songs[0]);
+    if (albumTrack.length > 0) {
+      setQueue(albumTrack);
+      setCurrentSong(albumTrack[0]);
     }
   };
 
@@ -75,7 +90,7 @@ export default function AlbumDetail() {
             </h1>
             <p className="text-xl text-gray-700 dark:text-gray-300 mb-2">{album.artist?.name || 'Unknown'}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {formatDate(album.releaseDate || new Date().toISOString())} • {songs.length} songs
+              {formatDate(album.releaseDate || new Date().toISOString())} • {albumTrack.length} songs
             </p>
           </div>
         </div>
@@ -94,32 +109,32 @@ export default function AlbumDetail() {
         <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
             <div className="col-span-1">#</div>
-            <div className="col-span-1">Image</div>
-
             <div className="col-span-7">Title</div>
             <div className="col-span-2 text-right">Duration</div>
           </div>
-          {songs.map((song: any, index: number) => (
+          {albumTrack.map((song: any, index: number) => (
             <motion.div
               key={song.id}
               whileHover={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}
               className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer"
               onClick={() => {
-                setQueue(songs);
+                setQueue(albumTrack);
                 setCurrentSong(song);
               }}
             >
-              <div className="col-span-1 text-gray-600 dark:text-gray-400">{index + 1}</div>
-              <div className="col-span-1">
-                <img
-                  src={getLowResCloudinaryUrl(album.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
-                  alt={song.title}
-                  className="w-12 h-12 rounded-xl object-cover"
-                />
+              <div className="col-span-1 text-gray-600 dark:text-gray-400">
+                <div className='flex flex-row gap-4 items-center'>
+                  {index + 1}
+                  <img
+                    src={getLowResCloudinaryUrl(song.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 300, height: 300 })}
+                    alt={song.title}
+                    className="w-12 h-12 rounded-xl object-cover"
+                  />
+                </div>
               </div>
               <div className="col-span-7">
-                <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{song.title}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{song.artist?.name || album.artist?.name || 'Unknown'}</p>
+                <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{capitalizeFirst(song.title)}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{capitalizeFirst(song.artist?.name || album.artist?.name || 'Unknown')}</p>
               </div>
               <div className="col-span-2 text-right text-gray-600 dark:text-gray-400">
                 {formatDuration(song.durationSec || 0)}
