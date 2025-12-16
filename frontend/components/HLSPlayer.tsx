@@ -13,6 +13,7 @@ export const HLSPlayer = memo(() => {
     volume,
     isShuffle,
     repeatMode,
+    muted,
     queue,
     currentTime,
     togglePlayPause,
@@ -92,6 +93,13 @@ export const HLSPlayer = memo(() => {
       ref={audioRef}
       onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
       onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+      loop={repeatMode === 'one'}
+      muted={muted}
+      onEnded={() => {
+        if (repeatMode === 'all' && queue.length > 0 && currentSong) {
+          playNext();
+        }
+      }}
     />
   );
 });
