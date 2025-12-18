@@ -60,6 +60,7 @@ export const advertisementController = {
 
         const addTrack = await prisma.adTrack.create({
             data: {
+                id: audioId,
                 adId: newAd.id,
                 audioUrl: audioPath,
             }
