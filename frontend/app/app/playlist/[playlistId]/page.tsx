@@ -168,10 +168,10 @@ export default function PlaylistDetail() {
 
         <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
-            <div className="col-span-1">#</div>
-            <div className="col-span-7">Title</div>
-            <div className={`col-span-2 text-right ${user?.id !== playlist?.userId ? 'col-span-1' : ''}`}>Duration</div>
-            <div className={`col-span-1 text-right ${user?.id !== playlist?.userId ? 'hidden' : ''}`}>Action</div>
+            <div className="sm:col-span-1 col-span-3">#</div>
+            <div className="sm:col-span-7 col-span-5">Title</div>
+            <div className={`sm:col-span-2 col-span-1 text-right ${user?.id !== playlist?.userId ? 'col-span-1' : ''}`}>Duration</div>
+            <div className={`sm:col-span-1 text-right sm:flex hidden ${user?.id !== playlist?.userId ? 'hidden' : ''}`}>Action</div>
           </div>
           {playlist.tracks.map((song: any, index: number) => (
             <motion.div
@@ -183,7 +183,7 @@ export default function PlaylistDetail() {
                 setCurrentSong(song);
               }}
             >
-              <div className="col-span-1 text-gray-600 dark:text-gray-400">
+              <div className="sm:col-span-1 col-span-3 text-gray-600 dark:text-gray-400">
                 <div className='flex flex-row gap-4 items-center'>
                   {index + 1}
                   <img
@@ -193,7 +193,7 @@ export default function PlaylistDetail() {
                   />
                 </div>
               </div>
-              <div className="col-span-7">
+              <div className="sm:col-span-7 col-span-5">
                 <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{capitalizeFirst(song.title)}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400">{capitalizeFirst(song.artist?.name || playlist.artist?.name || 'Unknown')}</p>
               </div>
@@ -202,7 +202,6 @@ export default function PlaylistDetail() {
               </div>
 
               <div className={`col-span-1 text-right ${user?.id !== playlist?.userId ? 'hidden' : ''}`}>
-                {/* delete button could go here */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

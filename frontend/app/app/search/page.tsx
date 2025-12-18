@@ -13,7 +13,6 @@ type Tab = 'all' | 'songs' | 'artists' | 'albums' | 'playlists';
 export default function Search() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>('all');
-  const [all, setAll] = useState<any[]>([]);
   const [tracks, setTracks] = useState<any[]>([]);
   const [artists, setArtists] = useState<any[]>([]);
   const [albums, setAlbums] = useState<any[]>([]);
@@ -39,9 +38,8 @@ export default function Search() {
       }
 
       if (activeTab == 'all' || activeTab == 'playlists') {
-        // const response = await api.get(`/playlists/semantic-search?q=${query.trim()}`);
-        // const result = await response.json();
-        // setAlbums(result.albums || []);
+        const response = await api.get(`/playlists/semantic-search?q=${query.trim()}`);
+        setPlaylists(response.data.data.playlists || []);
       }
 
       if (activeTab == 'all' || activeTab == 'playlists') {
@@ -159,7 +157,7 @@ export default function Search() {
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Playlists</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {filteredPlaylists.map((playlist) => (
+                {playlists?.map((playlist: any) => (
                   <PlaylistCard key={playlist.id} playlist={playlist} />
                 ))}
               </div>
@@ -169,7 +167,7 @@ export default function Search() {
           {tracks.length === 0 &&
             artists.length === 0 &&
             albums.length === 0 &&
-            filteredPlaylists.length === 0 && (
+            playlists.length === 0 && (
               <div className="text-center py-20">
                 <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                   No results found
