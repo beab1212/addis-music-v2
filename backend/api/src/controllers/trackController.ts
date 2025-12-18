@@ -78,7 +78,7 @@ export const trackController = {
         });
 
         // add to Meilisearch index
-        addTrackToMeiliIndex(newTrack.id);
+        // addTrackToMeiliIndex(newTrack.id);
 
         // TODO: queue sonic, metadata embedding and LUFS tasks with
         embeddingQueue.add('embedding', { type: 'track_audio', track_id: newTrack.id });
@@ -239,6 +239,18 @@ export const trackController = {
         // audio file
 
         // delete track record with hls segments
+
+        await prisma.playHistory.deleteMany({
+            where: { trackId: trackId },
+        });
+        
+        await prisma.playlistItem.deleteMany({
+            where: { trackId: trackId },
+        });
+
+        await prisma.trackLike.deleteMany({
+            where: { trackId: trackId },
+        });
 
         await prisma.track.delete({
             where: { id: trackId },
