@@ -7,7 +7,7 @@ import { generateSignedUrl } from "../utils/generateSignedUrl";
 
 
 const getPlaylistFromCacheOrGenerate = async (audioId: string, isAdd: boolean = false) => {
-    
+
     const cacheKey = `playlist:${audioId}`;
 
     // Try to get the playlist from Redis
@@ -32,29 +32,6 @@ const getPlaylistFromCacheOrGenerate = async (audioId: string, isAdd: boolean = 
     return newPlaylist;
 };
 
-
-
-const generatePlaylist = async (baseAudioSegments: any[], addAudioSegment: any) => {
-    const playlist: any[] = [];
-
-    if (!addAudioSegment) {
-        return baseAudioSegments;
-    }
-
-    // Insert ad after every 12 base segments which equals to 2 minutes of audio
-    const AD_INTERVAL = 12
-
-    for (let i = 0; i < baseAudioSegments.length; i++) {
-        playlist.push(baseAudioSegments[i]);
-
-        // Insert ad after every AD_INTERVAL segments
-        if ((i + 1) % AD_INTERVAL === 0) {
-            playlist.push(addAudioSegment);
-        }
-    }
-
-    return playlist;
-};
 
 
 // Helper to build M3U8 content from playlist
@@ -85,19 +62,89 @@ const setPlayHistory = async (userId: string, trackId: string) => {
                 playedAt: new Date()
             }
         });
+    } else {
+        await prisma.playHistory.update({
+            where: {
+                id: history.id
+            },
+            data: {
+                playedAt: new Date()
+            }
+        });
     }
 }
 
 
 export const streamController = {
-    stream: async(req: Request, res: Response) => {
+    // mainStreamx: async (req: Request, res: Response) => {
+    //     const userId = req.user?.id;
+    //     const audioId = uuidSchema.parse(req.params?.audioId || "");
+
+    //     // get subscription plan
+    //     let subscriptionLevel = "FREE";
+    //     if ((req.user as any)?.subscription) {
+    //         if ((req.user as any).subscription.status !== "ACTIVE") {
+    //             subscriptionLevel = "FREE";
+    //         } else {
+    //             subscriptionLevel = (req.user as any).subscription.plan || "FREE";
+    //         }
+    //     }
+
+    //     // check if the song exists
+    //     const track = await prisma.track.findUnique({
+    //         where: {
+    //             id: audioId
+    //         }
+    //     })
+
+    //     if (!track) {
+    //         throw new CustomErrors.NotFoundError("Requested song doesn't exist.");
+    //     }
+
+    //     const baseAudioSegments = await getPlaylistFromCacheOrGenerate(track.id, false);
+
+    //     if (!baseAudioSegments || baseAudioSegments.length === 0) {
+    //         throw new CustomErrors.NotFoundError("Audio segments not found for the requested song.");
+    //     }
+
+
+    //     // for free users, get ad audio segment
+    //     let addAudioSegment: string[] = [];
+
+    //     console.log("Subscription Level:", subscriptionLevel);
+
+
+
+    //     if (subscriptionLevel !== "FREE") {
+    //         // add selection must be dynamic based on various factors 
+    //         addAudioSegment = await getPlaylistFromCacheOrGenerate("552e0a29-571e-4c0d-b29a-cfcf46358501", true);
+    //         console.log("Ad Audio Segment:", addAudioSegment);
+    //     }
+
+    //     // generate playlist with ads if any
+    //     const playlist = await generatePlaylist(baseAudioSegments, addAudioSegment);
+
+    //     console.log("Merged Ads Segments: ", addAudioSegment);
+    //     console.log("Base Audio Segments: ", baseAudioSegments);
+    //     console.log("Final Playlist Segments: ", playlist);
+
+
+    //     // build m3u8 content
+    //     const m3u8Content = await buildM3U8Content(playlist);
+
+    //     // TODO: use advanced playHistory latter
+    //     setPlayHistory(userId!, track.id);
+
+    //     // Return the playlist content to the client
+    //     res.setHeader('Content-Type', 'application/vnd.apple.mpegurl')
+    //     res.send(m3u8Content);
+    // },
+
+    mainStream: async (req: Request, res: Response) => {
         const userId = req.user?.id;
         const audioId = uuidSchema.parse(req.params?.audioId || "");
 
-        // get subscription plan
-        const subscriptionLevel = "free"; // This should be fetched from the user's session or token
-
-        // check if the song exists
+        // check if the track exists
         const track = await prisma.track.findUnique({
             where: {
                 id: audioId
@@ -111,22 +158,12 @@ export const streamController = {
         const baseAudioSegments = await getPlaylistFromCacheOrGenerate(track.id, false);
 
         if (!baseAudioSegments || baseAudioSegments.length === 0) {
-            throw new CustomErrors.NotFoundError("Audio segments not found for the requested song.");
+            throw new CustomErrors.NotFoundError("Audio segments not found for the requested track.");
         }
 
-
-        // for free users, get ad audio segment
-        let addAudioSegment: string[] = [];
-        if (subscriptionLevel === "free") {
-            // add selection must be dynamic based on various factors
-            // addAudioSegment = await getPlaylistFromCacheOrGenerate("ad-audio-segment-id", true);
-        }
-
-        // generate playlist with ads if any
-        const playlist = await generatePlaylist(baseAudioSegments, addAudioSegment);
 
         // build m3u8 content
-        const m3u8Content = await buildM3U8Content(playlist);
+        const m3u8Content = await buildM3U8Content(baseAudioSegments);
 
         // TODO: use advanced playHistory latter
         setPlayHistory(userId!, track.id);
@@ -134,7 +171,76 @@ export const streamController = {
         // Return the playlist content to the client
         res.setHeader('Content-Type', 'application/vnd.apple.mpegurl')
         res.send(m3u8Content);
+    },
+
+    addStream: async (req: Request, res: Response) => {
+        const audioId = uuidSchema.parse(req.params?.audioId || "");
+
+        // check if the ad exists
+        const ad = await prisma.advertisement.findUnique({
+            where: {
+                id: audioId
+            }
+        })
+
+        if (!ad) {
+            throw new CustomErrors.NotFoundError("Requested advertisement doesn't exist.");
+        }
+
+        const adAudioSegments = await getPlaylistFromCacheOrGenerate('86d5fcb7-53da-4fa0-b901-3156d16ef1d3', true);
+
+        if (!adAudioSegments || adAudioSegments.length === 0) {
+            throw new CustomErrors.NotFoundError("Audio segments not found for the requested advertisement.");
+        }
+
+        // build m3u8 content
+        const m3u8Content = await buildM3U8Content(adAudioSegments);
+
+        // Return the playlist content to the client
+        res.setHeader('Content-Type', 'application/vnd.apple.mpegurl')
+        res.send(m3u8Content);
+    },
+
+
+    stream: async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        const audioId = uuidSchema.parse(req.params?.audioId || "");
+
+        const track = await prisma.track.findUnique({ where: { id: audioId } });
+
+        if (!track) throw new CustomErrors.NotFoundError("Song not found");
+
+        let subscriptionLevel = "FREE";
+
+        if ((req.user as any)?.subscription?.status === "ACTIVE") {
+            subscriptionLevel = (req.user as any).subscription.plan || "FREE";
+        }
+
+        const isPremium = subscriptionLevel !== "FREE";
+
+        // Cache or serve the main M3U8 somewhere, or generate signed URL to a virtual endpoint
+        const mainStreamUrl = `http://localhost:5000/stream/${track.id}/master.m3u8`;
+
+        let adStreamUrl: string | null = null;
+        let advertisement: any = null;
+        if (!isPremium) {
+            // TODO: Select ad based on various factors
+            advertisement = await prisma.advertisement.findFirst();
+
+            adStreamUrl = advertisement ? `http://localhost:5000/stream/${advertisement.id}/ads/ad.m3u8` : null;
+        }
+
+        // Return metadata for the frontend player
+        res.json({
+            success: true,
+            data: {
+                mainStreamUrl,
+                adStreamUrl,
+                advertisement,
+                adIntervalSeconds: 120,
+                isPremium
+            }
+        });
     }
 };
-
 
