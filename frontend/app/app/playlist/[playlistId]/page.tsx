@@ -221,7 +221,10 @@ export default function PlaylistDetail() {
       <PlaylistModal
         open={openModal}
         playlistId={id}
-        onClose={() => setOpenModal(false)}
+        onClose={() => {
+          setOpenModal(false)
+          setRefresh(!refresh)
+        }}
         onSave={handleSavePlaylist}
       />
 
