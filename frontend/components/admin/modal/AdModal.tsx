@@ -62,14 +62,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
         }
     };
 
-    const debounceFetch = (key: string, fn: () => void, delay = 300) => {
-        if (debounceRef.current[key]) {
-            window.clearTimeout(debounceRef.current[key]);
-        }
-        debounceRef.current[key] = window.setTimeout(fn, delay);
-    };
-
-    // fetch track details when editing
+    // fetch ad details when editing
     useEffect(() => {
         if (!open) return;
 
@@ -142,8 +135,9 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
                 if (audioFile) payload.append("audio", audioFile);
                 if (adArt) payload.append("cover", adArt);
 
-                api.post("/ads/upload", payload, { timeout: 10000 }).then(async (response) => {
-                    addToast( "Ad created successfully", "success");                    
+                api.post("/ads/upload", payload, { timeout: 0 }).then(async (response) => {
+                    addToast( "Ad created successfully", "success");
+                    onClose();              
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Ad creation failed", "error");
                 });
@@ -168,8 +162,7 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
             }
         
             // always call onSave for parent refresh (for edit case)
-            if (adId) await onSave(adId);
-            onClose();
+            // if (adId) await onSave(adId);
         } catch (err) {
             console.error("save failed", err);
             // keep saving false and keep modal open
