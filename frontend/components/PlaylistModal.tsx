@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { api } from '@/lib/api';
 import { X, Save, Tag, Search, FormInputIcon } from "lucide-react";
 import { useToastStore } from '@/store/toastStore';
-
+import { useRouter } from 'next/navigation';
 
 type Props = {
     open: boolean;
@@ -14,6 +14,7 @@ type Props = {
 
 export default function PlaylistModal({ open, playlistId, onClose, onSave }: Props) {
     const { addToast } = useToastStore();
+    const router = useRouter();
     const [saving, setSaving] = useState(false);
 
     // form fields
@@ -92,6 +93,8 @@ export default function PlaylistModal({ open, playlistId, onClose, onSave }: Pro
 
                 api.post("/playlists", payload, { timeout: 10000 }).then(async (response) => {
                     addToast("Playlist created successfully", "success");
+                    router.push(`/app/playlist/${response.data.data.playlist.id}`);
+                    onClose();
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Playlist creation failed", "error");
                 });
@@ -105,6 +108,7 @@ export default function PlaylistModal({ open, playlistId, onClose, onSave }: Pro
                 };
                 api.put(`/playlists/${playlistId}`, updatePayload).then(async (response) => {
                     addToast("Playlist updated successfully", "success");
+                    router.push(`/app/playlist/${playlistId}`);
                     onClose();
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Playlist update failed", "error");
