@@ -8,7 +8,7 @@ export const createPlaylistSchema = z.object({
     description: z
     .string()
     .min(1, "Title is required")
-    .max(100, "Title must be at most 100 characters"),
+    .max(250, "Title must be at most 250 characters"),
     isPublic: z
         .union([
             z.literal("true"),    // String literal "true"
