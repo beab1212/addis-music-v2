@@ -5,7 +5,7 @@ import { createPlaylistSchema } from "../validators/playlistValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
 import { Playlist } from "@prisma/client";
-import { get } from "http";
+import { searchPlaylists } from "../prisma/vectorQueries";
 
 const playlistMetadata = async (playlist: Playlist) => {
     return [
@@ -54,7 +54,11 @@ export const playlistController = {
             where: { id },
             include: {
                 items: {
-                    include: { track: true},
+                    include: {
+                        track: {
+                            include: { artist: true }, // include artist data for each track
+                        },
+                    },
                 },
             },
         });
@@ -137,6 +141,10 @@ export const playlistController = {
             throw new CustomErrors.UnauthorizedError('You are not authorized to delete this playlist');
         }
 
+        await prisma.playlistItem.deleteMany({
+            where: { playlistId: id },
+        });
+
         await prisma.playlist.delete({
             where: { id },
         });
@@ -190,6 +198,22 @@ export const playlistController = {
             success: true,
             data: { playlists },
             pagination: { page, limit, totalPages: Math.ceil(total / limit) }
+        });
+    },
+
+    semanticSearchPlaylists: async (req: Request, res: Response) => {
+        const { q, page, limit } = searchSchema.parse(req.query);
+        const userId = req.user?.id as string;
+        const isAdmin = req.user?.role === 'admin';
+
+        const offset = (page - 1) * limit;
+
+        const playlists = await searchPlaylists(q, limit, offset, userId);
+
+        res.status(200).json({
+            success: true,
+            data: { playlists },
+            // pagination: { page, limit, totalPages: Math.ceil(100 / limit) } // TODO: fix total count
         });
     },
 
