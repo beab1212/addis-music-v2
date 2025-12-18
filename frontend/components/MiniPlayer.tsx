@@ -1,17 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { 
-  Play, 
-  Pause, 
-  SkipBack, 
-  SkipForward, 
-  Shuffle, 
-  Repeat, 
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Shuffle,
+  Repeat,
   Volume2,
   VolumeX as VolumeMute,
   Heart,
-  Expand 
+  Expand
 } from 'lucide-react';
 import { usePlayerStore } from '../store/playerStore';
 import { formatDuration, getLowResCloudinaryUrl, capitalizeFirst } from '../utils/helpers';
@@ -30,7 +30,7 @@ export const MiniPlayer = memo(() => {
   const currentTime = usePlayerStore(state => state.currentTime);
   const muted = usePlayerStore(state => state.muted);
   const isLiked = usePlayerStore(state => state.isLiked);
-  
+
   // Get the dispatch functions outside of the render loop
   const togglePlayPause = usePlayerStore(state => state.togglePlayPause);
   const playNext = usePlayerStore(state => state.playNext);
@@ -65,7 +65,7 @@ export const MiniPlayer = memo(() => {
       <div className="absolute inset-x-0 top-0 h-20 bg-linear-to-t from-orange-500/10 to-transparent blur-3xl -z-10" />
 
       <div className="bg-white/75 dark:bg-black/75 backdrop-blur-2xl border-t border-white/20 dark:border-white/10 shadow-2xl">
-        <div 
+        <div
           className="absolute top-0 left-0 h-0.5 bg-linear-to-t from-orange-500 via-pink-500 to-purple-500"
           style={{ width: `${progress}%`, boxShadow: '0 0 8px rgba(251,146,60,0.6)' }}
         />
@@ -73,20 +73,24 @@ export const MiniPlayer = memo(() => {
         <div className="max-w-7xl mx-auto px-4 py-2.5">
           <div className="flex items-center justify-between">
             {/* Track Info */}
-            <div 
+            <div
               className="flex items-center gap-3 flex-1x min-w-0 cursor-pointer group"
-              onClick={() => router.push('/app/player')}
             >
               <img
                 src={getLowResCloudinaryUrl(currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 48, height: 48 })}
                 alt={currentSong.title}
+                onClick={() => router.push('/app/player')}
                 className="w-12 h-12 rounded-xl shadow-md object-cover ring-2 ring-white/30 group-hover:ring-orange-400/60 transition-all group-hover:scale-105"
               />
               <div className="min-w-0">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-orange-500 transition-colors">
+                <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-orange-500 transition-colors"
+                  onClick={() => router.push('/app/player')}
+                >
                   {capitalizeFirst(currentSong.title)}
                 </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate"
+                  onClick={() => router.push(`/app/artist/${currentSong?.artist?.id || ''}`)}
+                >
                   {capitalizeFirst(currentSong?.artist?.name || '')}
                 </p>
               </div>
@@ -98,11 +102,10 @@ export const MiniPlayer = memo(() => {
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleShuffle}
-                className={`p-2 rounded-full transition-all ${
-                  isShuffle 
-                    ? 'text-orange-500 bg-orange-500/15 shadow-md' 
+                className={`p-2 rounded-full transition-all ${isShuffle
+                    ? 'text-orange-500 bg-orange-500/15 shadow-md'
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
+                  }`}
               >
                 <Shuffle size={17} strokeWidth={2.3} />
               </motion.button>
@@ -151,11 +154,10 @@ export const MiniPlayer = memo(() => {
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleRepeatToggle}
-                className={`p-2 rounded-full transition-all relative ${
-                  repeatMode !== 'off'
+                className={`p-2 rounded-full transition-all relative ${repeatMode !== 'off'
                     ? 'text-purple-500 bg-purple-500/15 shadow-md'
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
+                  }`}
               >
                 <Repeat size={17} strokeWidth={2.3} />
                 {repeatMode === 'one' && (
