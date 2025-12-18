@@ -1,8 +1,9 @@
 'use client';
-import { ReactNode, memo } from 'react';
+import { ReactNode, memo, useEffect, useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import dynamic from 'next/dynamic';
+import { usePathname } from 'next/navigation';
 
 // Dynamically import the components with proper typing and `ssr: false`
 const DynamicMiniPlayer = dynamic(() => import('@/components/MiniPlayer').then(mod => mod.default), { ssr: false });
@@ -14,15 +15,33 @@ interface MainLayoutProps {
 }
 
 export const MainLayout = memo(({ children }: MainLayoutProps) => {
+  const pathname = usePathname();
+  const [currentPath, setCurrentPath] = useState<string | null>(pathname || '');
+
+  useEffect(() => {
+    setCurrentPath(pathname);
+    console.log("Current path updated to:", pathname);
+  }, [pathname]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300">
       <Navbar />
-      <Sidebar />
-      <main className="md:ml-64 pt-16 pb-24">
+
+      {!currentPath?.startsWith('/app/player') && (
+        <Sidebar />
+      )}
+
+      <main className={`pt-16 ${currentPath?.startsWith('/app/player') ? '' : 'md:ml-64 pb-24'}`}>
         {children}
       </main>
+
+
       {/* Lazy-loaded components */}
-      <DynamicMiniPlayer />
+      {!currentPath?.startsWith('/app/player') && (
+        <DynamicMiniPlayer />
+      )}
+
+
       <DynamicToast />
       <DynamicAuthModal />
     </div>
