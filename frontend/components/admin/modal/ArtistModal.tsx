@@ -101,7 +101,7 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
 
         debounceFetch("genres", async () => {
             try {
-                const { data } = await api.get("/genres", { params: { q: genreQuery } });
+                const { data } = await api.get("/genres/search", { params: { q: genreQuery } });
                 setGenreOptions(data?.data?.genres || []);
             } catch (e) {
                 console.error("genres fetch error", e);
