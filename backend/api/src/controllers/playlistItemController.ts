@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
-import { addItemToPlaylistSchema, playlistUuidSchema } from "../validators/playlistItemValidator";
+import { addItemToPlaylistSchema, playlistUuidSchema, addIMultipleTrackPlaylistSchema } from "../validators/playlistItemValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { da } from "zod/v4/locales";
 
@@ -35,6 +35,15 @@ export const playlistItemController = {
             throw new CustomErrors.NotFoundError('Track not found');
         }
 
+        // check if track already in playlist
+        const existingItem = await prisma.playlistItem.findFirst({
+            where: { playlistId, trackId },
+        });
+
+        if (existingItem) {
+            throw new CustomErrors.BadRequestError('Track is already in the playlist');
+        }
+
         const items = playlist.items;
         const currentItemCount = items.length;
 
@@ -48,25 +57,25 @@ export const playlistItemController = {
         if (newPosition > currentItemCount + 1) newPosition = currentItemCount + 1;
 
         const [newItem] = await prisma.$transaction(async (tx) => {
-        // Shift positions efficiently if inserting in middle
+            // Shift positions efficiently if inserting in middle
             if (newPosition <= currentItemCount) {
                 await tx.playlistItem.updateMany({
-                where: {
-                    playlistId,
-                    position: { gte: newPosition },
-                },
-                data: {
-                    position: { increment: 1 },
-                },
+                    where: {
+                        playlistId,
+                        position: { gte: newPosition },
+                    },
+                    data: {
+                        position: { increment: 1 },
+                    },
                 });
             }
 
             // Insert the new item
             const created = await tx.playlistItem.create({
                 data: {
-                playlistId,
-                trackId,
-                position: newPosition,
+                    playlistId,
+                    trackId,
+                    position: newPosition,
                 },
             });
 
@@ -79,13 +88,86 @@ export const playlistItemController = {
 
         res.status(201).json({
             success: true,
+            message: 'Track added to playlist successfully',
             data: { playlistItem: newItem },
+        });
+    },
+
+    addMultipleItemsToPlaylist: async (req: Request, res: Response) => {
+        // with out position just add to the end
+        const playlistId = playlistUuidSchema.parse(req.params.playlistId);
+        const { trackIds } = addIMultipleTrackPlaylistSchema.parse(req.body);
+        const userId = req.user?.id as string;
+        const isAdmin = req.user?.role === 'admin';
+
+        // Fetch playlist and verify permissions
+        const playlist = await prisma.playlist.findUnique({
+            where: { id: playlistId },
+            include: { items: { orderBy: { position: 'asc' } } },
+        });
+
+        if (!playlist) {
+            throw new CustomErrors.NotFoundError('Playlist not found');
+        }
+
+        if (playlist.userId !== userId && !isAdmin) {
+            throw new CustomErrors.UnauthorizedError('You are not authorized to modify this playlist');
+        }
+
+        // check if trackIds has duplicates
+        const uniqueTrackIds = new Set(trackIds);
+        if (uniqueTrackIds.size !== trackIds.length) {
+            throw new CustomErrors.BadRequestError('Duplicate track IDs are not allowed');
+        }
+
+        // check if all tracks are exist
+        const tracks = await prisma.track.findMany({
+            where: { id: { in: trackIds } },
+        });
+
+        if (tracks.length !== trackIds.length) {
+            throw new CustomErrors.NotFoundError('One or more tracks not found');
+        }
+
+        const items = playlist.items;
+        const currentItemCount = items.length;
+
+        if (currentItemCount + trackIds.length > 100) {
+            throw new CustomErrors.BadRequestError('Adding these tracks would exceed the playlist item limit of 100');
+        }
+
+        // check if tracks already in playlist
+        const existingItems = items.filter(item => trackIds.includes(item.trackId));
+        if (existingItems.length > 0) {
+            // return with track names
+            const existingTrackNames = existingItems.map(item => {
+                const track = tracks.find(t => t.id === item.trackId);
+                return track ? track.title : 'Unknown Track';
+            }).join(', ');
+            throw new CustomErrors.BadRequestError(`The following tracks are already in the playlist: ${existingTrackNames}`);
+        }
+
+        // Prepare new items data
+        const newItemsData = trackIds.map((trackId, index) => ({
+            playlistId,
+            trackId,
+            position: currentItemCount + index + 1,
+        }));
+
+        const newItems = await prisma.playlistItem.createMany({
+            data: newItemsData,
+        });
+
+        res.status(201).json({
+            success: true,
+            message: `${newItems.count} tracks added to playlist successfully`,
+            data: { playlistItems: newItemsData },
         });
     },
 
     deleteItemFromPlaylist: async (req: Request, res: Response) => {
         const playlistId = playlistUuidSchema.parse(req.params.playlistId);
-        const itemId = uuidSchema.parse(req.params.itemId);
+        const trackId = uuidSchema.parse(req.params.trackId);
         const userId = req.user?.id as string;
         const isAdmin = req.user?.role === 'admin';
 
@@ -103,8 +185,8 @@ export const playlistItemController = {
         }
 
         // Fetch the item to be deleted
-        const itemToDelete = await prisma.playlistItem.findUnique({
-            where: { id: itemId },
+        const itemToDelete = await prisma.playlistItem.findFirst({
+            where: { playlistId: playlistId, trackId: trackId },
         });
 
         if (!itemToDelete || itemToDelete.playlistId !== playlistId) {
@@ -116,17 +198,17 @@ export const playlistItemController = {
         await prisma.$transaction(async (tx) => {
             // Delete the item
             await tx.playlistItem.delete({
-                where: { id: itemId },
+                where: { id: itemToDelete.id }, // Use the ID of the item to delete
             });
 
             // Shift positions of remaining items
             await tx.playlistItem.updateMany({
                 where: {
                     playlistId,
-                    position: { gt: deletedPosition },
+                    position: { gt: itemToDelete.position }, // Update items after the deleted position
                 },
                 data: {
-                    position: { decrement: 1 },
+                    position: { decrement: 1 }, // Decrement their positions
                 },
             });
         });
