@@ -20,18 +20,19 @@ export default function Home() {
       {/* Background */}
       <Toast />
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-48 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-to-tr from-orange-500/20 via-rose-500/10 to-indigo-500/20 blur-3xl" />
-        <div className="absolute -bottom-56 right-1/3 h-[500px] w-[500px] rounded-full bg-gradient-to-tr from-indigo-500/10 via-sky-500/10 to-emerald-500/10 blur-3xl" />
+        <div className="absolute -top-48 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-linear-to-tr from-orange-500/20 via-rose-500/10 to-indigo-500/20 blur-3xl" />
+        <div className="absolute -bottom-56 right-1/3 h-[500px] w-[500px] rounded-full bg-linear-to-tr from-indigo-500/10 via-sky-500/10 to-emerald-500/10 blur-3xl" />
       </div>
 
       {/* Nav */}
-      <header className="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-black/40 border-b border-black/5 dark:border-white/10">
+      <header className="sticky top-0 z-20 backdrop-blur supports-backdrop-filter:bg-white/60 dark:supports-backdrop-filter:bg-black/40 border-b border-black/5 dark:border-white/10">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-pink-600" />
+            <img src="/addisMusic.png" alt="Addis Music Logo" className="h-8 w-8 mr-2" />
+
             <span className="text-lg font-extrabold tracking-tight">
               Addis
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-pink-600">
                 Music
               </span>
             </span>
@@ -75,7 +76,7 @@ export default function Home() {
                 </Link>
                 <button
                   onClick={signOut}
-                  className="rounded-lg bg-gradient-to-r from-orange-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  className="rounded-lg bg-linear-to-r from-orange-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                 >
                   Sign Out
                 </button>
@@ -90,7 +91,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => openAuthModal("signup")}
-                  className="rounded-lg bg-gradient-to-r from-orange-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                  className="rounded-lg bg-linear-to-r from-orange-600 to-pink-600 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                 >
                   Sign Up
                 </button>
@@ -106,7 +107,7 @@ export default function Home() {
           <div>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl">
               Stream. Discover. Share.
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-pink-600">
+              <span className="block text-transparent bg-clip-text bg-linear-to-r from-orange-600 to-pink-600">
                 Music without limits
               </span>
             </h1>
@@ -118,7 +119,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/app"
-                className="rounded-xl bg-gradient-to-r from-orange-600 to-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-600/20 hover:opacity-95"
+                className="rounded-xl bg-linear-to-r from-orange-600 to-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-600/20 hover:opacity-95"
               >
                 Start Listening
               </Link>
@@ -140,16 +141,16 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            <div className="aspect-[4/3] w-full rounded-2xl border border-black/10 dark:border-white/10 bg-gradient-to-br from-neutral-100 to-white dark:from-zinc-900 dark:to-zinc-950 p-3 shadow-2xl">
+            <div className="aspect-4/3 w-full rounded-2xl border border-black/10 dark:border-white/10 bg-linear-to-br from-neutral-100 to-white dark:from-zinc-900 dark:to-zinc-950 p-3 shadow-2xl">
               <div className="h-full w-full rounded-xl border border-black/5 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur">
                 {/* Player mock */}
                 <div className="flex h-full flex-col p-5">
                   <div className="mb-4 flex items-center justify-between">
                     <div className="h-4 w-28 rounded bg-black/10 dark:bg-white/10" />
-                    <div className="h-6 w-6 rounded bg-gradient-to-br from-orange-500 to-pink-600" />
+                    <div className="h-6 w-6 rounded bg-linear-to-br from-orange-500 to-pink-600" />
                   </div>
                   <div className="grid grid-cols-[96px,1fr] gap-5">
-                    <div className="h-24 w-24 rounded-lg bg-gradient-to-br from-orange-500 to-pink-600" />
+                    <div className="h-24 w-24 rounded-lg bg-linear-to-br from-orange-500 to-pink-600" />
                     <div className="space-y-3">
                       <div className="h-4 w-40 rounded bg-black/10 dark:bg-white/10" />
                       <div className="h-3 w-64 rounded bg-black/10 dark:bg-white/10" />
@@ -169,7 +170,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-xl bg-gradient-to-tr from-emerald-400/40 to-cyan-400/40 blur-xl" />
+            <div className="pointer-events-none absolute -right-4 -top-4 h-24 w-24 rounded-xl bg-linear-to-tr from-emerald-400/40 to-cyan-400/40 blur-xl" />
           </div>
         </div>
       </section>
@@ -188,12 +189,12 @@ export default function Home() {
             { title: "Seamless Player", desc: "Persistent playback across pages with low-latency updates." },
             { title: "Smart Search", desc: "Find tracks, artists, albums and tags in milliseconds." },
             { title: "Curated Playlists", desc: "Hand‑picked collections for every mood and moment." },
-            { title: "Offline‑ready", desc: "Prefetch and cache frequently played tracks." },
+            { title: "Smart Recommendations", desc: "Personalized suggestions based on your listening habits." },
             { title: "Dark Mode", desc: "Designed to look great on any display and theme." },
             { title: "Mobile First", desc: "Responsive layouts that feel native on phones." },
           ].map((f, i) => (
             <div key={i} className="rounded-2xl border border-black/10 dark:border-white/10 bg-white/60 dark:bg-white/5 p-6 shadow-sm">
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-500 to-pink-600" />
+              <div className="h-10 w-10 rounded-lg bg-linear-to-br from-orange-500 to-pink-600" />
               <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{f.desc}</p>
             </div>
@@ -210,7 +211,7 @@ export default function Home() {
             { step: "3", title: "Collect", desc: "Build and share playlists you love." },
           ].map((s) => (
             <div key={s.step} className="rounded-2xl border border-black/10 dark:border-white/10 p-6">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-orange-600 to-pink-600 text-white font-bold">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-r from-orange-600 to-pink-600 text-white font-bold">
                 {s.step}
               </span>
               <h4 className="mt-4 text-lg font-semibold">{s.title}</h4>
@@ -239,14 +240,14 @@ export default function Home() {
               <ul className="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                 {p.features.map((f) => (
                   <li key={f} className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-orange-600 to-pink-600" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-linear-to-r from-orange-600 to-pink-600" />
                     {f}
                   </li>
                 ))}
               </ul>
               <Link
-                href="/app"
-                className="mt-6 inline-block w-full rounded-lg bg-gradient-to-r from-orange-600 to-pink-600 px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-90"
+                href="/app/premium"
+                className="mt-6 inline-block w-full rounded-lg bg-linear-to-r from-orange-600 to-pink-600 px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-90"
               >
                 Choose {p.name}
               </Link>
@@ -264,7 +265,7 @@ export default function Home() {
             { q: "Is there a free plan?", a: "Yes. Get started for free and upgrade anytime." },
             { q: "Does it support dark mode?", a: "Yes. The UI adapts automatically to your system theme." },
           ].map((item) => (
-            <details key={item.q} className="group open:bg-black/5 dark:open:bg-white/[0.03]">
+            <details key={item.q} className="group open:bg-black/5 dark:open:bg-white/3">
               <summary className="cursor-pointer list-none p-5 text-sm font-medium">
                 {item.q}
               </summary>
