@@ -101,6 +101,8 @@ export const HLSPlayer = memo(() => {
       onEnded={() => {
         if (repeatMode === 'all' && queue.length > 0 && currentSong) {
           playNext();
+        } else if (repeatMode === 'off') {
+          togglePlayPause();
         }
       }}
     />
