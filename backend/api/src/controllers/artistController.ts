@@ -113,6 +113,18 @@ export const artistController = {
             throw new CustomErrors.NotFoundError('Artist not found');
         }
 
+        await prisma.artistFollow.deleteMany({
+            where: { artistId },
+        });
+
+        await prisma.track.deleteMany({
+            where: { artistId },
+        });
+
+        await prisma.album.deleteMany({
+            where: { artistId },
+        });
+
         await prisma.artist.delete({
             where: { id: artistId },
         });
