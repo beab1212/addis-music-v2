@@ -111,7 +111,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
 
         debounceFetch("genres", async () => {
             try {
-                const { data } = await api.get("/genres", { params: { q: genreQuery } });
+                const { data } = await api.get("/genres/search", { params: { q: genreQuery } });
                 setGenreOptions(data?.data?.genres || []);
             } catch (e) {
                 console.error("genres fetch error", e);
@@ -123,7 +123,7 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
         if (!open) return;
         debounceFetch("artists", async () => {
             try {
-                const { data } = await api.get("/artists", { params: { q: artistQuery } });
+                const { data } = await api.get("/artists/search", { params: { q: artistQuery } });
                 setArtistOptions(data?.data?.artists || []);
             } catch (e) {
                 console.error("artists fetch error", e);
