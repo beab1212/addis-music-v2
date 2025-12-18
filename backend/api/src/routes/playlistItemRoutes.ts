@@ -5,7 +5,8 @@ import { playlistItemController } from '../controllers/playlistItemController';
 const router = Router();
 
 router.post('/:playlistId/items', requireAuth, playlistItemController.addItemToPlaylist);
-router.delete('/:playlistId/items/:itemId', requireAuth, playlistItemController.deleteItemFromPlaylist);
+router.post('/:playlistId/items/bulk', requireAuth, playlistItemController.addMultipleItemsToPlaylist);
+router.delete('/:playlistId/items/:trackId', requireAuth, playlistItemController.deleteItemFromPlaylist);
 router.put('/:playlistId/items/:itemId/position', requireAuth, playlistItemController.shiftItemPosition);
 
 
