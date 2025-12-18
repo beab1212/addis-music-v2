@@ -46,3 +46,21 @@ body {
 .dark .modern-scrollbar-minimal::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
 }
+
+
+
+/* App logo spin from old code */
+@keyframes slow-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.slow-spin {
+  animation: slow-spin 20s linear infinite; /* Adjust duration as needed */
+}
+
+.paused {
+  animation-play-state: paused;
+}
+
+
