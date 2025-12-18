@@ -53,8 +53,8 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
                     {session.user.image ? (
-                      <Image
-                        src={session.user.image}
+                      <img
+                        src={session.user.image || 'https://img.freepik.com/premium-vector/person-with-blue-shirt-that-says-name-person_1029948-7040.jpg?semt=ais_hybrid&w=740&q=80'}
                         alt="Avatar"
                         width={32}
                         height={32}
