@@ -19,12 +19,15 @@ export default function Profile() {
   // }
 
   const [likedSongs, setLikedSongs] = useState([]);
+  const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
     // Fetch liked songs from API or use mock data
     const fetchLikedSongs = async () => {
       try {
         const response = await api.get('/track-likes/liked-tracks');
+        const playlistsResponse = await api.get('/playlists/user');
+        setUserPlaylists(playlistsResponse.data.data.playlists);
         setLikedSongs(response.data.data.tracks);
       } catch (error) {
         console.error('Error fetching liked songs:', error);
@@ -34,7 +37,7 @@ export default function Profile() {
     fetchLikedSongs();
   }, []);
 
-  const userPlaylists: Array<any> = [];
+  
 
 
   const handleLogout = () => {
@@ -142,7 +145,7 @@ export default function Profile() {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Your Playlists</h2>
           {userPlaylists.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {userPlaylists.map((playlist) => (
+              {userPlaylists.map((playlist: any) => (
                 <PlaylistCard key={playlist.id} playlist={playlist} />
               ))}
             </div>
