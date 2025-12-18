@@ -108,7 +108,7 @@ export default function AlbumDetail() {
 
         <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-lg overflow-hidden">
           <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-400">
-            <div className="col-span-1">#</div>
+            <div className="sm:col-span-1 col-span-3">#</div>
             <div className="col-span-7">Title</div>
             <div className="col-span-2 text-right">Duration</div>
           </div>
@@ -122,7 +122,7 @@ export default function AlbumDetail() {
                 setCurrentSong(song);
               }}
             >
-              <div className="col-span-1 text-gray-600 dark:text-gray-400">
+              <div className="sm:col-span-1 col-span-3 text-gray-600 dark:text-gray-400">
                 <div className='flex flex-row gap-4 items-center'>
                   {index + 1}
                   <img
@@ -132,9 +132,14 @@ export default function AlbumDetail() {
                   />
                 </div>
               </div>
-              <div className="col-span-7">
+              <div className="col-span-7 ">
                 <p className={`font-semibold  ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>{capitalizeFirst(song.title)}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">{capitalizeFirst(song.artist?.name || album.artist?.name || 'Unknown')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/app/artist/${song.artist?.id || ''}`)
+                  }}
+                >{capitalizeFirst(song.artist?.name || album.artist?.name || 'Unknown')}</p>
               </div>
               <div className="col-span-2 text-right text-gray-600 dark:text-gray-400">
                 {formatDuration(song.durationSec || 0)}
