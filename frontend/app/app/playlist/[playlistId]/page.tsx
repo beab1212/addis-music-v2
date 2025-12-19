@@ -102,9 +102,8 @@ export default function PlaylistDetail() {
 
   const handlePlay = () => {
     if (playlist.tracks.length > 0) {
-      setQueue(playlist.songs);
-      setCurrentSong(playlist.songs[0]);
-      addToast('Playing playlist', 'success');
+      setQueue(playlist.tracks);
+      setCurrentSong(playlist.tracks[0]);
     }
   };
 
