@@ -67,7 +67,6 @@ export default function Home() {
       try {
         const response = await api.get('/tracks');
         setTestData(response.data?.data?.tracks || []);
-        console.log('Test Data:', response.data?.data?.tracks);
       } catch (error) {
         console.error('Error fetching test data:', error);
       }
@@ -81,7 +80,6 @@ export default function Home() {
       try {
         const response = await api.get('/personalization/for-you?page=1&limit=20');
         setRecommendedForYouData(response.data?.data?.tracks || []);
-        console.log('Recommended Data:', response.data?.data);
       } catch (error) {
         console.error('Error fetching recommended data:', error);
       }
@@ -95,7 +93,6 @@ export default function Home() {
       try {
         const response = await api.get('/personalization/sounds-you-may-like?page=1&limit=20');
         setSoundYouMayLikeData(response.data?.data?.tracks || []);
-        console.log('Sounds You May Like Data:', response.data?.data);
       } catch (error) {
         console.error('Error fetching sounds you may like data:', error);
       }
@@ -109,7 +106,6 @@ export default function Home() {
       try {
         const response = await api.get('/personalization/trending-now');
         setTrendingData(response.data?.data?.tracks || []);
-        console.log('Trending Data:', response.data?.data);
       } catch (error) {
         console.error('Error fetching trending data:', error);
       }
@@ -123,7 +119,6 @@ export default function Home() {
       try {
         const response = await api.get('/personalization/new-albums');
         setNewAlbumsData(response.data?.data?.albums || []);
-        console.log('New Albums Data:', response.data?.data);
       } catch (error) {
         console.error('Error fetching new albums data:', error);
       }
@@ -151,7 +146,6 @@ export default function Home() {
       try {
         const response = await api.get('/personalization/featured-artists');
         setFeaturedArtistsData(response.data?.data?.artists || []);
-        console.log('Featured Artists Data:', response.data?.data);
       } catch (error) {
         console.error('Error fetching featured artists data:', error);
       }
@@ -218,7 +212,7 @@ export default function Home() {
       </Section>
 
       <Section title="Popular Playlists">
-        {mockPlaylists.map((playlist) => (
+        {popularPlaylistsData.map((playlist: any) => (
           <div key={playlist.id} className="flex-shrink-0 w-56">
             <PlaylistCard playlist={playlist} />
           </div>
