@@ -182,7 +182,6 @@ export const getSimilarTracks = async (
   return organizeTracksWithArtist(results);
 };
 
-
 // The function to fetch similar-sounding tracks
 export const getSimilarSoundingTracks = async (
   userAudioVector?: number[],
@@ -190,7 +189,7 @@ export const getSimilarSoundingTracks = async (
   offset: number = 0,
 ) => {
   const SONIC_VECTOR_DIM = 512; // UPDATE THIS to your actual embedding dimension!
-  const MAX_COSINE_DISTANCE = 0.25; // Tuned for good perceptual similarity
+  const MAX_COSINE_DISTANCE = 0.1; // Tuned for good perceptual similarity
   // Tune between 0.25–0.40 depending on how strict you want similarity
 
 
@@ -485,7 +484,7 @@ export const featuredArtists = async (
 
 
 
-const MAX_COSINE_DISTANCE = 0.7; // tune this
+const MAX_COSINE_DISTANCE = 0.8; // tune this
 
 
 // for search queries
@@ -553,7 +552,7 @@ export const searchAlbums = async (query: string, limit: number = 20, offset: nu
 export const searchPlaylists = async (query: string, limit: number = 20, offset: number = 0, userId: string) => {
   const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
   const embedding = `[${searchEmbeddingResult.join(",")}]`;
-  const MAX_COSINE_DISTANCE = 0.88;
+  const MAX_COSINE_DISTANCE = 0.8; // tune this
 
   const results: any = await prisma.$queryRawUnsafe(`
     SELECT 
@@ -570,7 +569,7 @@ export const searchPlaylists = async (query: string, limit: number = 20, offset:
     WHERE
       p."embeddingVector" <=> CAST($1 AS vector) <= $4
       AND (
-        p."isPrivate" = false
+        p."isPublic" = false
         OR ($5 IS NOT NULL AND p."userId" = $5)
       )
 
