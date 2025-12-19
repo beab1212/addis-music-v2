@@ -150,8 +150,8 @@ export const getSimilarTracks = async (
         userMetaVector.length > 0 && userAudioVector.length > 0
           ? `
           (
-            (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.6 +
-            (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4
+            (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.7 +
+            (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.3
           ) AS "score"
         `
           : userMetaVector.length > 0
@@ -178,6 +178,56 @@ export const getSimilarTracks = async (
     LIMIT $3
     OFFSET $4;
   `, ...options, limit, offset);
+
+  return organizeTracksWithArtist(results);
+};
+
+
+// The function to fetch similar-sounding tracks
+export const getSimilarSoundingTracks = async (
+  userAudioVector?: number[],
+  limit: number = 10,
+  offset: number = 0,
+) => {
+  const SONIC_VECTOR_DIM = 512; // UPDATE THIS to your actual embedding dimension!
+  const MAX_COSINE_DISTANCE = 0.25; // Tuned for good perceptual similarity
+  // Tune between 0.25–0.40 depending on how strict you want similarity
+
+
+  // Fallback: no vector provided
+  if (!Array.isArray(userAudioVector) || userAudioVector.length === 0) {
+    const latestTracks = await prisma.track.findMany({
+      include: { artist: true },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip: offset,
+    });
+    return latestTracks;
+  }
+
+  const results: any = await prisma.$queryRawUnsafe(`
+    SELECT 
+      ${trackAndArtistSelect},
+      (1 - (t."sonicEmbeddingVector" <=> $1::vector(${SONIC_VECTOR_DIM}))) AS similarity
+    FROM "Track" t
+    JOIN "Artist" a 
+      ON t."artistId" = a."id"
+
+    LEFT JOIN "PlayHistory" ph
+      ON ph."trackId" = t."id"
+    
+    WHERE t."sonicEmbeddingVector" IS NOT NULL
+      AND t."sonicEmbeddingVector" <=> $1::vector(${SONIC_VECTOR_DIM}) <= $4
+    GROUP BY t."id", a."id"
+    ORDER BY t."sonicEmbeddingVector" <=> $1::vector(${SONIC_VECTOR_DIM}) ASC
+    LIMIT $2
+    OFFSET $3
+  `, 
+    userAudioVector,      // $1
+    limit,                // $2
+    offset,               // $3
+    MAX_COSINE_DISTANCE
+  );
 
   return organizeTracksWithArtist(results);
 };
@@ -366,7 +416,7 @@ export const popularPlaylists = async (
     offset  // Add offset as parameter
   );
 
-  console.log("Popular playlist: ", results);
+  // console.log("Popular playlist: ", results);
   
 
   return results;
@@ -424,7 +474,7 @@ export const featuredArtists = async (
     offset  // Add offset as parameter
   );
 
-  console.log("Featured artists: ", results);
+  // console.log("Featured artists: ", results);
   
 
   return results;
@@ -435,7 +485,7 @@ export const featuredArtists = async (
 
 
 
-const MAX_COSINE_DISTANCE = 0.6; // tune this
+const MAX_COSINE_DISTANCE = 0.7; // tune this
 
 
 // for search queries
@@ -500,9 +550,11 @@ export const searchAlbums = async (query: string, limit: number = 20, offset: nu
   return organizeAlbumsWithArtist(results);
 };
 
-export const searchPlaylists = async (query: string, limit: number = 20, offset: number = 0) => {
+export const searchPlaylists = async (query: string, limit: number = 20, offset: number = 0, userId: string) => {
   const searchEmbeddingResult: any = (await queryEmbedding(query)).result?.data || [];
   const embedding = `[${searchEmbeddingResult.join(",")}]`;
+  const MAX_COSINE_DISTANCE = 0.88;
+
   const results: any = await prisma.$queryRawUnsafe(`
     SELECT 
       p."id",
@@ -510,16 +562,23 @@ export const searchPlaylists = async (query: string, limit: number = 20, offset:
       p."description",
       p."coverUrl",
       p."userId",
-      p."createdAt"
+      p."createdAt",
+      (1 - (p."embeddingVector" <=> CAST($1 AS vector))) AS similarity
 
     FROM "Playlist" p
 
-    ORDER BY 
-      (1 - (p."embeddingVector" <-> CAST($1 AS vector))) DESC
+    WHERE
+      p."embeddingVector" <=> CAST($1 AS vector) <= $4
+      AND (
+        p."isPrivate" = false
+        OR ($5 IS NOT NULL AND p."userId" = $5)
+      )
 
+    ORDER BY similarity DESC
     LIMIT $2
     OFFSET $3;
-  `, embedding, limit, offset);
+  `, embedding, limit, offset, MAX_COSINE_DISTANCE, userId ?? null);
+
   return results;
 };
 
