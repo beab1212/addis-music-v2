@@ -212,7 +212,7 @@ export default function Home() {
       </Section>
 
       <Section title="Popular Playlists">
-        {popularPlaylistsData.map((playlist: any) => (
+        {popularPlaylistsData?.map((playlist: any) => (
           <div key={playlist.id} className="flex-shrink-0 w-56">
             <PlaylistCard playlist={playlist} />
           </div>
