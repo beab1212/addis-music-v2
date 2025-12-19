@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { Home, Search, Library, PlusCircle, Heart, Settings, LayoutDashboard, Menu } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from '../store/authStore';
+import { api } from '@/lib/api';
+import { getLowResCloudinaryUrl } from '@/utils/helpers';
 
 const Tooltip = ({ label }: { label: string }) => (
   <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
@@ -18,6 +20,24 @@ export const Sidebar = ({ collapsed, onCollapseChange }: { collapsed: boolean; o
   const { isAuthenticated, user } = useAuthStore();
 
   const [hovered, setHovered] = useState<string | null>(null);
+
+  const [playlists, setPlaylists] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await api.get('/playlists/user');
+          console.log('Fetched playlists=====:', response.data.data.playlists);
+          setPlaylists(response.data.data.playlists);
+        } catch (error) {
+          console.error('Error fetching playlists:', error);
+        }
+      }
+    };
+
+    fetchPlaylists();
+  }, [isAuthenticated]);
 
   const mainLinks = [
     { to: '/app', icon: Home, label: 'Home' },
@@ -151,29 +171,29 @@ export const Sidebar = ({ collapsed, onCollapseChange }: { collapsed: boolean; o
                 </h3>
               )}
 
-              {/* <div className="space-y-1">
-                {playlists.slice(0, 5).map((playlist) => (
+              <div className="space-y-1">
+                {playlists?.map((playlist) => (
                   <Link key={playlist.id} href={`/app/playlist/${playlist.id}`}>
                     <motion.div
-                      onMouseEnter={() => setHovered(playlist.name)}
+                      onMouseEnter={() => setHovered(playlist?.title)}
                       onMouseLeave={() => setHovered(null)}
                       whileHover={{ x: collapsed ? 0 : 4 }}
                       className="relative flex items-center gap-3 px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <img
-                        src={playlist.coverUrl}
+                        src={getLowResCloudinaryUrl(playlist.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 40, height: 40 })}
                         className="w-8 h-8 rounded object-cover"
-                        alt={playlist.name}
+                        alt={playlist?.title}
                       />
 
-                      {!collapsed && <span className="text-sm truncate">{playlist.name}</span>}
-                      {collapsed && hovered === playlist.name && (
-                        <Tooltip label={playlist.name} />
+                      {!collapsed && <span className="text-sm truncate">{playlist.title}</span>}
+                      {collapsed && hovered === playlist.title && (
+                        <Tooltip label={playlist.title} />
                       )}
                     </motion.div>
                   </Link>
                 ))}
-              </div> */}
+              </div>
             </div>
           </>
         )}
