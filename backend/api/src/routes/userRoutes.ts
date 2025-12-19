@@ -6,7 +6,10 @@ import { userController } from "../controllers/userController";
 const router = Router();
 
 router.get("/me", requireAuth, userController.getMe);
+router.get('/preferences', requireAuth, userController.getUserPreferences);
 router.get("/:id", requireAuth, authorize("admin"), userController.getUser);
+router.put("/profile", requireAuth, userController.updateUserProfile);
+router.put("/preferences", requireAuth, userController.updateUserPreferences);
 
 
 
