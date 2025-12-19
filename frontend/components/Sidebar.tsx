@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
-import { Home, Search, Library, PlusCircle, Heart, Settings, LayoutDashboard, Menu } from 'lucide-react';
+import { Home, Search, Library, PlusCircle, Heart, Settings, LayoutDashboard, Menu, Music2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from "react";
 import { useAuthStore } from '../store/authStore';
@@ -43,6 +43,7 @@ export const Sidebar = ({ collapsed, onCollapseChange }: { collapsed: boolean; o
     { to: '/app', icon: Home, label: 'Home' },
     { to: '/app/search', icon: Search, label: 'Search' },
     { to: '/app/library', icon: Library, label: 'Your Library' },
+    { to: '/app/genre', icon: Music2, label: 'Genres' },
   ];
 
   const secondaryLinks = [
@@ -50,7 +51,12 @@ export const Sidebar = ({ collapsed, onCollapseChange }: { collapsed: boolean; o
     { to: '/app/settings', icon: Settings, label: 'Settings' },
   ];
 
-  const isActive = (path: string) => location === path;
+  const isActive = (path: string) => {
+    if (path === '/app') {
+      return location === '/app';
+    }
+    return location?.startsWith(path)
+  };
 
   return (
     <aside
