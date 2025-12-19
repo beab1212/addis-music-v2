@@ -10,5 +10,6 @@ router.get("/trending-now", requireAuth, personalizationControl.trendingNow);
 router.get("/featured-artists", requireAuth, personalizationControl.featuredArtists);
 router.get("/popular-playlists", requireAuth, personalizationControl.popularPlaylists);
 router.get("/new-albums", requireAuth, personalizationControl.newAlbums);
+router.get("/sounds-you-may-like", requireAuth, personalizationControl.soundsYouMayLike);
 
 export default router;
