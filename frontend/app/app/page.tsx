@@ -59,6 +59,7 @@ export default function Home() {
   const [popularPlaylistsData, setPopularPlaylistsData] = useState<any>(null);
   const [newAlbumsData, setNewAlbumsData] = useState<any>(null);
   const [recommendedForYouData, setRecommendedForYouData] = useState<any>(null);
+  const [soundYouMayLikeData, setSoundYouMayLikeData] = useState<any>(null);
   const [testData, setTestData] = useState<any>(null);
 
   useEffect(() => {
@@ -87,6 +88,20 @@ export default function Home() {
     };
 
     fetchRecommendedData();
+  }, []);
+
+  useEffect(() => {
+    const fetchSoundsYouMayLikeData = async () => {
+      try {
+        const response = await api.get('/personalization/sounds-you-may-like?page=1&limit=20');
+        setSoundYouMayLikeData(response.data?.data?.tracks || []);
+        console.log('Sounds You May Like Data:', response.data?.data);
+      } catch (error) {
+        console.error('Error fetching sounds you may like data:', error);
+      }
+    };
+
+    fetchSoundsYouMayLikeData();
   }, []);
 
   useEffect(() => {
@@ -171,6 +186,14 @@ export default function Home() {
 
       <Section title="Recommended for You">
         {recommendedForYouData?.map((song: any) => (
+          <div key={song.id} className="flex-shrink-0 w-56">
+            <SongCard song={song} />
+          </div>
+        ))}
+      </Section>
+
+      <Section title="Sounds You May Like">
+        {soundYouMayLikeData?.map((song: any) => (
           <div key={song.id} className="flex-shrink-0 w-56">
             <SongCard song={song} />
           </div>
