@@ -30,7 +30,7 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2">
             <img src="/addisMusic.png" alt="Addis Music Logo" className="h-8 w-8 mr-2" />
 
-            <span className="text-lg font-extrabold tracking-tight">
+            <span className="text-lg font-extrabold tracking-tight sm:flex hidden">
               Addis
               <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-500 to-pink-600">
                 Music
@@ -64,7 +64,7 @@ export default function Home() {
                       <div className="h-8 w-8 rounded-full bg-black/10 dark:bg-white/10" />
                     )}
                   </div>
-                  <span className="text-xs text-gray-700 dark:text-gray-300">
+                  <span className="text-xs text-gray-700 dark:text-gray-300 sm:flex hidden">
                     {session.user.email ?? session.user.name ?? "User"}
                   </span>
                 </div>
