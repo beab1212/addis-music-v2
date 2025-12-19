@@ -1,162 +1,77 @@
 'use client';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
+
 import { SongCard } from '@/components/SongCard';
 import { ArtistCard } from '@/components/ArtistCard';
 import { PlaylistCard } from '@/components/PlaylistCard';
 import { AlbumCard } from '@/components/AlbumCard';
-import { mockSongs, mockArtists, mockPlaylists, mockAlbums } from '@/utils/mockData';
-import { useRef, useEffect, useState, use } from 'react';
-import { api } from '@/lib/api';
+import { Section } from '@/components/Section';
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
-
-  return (
-    <div className="mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => scroll('left')}
-            className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow text-gray-700 dark:text-gray-300"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow text-gray-700 dark:text-gray-300"
-          >
-            <ChevronRight size={20} />
-          </button>
-        </div>
-      </div>
-      <div
-        ref={scrollRef}
-        className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-};
+interface HomeData {
+  recommended: any[];
+  sounds: any[];
+  trending: any[];
+  artists: any[];
+  playlists: any[];
+  albums: any[];
+  test: any[];
+}
 
 export default function Home() {
-
-  const [trendingData, setTrendingData] = useState<any>(null);
-  const [featuredArtistsData, setFeaturedArtistsData] = useState<any>(null);
-  const [popularPlaylistsData, setPopularPlaylistsData] = useState<any>(null);
-  const [newAlbumsData, setNewAlbumsData] = useState<any>(null);
-  const [recommendedForYouData, setRecommendedForYouData] = useState<any>(null);
-  const [soundYouMayLikeData, setSoundYouMayLikeData] = useState<any>(null);
-  const [testData, setTestData] = useState<any>(null);
+  const [data, setData] = useState<HomeData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAll = async () => {
       try {
-        const response = await api.get('/tracks');
-        setTestData(response.data?.data?.tracks || []);
-      } catch (error) {
-        console.error('Error fetching test data:', error);
+        const [
+          recommended,
+          sounds,
+          trending,
+          albums,
+          playlists,
+          artists,
+          test,
+        ] = await Promise.all([
+          api.get('/personalization/for-you?page=1&limit=20'),
+          api.get('/personalization/sounds-you-may-like?page=1&limit=20'),
+          api.get('/personalization/trending-now'),
+          api.get('/personalization/new-albums'),
+          api.get('/personalization/popular-playlists'),
+          api.get('/personalization/featured-artists'),
+          api.get('/tracks'),
+        ]);
+
+        setData({
+          recommended: recommended.data?.data?.tracks ?? [],
+          sounds: sounds.data?.data?.tracks ?? [],
+          trending: trending.data?.data?.tracks ?? [],
+          albums: albums.data?.data?.albums ?? [],
+          playlists: playlists.data?.data?.playlists ?? [],
+          artists: artists.data?.data?.artists ?? [],
+          test: test.data?.data?.tracks ?? [],
+        });
+      } catch (err) {
+        console.error('Home fetch failed', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchData();
+    fetchAll();
   }, []);
 
-  useEffect(() => {
-    const fetchRecommendedData = async () => {
-      try {
-        const response = await api.get('/personalization/for-you?page=1&limit=20');
-        setRecommendedForYouData(response.data?.data?.tracks || []);
-      } catch (error) {
-        console.error('Error fetching recommended data:', error);
-      }
-    };
+  if (loading) {
+    return <div className="p-8 text-center">Loading…</div>;
+  }
 
-    fetchRecommendedData();
-  }, []);
-
-  useEffect(() => {
-    const fetchSoundsYouMayLikeData = async () => {
-      try {
-        const response = await api.get('/personalization/sounds-you-may-like?page=1&limit=20');
-        setSoundYouMayLikeData(response.data?.data?.tracks || []);
-      } catch (error) {
-        console.error('Error fetching sounds you may like data:', error);
-      }
-    };
-
-    fetchSoundsYouMayLikeData();
-  }, []);
-
-  useEffect(() => {
-    const fetchTrendingData = async () => {
-      try {
-        const response = await api.get('/personalization/trending-now');
-        setTrendingData(response.data?.data?.tracks || []);
-      } catch (error) {
-        console.error('Error fetching trending data:', error);
-      }
-    };
-
-    fetchTrendingData();
-  }, []);
-
-  useEffect(() => {
-    const fetchNewAlbumsData = async () => {
-      try {
-        const response = await api.get('/personalization/new-albums');
-        setNewAlbumsData(response.data?.data?.albums || []);
-      } catch (error) {
-        console.error('Error fetching new albums data:', error);
-      }
-    };
-
-    fetchNewAlbumsData();
-  }, []);
-
-  useEffect(() => {
-    const fetchPopularPlaylistsData = async () => {
-      try {
-        const response = await api.get('/personalization/popular-playlists');
-        setPopularPlaylistsData(response.data?.data?.playlists || []);
-        console.log('Popular Playlists Data:', response.data?.data);
-      } catch (error) {
-        console.error('Error fetching popular playlists data:', error);
-      }
-    };
-
-    fetchPopularPlaylistsData();
-  }, []);
-
-  useEffect(() => {
-    const fetchFeaturedArtistsData = async () => {
-      try {
-        const response = await api.get('/personalization/featured-artists');
-        setFeaturedArtistsData(response.data?.data?.artists || []);
-      } catch (error) {
-        console.error('Error fetching featured artists data:', error);
-      }
-    };
-
-    fetchFeaturedArtistsData();
-  }, []);
-
+  if (!data) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* HERO */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -166,11 +81,13 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 text-white">
             <h1 className="text-5xl font-bold mb-4">Discover Your Sound</h1>
-            <p className="text-xl opacity-90 mb-6">Explore millions of songs from artists around the world</p>
+            <p className="text-xl opacity-90 mb-6">
+              Explore millions of songs from artists around the world
+            </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold shadow-xl hover:shadow-2xl transition-shadow"
+              className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold shadow-xl"
             >
               Start Listening
             </motion.button>
@@ -179,62 +96,60 @@ export default function Home() {
       </motion.div>
 
       <Section title="Recommended for You">
-        {recommendedForYouData?.map((song: any) => (
-          <div key={song.id} className="flex-shrink-0 w-56">
-            <SongCard song={song} />
+        {data.recommended.map((s) => (
+          <div key={s.id} className="w-56 shrink-0">
+            <SongCard song={s} />
           </div>
         ))}
       </Section>
 
       <Section title="Sounds You May Like">
-        {soundYouMayLikeData?.map((song: any) => (
-          <div key={song.id} className="flex-shrink-0 w-56">
-            <SongCard song={song} />
+        {data.sounds.map((s) => (
+          <div key={s.id} className="w-56 shrink-0">
+            <SongCard song={s} />
           </div>
         ))}
       </Section>
 
       <Section title="Trending Now">
-        {trendingData?.map((song: any) => (
-          <div key={song.id} className="flex-shrink-0 w-56">
-            <SongCard song={song} />
+        {data.trending.map((s) => (
+          <div key={s.id} className="w-56 shrink-0">
+            <SongCard song={s} />
           </div>
         ))}
       </Section>
-      
 
       <Section title="Featured Artists">
-        {featuredArtistsData?.map((artist: any) => (
-          <div key={artist.id} className="flex-shrink-0 w-56">
-            <ArtistCard artist={artist} />
+        {data.artists.map((a) => (
+          <div key={a.id} className="w-56 shrink-0">
+            <ArtistCard artist={a} />
           </div>
         ))}
       </Section>
 
       <Section title="Popular Playlists">
-        {popularPlaylistsData?.map((playlist: any) => (
-          <div key={playlist.id} className="flex-shrink-0 w-56">
-            <PlaylistCard playlist={playlist} />
+        {data.playlists.map((p) => (
+          <div key={p.id} className="w-56 shrink-0">
+            <PlaylistCard playlist={p} />
           </div>
         ))}
       </Section>
 
       <Section title="New Albums">
-        {newAlbumsData?.map((album: any) => (
-          <div key={album.id} className="flex-shrink-0 w-56">
-            <AlbumCard album={album} />
+        {data.albums.map((a) => (
+          <div key={a.id} className="w-56 shrink-0">
+            <AlbumCard album={a} />
           </div>
         ))}
       </Section>
 
-
       <Section title="Test Track Section">
-        {testData?.map((song: any) => (
-          <div key={song.id} className="flex-shrink-0 w-56">
-            <SongCard song={song} />
+        {data.test.map((s) => (
+          <div key={s.id} className="w-56 shrink-0">
+            <SongCard song={s} />
           </div>
         ))}
       </Section>
     </div>
   );
-};
+}
