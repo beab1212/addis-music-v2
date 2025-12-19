@@ -1,9 +1,64 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Settings as SettingsIcon, Bell, Globe, Volume2, Shield } from 'lucide-react';
+import { api } from '@/lib/api';
+import { useToastStore } from '@/store/toastStore';
 
 export default function Settings() {
+  const { addToast } = useToastStore();
+
+  const [formData, setFormData] = useState({
+    favoriteGenres: '',
+    favoriteArtists: '',
+    moodPreference: '',
+    language: '',
+  });
+
+  const changeHandler = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  useEffect(() => {
+    const fetchUserPreferences = async () => {
+      try {
+        const response = await api.get('/user/preferences');
+        if (response.data.data && response.data.data.userPreferences) {
+          setFormData({
+              favoriteGenres: response.data.data.userPreferences.favoriteGenres.join(', '),
+              favoriteArtists: response.data.data.userPreferences.favoriteArtists.join(', '),
+              moodPreference: response.data.data.userPreferences.moodPreference,
+              language: response.data.data.userPreferences.language,
+            });
+        }
+      } catch (error) {
+        console.error('Error fetching user preferences:', error);
+      }
+    }
+    fetchUserPreferences();
+  }, []);
+
+  const submitHandler = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        favoriteGenres: formData.favoriteGenres.split(',').map((genre) => genre.trim()),
+        favoriteArtists: formData.favoriteArtists.split(',').map((artist) => artist.trim()),
+        moodPreference: formData.moodPreference,
+        language: formData.language,
+      };
+      await api.put('/user/preferences', payload);
+      addToast('Preferences updated successfully!', 'success');
+    } catch (error: any) {
+      console.error('Error updating user preferences:', error);
+      addToast(error?.response?.data?.message || 'Failed to update preferences.', 'error');
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -28,7 +83,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          {/* <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-3 mb-4">
               <Globe size={24} className="text-gray-600 dark:text-gray-400" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Language</h2>
@@ -40,9 +95,105 @@ export default function Settings() {
               <option>German</option>
               <option>Japanese</option>
             </select>
-          </div>
+          </div> */}
 
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div className="flex items-center gap-3 mb-4">
+              <Globe size={24} className="text-gray-600 dark:text-gray-400" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Preference</h2>
+            </div>
+
+            <div className="space-y-3">
+              {/* use like favoriteGenres, favoriteArtists, moodPreference input field defaulted to edit disable */}
+              <form className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8" onSubmit={submitHandler}>
+
+                {/* Input */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    name='favoriteGenres'
+                    defaultValue={formData.favoriteGenres || ''}
+                    onChange={changeHandler}
+                    placeholder=" "
+                    className="peer w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-4 pt-6 pb-2 text-gray-900 dark:text-white focus:border-orange-500 focus:ring-0 outline-none transition"
+                  />
+                  <label className="pointer-events-none absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all 
+            peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+            peer-placeholder-shown:text-gray-400
+            peer-focus:top-2 peer-focus:text-sm peer-focus:text-orange-500">
+                    Favorite Genres
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    name='favoriteArtists'
+                    defaultValue={formData.favoriteArtists || ''}
+                    onChange={changeHandler}
+                    placeholder=" "
+                    className="peer w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-4 pt-6 pb-2 text-gray-900 dark:text-white focus:border-orange-500 focus:ring-0 outline-none transition"
+                  />
+                  <label className="pointer-events-none absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all 
+            peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+            peer-placeholder-shown:text-gray-400
+            peer-focus:top-2 peer-focus:text-sm peer-focus:text-orange-500">
+                    Favorite Artists
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    name='moodPreference'
+                    defaultValue={formData.moodPreference || ''}
+                    onChange={changeHandler}
+                    placeholder=" "
+                    className="peer w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-4 pt-6 pb-2 text-gray-900 dark:text-white focus:border-orange-500 focus:ring-0 outline-none transition"
+                  />
+                  <label className="pointer-events-none absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all 
+            peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+            peer-placeholder-shown:text-gray-400
+            peer-focus:top-2 peer-focus:text-sm peer-focus:text-orange-500">
+                    Mood Preference
+                  </label>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    name='language'
+                    defaultValue={formData.language || ''}
+                    onChange={changeHandler}
+                    placeholder=" "
+                    className="peer w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent px-4 pt-6 pb-2 text-gray-900 dark:text-white focus:border-orange-500 focus:ring-0 outline-none transition"
+                  />
+                  <label className="pointer-events-none absolute left-4 top-2 text-sm text-gray-500 dark:text-gray-400 transition-all 
+            peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
+            peer-placeholder-shown:text-gray-400
+            peer-focus:top-2 peer-focus:text-sm peer-focus:text-orange-500">
+                    Language
+                  </label>
+                </div>
+
+
+                {/* Actions */}
+                <div className="md:col-span-2 flex justify-end pt-4">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-3 text-sm font-medium text-white shadow-lg shadow-orange-500/20 hover:from-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500/40 transition-all"
+                  >
+                    Save changes
+                  </button>
+                </div>
+              </form>
+
+            </div>
+          </div>
+
+
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hidden">
             <div className="flex items-center gap-3 mb-4">
               <Volume2 size={24} className="text-gray-600 dark:text-gray-400" />
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Audio Quality</h2>
