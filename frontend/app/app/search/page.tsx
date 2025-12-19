@@ -36,14 +36,9 @@ export default function Search() {
         const response = await api.get(`/albums/semantic-search?q=${query.trim()}`);
         setAlbums(response.data.data.albums || []);
       }
-
       if (activeTab == 'all' || activeTab == 'playlists') {
         const response = await api.get(`/playlists/semantic-search?q=${query.trim()}`);
         setPlaylists(response.data.data.playlists || []);
-      }
-
-      if (activeTab == 'all' || activeTab == 'playlists') {
-
       }
     } catch (error) {
       console.error('Error fetching tracks:', error);
@@ -52,14 +47,6 @@ export default function Search() {
 
 
   const tabs: Tab[] = ['all', 'songs', 'artists', 'albums', 'playlists'];
-
-  // temp
-  const filteredArtists = mockArtists.filter((artist) =>
-    artist.name.toLowerCase().includes(search.toLowerCase())
-  );
-  const filteredPlaylists = mockPlaylists.filter((playlist) =>
-    playlist.name.toLowerCase().includes(search.toLowerCase())
-  );
 
   useEffect(() => {
       // Delay setting the debouncedQuery state
@@ -153,7 +140,7 @@ export default function Search() {
             </div>
           )}
 
-          {(activeTab === 'all' || activeTab === 'playlists') && filteredPlaylists.length > 0 && (
+          {(activeTab === 'all' || activeTab === 'playlists') && playlists.length > 0 && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Playlists</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
