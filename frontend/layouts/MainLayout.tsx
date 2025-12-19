@@ -19,6 +19,8 @@ export const MainLayout = memo(({ children }: MainLayoutProps) => {
   const pathname = usePathname();
   const [currentPath, setCurrentPath] = useState<string | null>(pathname || '');
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   useEffect(() => {
     setCurrentPath(pathname);
     console.log("Current path updated to:", pathname);
@@ -29,12 +31,22 @@ export const MainLayout = memo(({ children }: MainLayoutProps) => {
       <Navbar />
 
       {!currentPath?.startsWith('/app/player') && (
-        <Sidebar />
+        <Sidebar collapsed={sidebarCollapsed} onCollapseChange={setSidebarCollapsed} />
       )}
 
-      <main className={`pt-16 ${currentPath?.startsWith('/app/player') ? '' : 'md:ml-64 pb-24'}`}>
+      <main
+        className={`
+          pt-16 pb-24 transition-all duration-300
+          ${currentPath?.startsWith('/app/player')
+            ? ''
+            : sidebarCollapsed
+              ? 'md:ml-20'
+              : 'md:ml-64'}
+  `}
+      >
         {children}
       </main>
+
 
 
       {/* Lazy-loaded components */}
