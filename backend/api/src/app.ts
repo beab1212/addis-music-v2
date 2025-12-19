@@ -25,6 +25,7 @@ import personalizationRoute from "./routes/personalizationRoutes";
 import advertisementRoute from "./routes/advertisementRouter";
 import { subscriptionController } from "./controllers/subscriptionController";
 import subscriptionRoute from "./routes/subscriptionRoutes";
+import genreTrackRoute from "./routes/genreTracksRouter";
 
 
 const app = express();
@@ -60,6 +61,7 @@ api.use("/artist-follows", artistFollowRoute);
 api.use("/user-follows", userFollowRoute);
 api.use("/tracks", trackRoute);
 api.use("/personalization", personalizationRoute);
+api.use("/genre-tracks", genreTrackRoute);
 api.use("/ads", advertisementRoute);
 api.use("/subscriptions", subscriptionRoute);
 app.get("/api/v1/payments/chapa/callback/:paymentId", subscriptionController.chapaCallback);

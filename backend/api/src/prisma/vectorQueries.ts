@@ -484,7 +484,7 @@ export const featuredArtists = async (
 
 
 
-const MAX_COSINE_DISTANCE = 0.8; // tune this
+const MAX_COSINE_DISTANCE = 0.74; // tune this
 
 
 // for search queries
