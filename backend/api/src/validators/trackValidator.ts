@@ -6,7 +6,7 @@ export const uploadTrackSchema = z.object({
     albumId: z.string().nullable().optional(),
     genreId: z.string().uuid("Genre Id must be a valid UUID"),
     tags: z.array(
-        z.string().min(1, "Tag must be min 1 character").max(10, "Tag must be max 10 characters")
+        z.string().max(30, "Tag is too long")
     ).max(10, "Maximum of 10 tags allowed").optional(),
     releaseDate: z
         .string()
