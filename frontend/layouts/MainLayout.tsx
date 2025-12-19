@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation';
 const DynamicMiniPlayer = dynamic(() => import('@/components/MiniPlayer').then(mod => mod.default), { ssr: false });
 const DynamicToast = dynamic(() => import('@/components/Toast').then(mod => mod.Toast), { ssr: false });
 const DynamicAuthModal = dynamic(() => import('@/components/AuthModal').then(mod => mod.AuthModal), { ssr: false });
+const DynamicAddOverlay = dynamic(() => import('@/components/AddOverlay').then(mod => mod.default), { ssr: false });
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -44,6 +45,7 @@ export const MainLayout = memo(({ children }: MainLayoutProps) => {
 
       <DynamicToast />
       <DynamicAuthModal />
+      <DynamicAddOverlay />
     </div>
   );
 });
