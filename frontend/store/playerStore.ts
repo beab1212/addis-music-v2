@@ -135,11 +135,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
     const currentIndex = queue.findIndex(s => s.id === currentSong.id);
 
-    // if (repeatMode === 'one') {
-    //   set({ currentTime: 0, isPlaying: true });
-    //   return;
-    // }
-
     let nextIndex;
     if (isShuffle) {
       nextIndex = Math.floor(Math.random() * queue.length);
@@ -150,8 +145,10 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       }
     }
 
+    console.log("Playing next track", queue[nextIndex]);
+
     if (nextIndex !== currentIndex || repeatMode === 'all') {
-      set({ currentSong: queue[nextIndex], currentTime: 0, isPlaying: true });
+      get().setCurrentSong(queue[nextIndex]);
     }
   },
 
@@ -168,7 +165,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     const currentIndex = queue.findIndex(s => s.id === currentSong.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
 
-    set({ currentSong: queue[prevIndex], currentTime: 0, isPlaying: true });
+    get().setCurrentSong(queue[prevIndex]);
   },
 
   setCurrentTime: (time) => {
