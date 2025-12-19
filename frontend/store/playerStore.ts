@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Song } from '@/types';
 import { api } from '@/lib/api';
+import { s } from 'framer-motion/client';
 
 interface PlayerState {
   currentSong: Song | null;
@@ -13,6 +14,8 @@ interface PlayerState {
   duration: number;
   muted: boolean;
   isLiked: boolean;
+  advertisementData: any | null;
+  isAdvertisementPlaying: boolean;
 
   setCurrentSong: (song: Song) => void;
   togglePlayPause: () => void;
@@ -29,6 +32,8 @@ interface PlayerState {
   addToQueue: (song: Song) => void;
   removeFromQueue: (songId: string) => void;
   clearQueue: () => void;
+  setAdvertisementData: (data: any) => void;
+  setIsAdvertisementPlaying: (isPlaying: boolean) => void;
 }
 
 const fetchIsLiked = async (trackId: string): Promise<boolean> => {
@@ -52,6 +57,16 @@ const fetchIsLiked = async (trackId: string): Promise<boolean> => {
   }
 };
 
+const getTrackStreamUrl = async(trackId: string): Promise<boolean> => {
+  try {
+    const response = await api.get(`http://localhost:5000/stream/${trackId}/stream-url`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Error fetching stream URL:', error);
+    return false;
+  }
+}
+
 export const usePlayerStore = create<PlayerState>((set, get) => ({
   currentSong: null,
   isPlaying: false,
@@ -63,23 +78,39 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   muted: false,
   isLiked: false,
+  advertisementData: null,
+  isAdvertisementPlaying: false,
+
+  setIsAdvertisementPlaying: (isPlaying) => set({ isAdvertisementPlaying: isPlaying }),
+  setAdvertisementData: (data) => set({ advertisementData: data }),
 
   setCurrentSong: (song) => {
+    if (get().isAdvertisementPlaying) return;
     fetchIsLiked(song.id).then((isLiked) => {
       set({ isLiked });
+    });
+    getTrackStreamUrl(song.id).then((streamData) => {
+      set({ advertisementData: streamData });
     });
     set({ currentSong: song, isPlaying: true, currentTime: 0 })
   },
 
-  togglePlayPause: () => set((state) => ({ isPlaying: !state.isPlaying })),
+  togglePlayPause: () => {
+    if (get().isAdvertisementPlaying) return;
+    set((state) => ({ isPlaying: !state.isPlaying }));
+  },
 
   setVolume: (volume) => set({ volume }),
 
-  toggleShuffle: () => set((state) => ({ isShuffle: !state.isShuffle })),
+  toggleShuffle: () => {
+    if (get().isAdvertisementPlaying) return;
+    set((state) => ({ isShuffle: !state.isShuffle }));
+  },
 
   toggleMute: () => set((state) => ({ muted: !state.muted })),
 
   toggleIsLiked: () => {
+    if (get().isAdvertisementPlaying) return;
     const { currentSong } = get();
     if (!currentSong) return;
     toggleLike(currentSong.id).then(() => {
@@ -87,11 +118,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
   },
 
-  setRepeatMode: (mode) => set({ repeatMode: mode }),
+  setRepeatMode: (mode) => {
+    if (get().isAdvertisementPlaying) return;
+    set({ repeatMode: mode });
+  },
 
-  setQueue: (queue) => set({ queue }),
+  setQueue: (queue) => {
+    if (get().isAdvertisementPlaying) return;
+    set({ queue });
+  },
 
   playNext: () => {
+    if (get().isAdvertisementPlaying) return;
     const { queue, currentSong, repeatMode, isShuffle } = get();
     if (!currentSong || queue.length === 0) return;
 
@@ -118,6 +156,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   playPrevious: () => {
+    if (get().isAdvertisementPlaying) return;
     const { queue, currentSong, currentTime } = get();
     if (!currentSong || queue.length === 0) return;
 
@@ -132,15 +171,27 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set({ currentSong: queue[prevIndex], currentTime: 0, isPlaying: true });
   },
 
-  setCurrentTime: (time) => set({ currentTime: time }),
+  setCurrentTime: (time) => {
+    if (get().isAdvertisementPlaying) return;
+    set({ currentTime: time });
+  },
 
   setDuration: (duration) => set({ duration }),
 
-  addToQueue: (song) => set((state) => ({ queue: [...state.queue, song] })),
+  addToQueue: (song) => {
+    if (get().isAdvertisementPlaying) return;
+    set((state) => ({ queue: [...state.queue, song] }));
+  },
 
-  removeFromQueue: (songId) => set((state) => ({
-    queue: state.queue.filter(s => s.id !== songId)
-  })),
+  removeFromQueue: (songId) => {
+    if (get().isAdvertisementPlaying) return;
+    set((state) => ({
+      queue: state.queue.filter(s => s.id !== songId)
+    }));
+  },
 
-  clearQueue: () => set({ queue: [] }),
+  clearQueue: () => {
+    if (get().isAdvertisementPlaying) return;
+    set({ queue: [] });
+  },
 }));
