@@ -13,11 +13,10 @@ const Tooltip = ({ label }: { label: string }) => (
   </div>
 );
 
-export const Sidebar = () => {
+export const Sidebar = ({ collapsed, onCollapseChange }: { collapsed: boolean; onCollapseChange: (collapsed: boolean) => void }) => {
   const location = usePathname();
   const { isAuthenticated, user } = useAuthStore();
 
-  const [collapsed, setCollapsed] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
 
   const mainLinks = [
@@ -49,7 +48,7 @@ export const Sidebar = () => {
       <button
         className="absolute z-50 top-20 -right-4 p-2 bg-white dark:text-gray-300 dark:bg-gray-900 border border-gray-300 dark:border-gray-700
                   rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-        onClick={() => setCollapsed(!collapsed)}
+        onClick={() => onCollapseChange(!collapsed)}
       >
         <Menu size={18} />
       </button>
