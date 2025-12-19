@@ -50,7 +50,7 @@ async def personalization_worker():
     worker.on("failed", lambda job, err: print(f"Job {job.id} failed: {err}"))
 
     async def on_completed(job, return_value):
-        print(f"Job {job.id} completed → {return_value}")
+        # print(f"Job {job.id} completed → {return_value}")
         try:
             # remove job queue for memory optimization
             await job.remove()
