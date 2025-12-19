@@ -189,7 +189,7 @@ export const getSimilarSoundingTracks = async (
   offset: number = 0,
 ) => {
   const SONIC_VECTOR_DIM = 512; // UPDATE THIS to your actual embedding dimension!
-  const MAX_COSINE_DISTANCE = 0.1; // Tuned for good perceptual similarity
+  const MAX_COSINE_DISTANCE = 0.15; // Tuned for good perceptual similarity
   // Tune between 0.25–0.40 depending on how strict you want similarity
 
 
