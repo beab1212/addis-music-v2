@@ -59,14 +59,14 @@ export default function AlbumsManagement() {
   };
 
   useEffect(() => {
-      // Delay setting the debouncedQuery state
-      const timer = setTimeout(() => {
-        fetchAlbums(search);
-      }, 500); // 500ms debounce delay
-  
-      // Clean up the previous timer on each render
-      return () => clearTimeout(timer);
-    }, [search]); 
+    // Delay setting the debouncedQuery state
+    const timer = setTimeout(() => {
+      fetchAlbums(search);
+    }, 500); // 500ms debounce delay
+
+    // Clean up the previous timer on each render
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     fetchAlbums();
@@ -230,11 +230,11 @@ export default function AlbumsManagement() {
 
         <div className="flex items-center justify-between mt-6">
           <p className="text-gray-600 dark:text-gray-400">
-            Showing {(page - 1) * limit + 1} to {Math.min(page * limit, total)} of {total}
+            Showing {page} of {total}
           </p>
           <div className="flex gap-2">
-            <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 dark:text-white rounded-lg disabled:opacity-50">Previous</button>
-            <button disabled={page * limit >= total} onClick={() => setPage(page + 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Next</button>
+            <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Previous</button>
+            <button disabled={page == Math.min(page * limit, total)} onClick={() => setPage(page + 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Next</button>
           </div>
         </div>
       </motion.div>
