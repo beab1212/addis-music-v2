@@ -2,8 +2,8 @@ import { redisClient } from "../libs/redis";
 import { personalizationQueue, personalizationQueueEvents } from '../jobs/audioQueue';
 import { CustomErrors } from '../errors';
 
-export const getCachedVectors = async (userId: string): Promise<{ user_meta_vector: number[]; user_audio_vector: number[] } | null> => {
-    const cacheKey = `user_vectors:${userId}`;
+export const getCachedVectors = async (userId: string, isRecent: boolean = false): Promise<{ user_meta_vector: number[]; user_audio_vector: number[] } | null> => {
+    const cacheKey = `${isRecent ? 'recent:' : ''}user_vectors:${userId}`;
     const cachedData = await redisClient.get(cacheKey);
 
     if (cachedData) {
@@ -23,13 +23,13 @@ export const getCachedVectors = async (userId: string): Promise<{ user_meta_vect
 }
 
 
-export const getCachedOrGenerateVectors = async (userId: string): Promise<{ user_meta_vector: number[]; user_audio_vector: number[] }> => {
-    const cachedVectors = await getCachedVectors(userId);
+export const getCachedOrGenerateVectors = async (userId: string, isRecent: boolean = false): Promise<{ user_meta_vector: number[]; user_audio_vector: number[] }> => {
+    const cachedVectors = await getCachedVectors(userId, isRecent);
     if (cachedVectors) {
         console.log("Fetched vectors from cache.");
         return cachedVectors;
     } else {
-        const job = await personalizationQueue.add('personalization', { type: 'for_you', user_id: userId });
+        const job = await personalizationQueue.add('personalization', { type: 'for_you', user_id: userId, is_recent: isRecent });
         const result = await job.waitUntilFinished(personalizationQueueEvents);
         
         if (result.status !== 'done') {
