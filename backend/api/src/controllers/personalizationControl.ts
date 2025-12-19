@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../libs/db';
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
-import { getSimilarTracks, getTrendingNow, getNewAlbums, popularPlaylists, featuredArtists } from "../prisma/vectorQueries";
+import { getSimilarTracks, getTrendingNow, getNewAlbums, popularPlaylists, featuredArtists, getSimilarSoundingTracks } from "../prisma/vectorQueries";
 import { CustomErrors } from '../errors';
 import { getCachedOrGenerateVectors } from '../utils/cache_vectors';
 
@@ -23,6 +23,25 @@ export const personalizationControl = {
         return res.status(200).json({
             success: true,
             data: { tracks: similarTracks }
+        });
+    },
+
+    soundsYouMayLike: async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        const { page, limit } = paginationSchema.parse(req.query);
+        const offset = (page - 1) * limit;
+
+        const { user_audio_vector } = await getCachedOrGenerateVectors(userId as string, true);
+
+        const recommendedTracks = await getSimilarSoundingTracks(
+            user_audio_vector,
+            limit,
+            offset
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: { tracks: recommendedTracks }
         });
     },
 
