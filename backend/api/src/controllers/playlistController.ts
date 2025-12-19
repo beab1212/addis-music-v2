@@ -208,6 +208,8 @@ export const playlistController = {
 
         const offset = (page - 1) * limit;
 
+        console.log("User ID:", userId, "Is Admin:", isAdmin);
+
         const playlists = await searchPlaylists(q, limit, offset, userId);
 
         res.status(200).json({

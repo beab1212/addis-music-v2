@@ -9,7 +9,7 @@ const router = Router();
 router.post("/", requireAuth, uploadImage.single('image'), playlistController.createPlaylist);
 router.get("/", requireAuth, playlistController.getAllPlaylists);
 router.get("/user", requireAuth, playlistController.getUserPlaylists);
-router.get("/semantic-search", requireAuth, playlistController.searchPlaylists);
+router.get("/semantic-search", requireAuth, playlistController.semanticSearchPlaylists);
 router.get("/search", requireAuth, playlistController.searchPlaylists);
 router.get("/:id", requireAuth, playlistController.getPlaylistById);
 router.put("/:id", requireAuth, playlistController.updatePlaylist);
