@@ -28,7 +28,7 @@ async def process_for_you_job(job):
         preferences = get_user_preference(user_id)
         
         # 4. Extract embedding vectors (default to empty lists if not present)
-        pref_meta = preferences.get("embeddingMeta") if preferences else []
+        pref_meta = preferences.get("embeddingVector") if preferences else []
 
         # 5. Extract vectors from listened and liked tracks
         listened_meta = [h.get("embeddingVector", []) for h in listened] if listened else []
