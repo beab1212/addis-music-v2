@@ -225,7 +225,15 @@ export const streamController = {
         let advertisement: any = null;
         if (!isPremium) {
             // TODO: Select ad based on various factors
-            advertisement = await prisma.advertisement.findFirst();
+            
+            // for now, randomly select the first ad
+            const ads = await prisma.advertisement.findMany();
+            if (ads.length === 0) {
+                advertisement = null;
+            } else {
+                const idx = Math.floor(Math.random() * ads.length);
+                advertisement = ads[idx];
+            }
 
             adStreamUrl = advertisement ? `http://localhost:5000/stream/${advertisement.id}/ads/ad.m3u8` : null;
         }
