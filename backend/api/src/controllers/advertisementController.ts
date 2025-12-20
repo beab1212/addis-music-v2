@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import  { v4 as uuidv4 } from "uuid";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
-import { uploadImageToCloudinary } from '../libs/cloudinary';
-import { uploadAudioToS3 } from '../libs/s3Client';
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from '../libs/cloudinary';
+import { uploadAudioToS3, deleteAudioFromS3 } from '../libs/s3Client';
 import { createAdvertisementSchema } from "../validators/advertisementValidator";
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 
@@ -126,6 +126,9 @@ export const advertisementController = {
         // upload to s3 bucket
         audioPath = await uploadAudioToS3(audioPath as string, audioId, (req.files as any).audio[0].mimetype, true);
 
+        // delete old audio from s3
+        await deleteAudioFromS3(`add/${id}`);
+
         const updatedAdTrack = await prisma.adTrack.update({
             where: { id },
             data: {
@@ -169,7 +172,10 @@ export const advertisementController = {
             }
         });
 
-        // TODO: Delete old cover image from Cloudinary
+        // delete old cover from cloudinary
+        if (ad.imageUrl) {
+            await deleteImageFromCloudinary(ad.imageUrl);
+        }
 
         res.status(200).json({
             success: true,
@@ -181,7 +187,7 @@ export const advertisementController = {
     deleteAdvertisement: async (req: Request, res: Response) => {
         const { id } = req.params;
 
-        const ad = await prisma.advertisement.findUnique({ where: { id } });
+        const ad = await prisma.advertisement.findUnique({ where: { id }, include: { tracks: true } });
 
         if (!ad) {
             throw new CustomErrors.NotFoundError("Advertisement not found");
@@ -191,6 +197,15 @@ export const advertisementController = {
 
         await prisma.advertisement.delete({ where: { id } });
         // TODO: Delete associated files from S3 and Cloudinary
+
+        for (const track of ad.tracks) {
+            await deleteAudioFromS3(`add/${track.id}`);
+        }
+
+        if (ad.imageUrl) {
+            await deleteImageFromCloudinary(ad.imageUrl);
+        }
+
 
         res.status(200).json({
             success: true,
