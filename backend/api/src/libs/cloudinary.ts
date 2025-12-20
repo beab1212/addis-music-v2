@@ -24,6 +24,11 @@ export const uploadImageToCloudinary = async (src: string) => {
 }
 
 export const deleteImageFromCloudinary = async (publicId: string) => {
+    if (!publicId) return false;
+    if (publicId.startsWith('http')) {
+        const parts = publicId.split('/');
+        publicId = parts.slice(parts.indexOf('images')).join('/').split('.').slice(0, -1).join('.');
+    }
     try {
         await cloudinary.uploader.destroy(publicId);
     } catch (error) {
