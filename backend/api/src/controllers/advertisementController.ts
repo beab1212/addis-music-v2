@@ -196,7 +196,6 @@ export const advertisementController = {
         await prisma.adTrack.deleteMany({ where: { adId: ad.id } });
 
         await prisma.advertisement.delete({ where: { id } });
-        // TODO: Delete associated files from S3 and Cloudinary
 
         for (const track of ad.tracks) {
             await deleteAudioFromS3(`add/${track.id}`);
@@ -206,6 +205,7 @@ export const advertisementController = {
             await deleteImageFromCloudinary(ad.imageUrl);
         }
 
+        //TODO: remove hls segments
 
         res.status(200).json({
             success: true,
