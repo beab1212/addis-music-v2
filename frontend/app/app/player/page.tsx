@@ -202,7 +202,8 @@ export default function Player() {
                         className="w-12 h-12 rounded object-cover"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 dark:text-white truncate">
+                        
+                        <p className={`font-medium truncate ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>
                           {song.title}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
