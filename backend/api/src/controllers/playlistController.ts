@@ -6,6 +6,7 @@ import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
 import { Playlist } from "@prisma/client";
 import { searchPlaylists } from "../prisma/vectorQueries";
+import { deleteImageFromCloudinary } from "../libs/cloudinary";
 
 const playlistMetadata = async (playlist: Playlist) => {
     return [
@@ -148,6 +149,8 @@ export const playlistController = {
         await prisma.playlist.delete({
             where: { id },
         });
+
+        await deleteImageFromCloudinary(existingPlaylist.coverUrl || '');
 
         res.status(200).json({
             success: true,

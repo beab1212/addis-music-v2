@@ -7,6 +7,7 @@ import { embeddingQueue } from "../jobs/audioQueue";
 import { Artist } from "@prisma/client";
 import { searchArtists } from "../prisma/vectorQueries";
 import { get } from "http";
+import { deleteImageFromCloudinary } from "../libs/cloudinary";
 
 const artistMetadata = async (artist: Artist) => {
     return [
@@ -128,6 +129,8 @@ export const artistController = {
         await prisma.artist.delete({
             where: { id: artistId },
         });
+
+        await deleteImageFromCloudinary(artist.imageUrl || '');
 
         res.status(200).json({ success: true, message: 'Artist deleted successfully' });
     },
