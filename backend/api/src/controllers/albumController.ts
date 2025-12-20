@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { createAlbumSchema } from "../validators/albumValidator";
+import { deleteImageFromCloudinary } from '../libs/cloudinary';
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
 import { embeddingQueue } from "../jobs/audioQueue";
 import { Album } from "@prisma/client";
@@ -100,6 +101,8 @@ export const albumController = {
         await prisma.album.delete({
             where: { id: albumId },
         });
+
+        await deleteImageFromCloudinary(album.coverUrl || '');
 
         res.status(200).json({ success: true, message: 'Album deleted successfully' });
     },
