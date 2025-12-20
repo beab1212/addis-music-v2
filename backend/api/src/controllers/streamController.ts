@@ -179,7 +179,11 @@ export const streamController = {
         // check if the ad exists
         const ad = await prisma.advertisement.findUnique({
             where: {
-                id: audioId
+                id: audioId,
+                active: true
+            },
+            include: {
+                tracks: true
             }
         })
 
@@ -187,7 +191,7 @@ export const streamController = {
             throw new CustomErrors.NotFoundError("Requested advertisement doesn't exist.");
         }
 
-        const adAudioSegments = await getPlaylistFromCacheOrGenerate('86d5fcb7-53da-4fa0-b901-3156d16ef1d3', true);
+        const adAudioSegments = await getPlaylistFromCacheOrGenerate(ad.tracks[0].id, true);
 
         if (!adAudioSegments || adAudioSegments.length === 0) {
             throw new CustomErrors.NotFoundError("Audio segments not found for the requested advertisement.");
@@ -225,9 +229,11 @@ export const streamController = {
         let advertisement: any = null;
         if (!isPremium) {
             // TODO: Select ad based on various factors
-            
+
             // for now, randomly select the first ad
-            const ads = await prisma.advertisement.findMany();
+            const ads = await prisma.advertisement.findMany({
+                where: { active: true },
+            });
             if (ads.length === 0) {
                 advertisement = null;
             } else {
