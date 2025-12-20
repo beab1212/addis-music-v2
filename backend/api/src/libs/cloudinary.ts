@@ -27,8 +27,10 @@ export const deleteImageFromCloudinary = async (publicId: string) => {
     if (!publicId) return false;
     if (publicId.startsWith('http')) {
         const parts = publicId.split('/');
-        publicId = parts.slice(parts.indexOf('images')).join('/').split('.').slice(0, -1).join('.');
+        publicId = `addis-music/${parts.slice(parts.indexOf('images')).join('/').split('.').slice(0, -1).join('.')}`;
     }
+
+    console.log('Deleting image from Cloudinary with public ID:', publicId);
     try {
         await cloudinary.uploader.destroy(publicId);
     } catch (error) {
@@ -37,6 +39,5 @@ export const deleteImageFromCloudinary = async (publicId: string) => {
     }
     return true;
 }
-
 
 export default cloudinary;

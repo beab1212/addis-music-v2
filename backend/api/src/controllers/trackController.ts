@@ -4,8 +4,8 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { uploadTrackSchema } from '../validators/trackValidator';
 import { uuidSchema, searchSchema, paginationSchema } from '../validators';
-import { uploadImageToCloudinary } from '../libs/cloudinary';
-import { uploadAudioToS3 } from '../libs/s3Client';
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from '../libs/cloudinary';
+import { uploadAudioToS3, deleteAudioFromS3 } from '../libs/s3Client';
 import { addTrackToMeiliIndex } from '../libs/meili';
 import { embeddingQueue } from '../jobs/audioQueue';
 import { searchTracks } from '../prisma/vectorQueries';
@@ -233,13 +233,6 @@ export const trackController = {
             throw new CustomErrors.NotFoundError('Track not found');
         }
 
-        // delete cloud files if needed (audio, cover) -- TODO
-        // cover image
-
-        // audio file
-
-        // delete track record with hls segments
-
         await prisma.playHistory.deleteMany({
             where: { trackId: trackId },
         });
@@ -255,6 +248,14 @@ export const trackController = {
         await prisma.track.delete({
             where: { id: trackId },
         });
+
+        await deleteAudioFromS3(`music/${trackId}`);
+        
+        if (existingTrack.coverUrl) {
+            await deleteImageFromCloudinary(existingTrack.coverUrl);
+        }
+
+        // TODO: remove from Meilisearch index and hls segments
 
         res.status(200).json({
             success: true,
