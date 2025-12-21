@@ -84,7 +84,7 @@ export default function Player() {
                   } `}
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <img src="/addisMusic.png" alt="logo" className="w-24 h-24 bg-black/90 rounded-full p-4 border-2 border-white object-contain shadow-lg shadow-black" />
+                <img src="/addisMusic.png" alt="logo" className="w-24 h-24 bg-black/90 rounded-full p-4 border-4 border-white/90 object-contain shadow-lg shadow-black" />
               </div>
             </div>
             <div className="flex items-start justify-between mb-6"> 
