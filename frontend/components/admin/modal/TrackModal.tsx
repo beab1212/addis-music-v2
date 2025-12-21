@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { X, Save, Tag, Search } from "lucide-react";
 import SearchSelect from "../SearchSelect";
 import { useToastStore } from '@/store/toastStore';
+import ProgressSpinner from "@/components/ProgressSpinner";
 
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
 export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
     const { addToast } = useToastStore();
     const [saving, setSaving] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // form fields
     const [title, setTitle] = useState("");
@@ -216,11 +218,18 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
                     headers: {
                         "Content-Type": "multipart/form-data",
                     },timeout: 0,
+                    onUploadProgress: (progressEvent: any) => {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        setUploadProgress(percentCompleted);
+                    },
 
                 }).then(async (response) => {
                     addToast( "Track created successfully", "success");
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Track creation failed", "error");
+                    setUploadProgress(0);
                 });
             
             } else {
@@ -575,6 +584,10 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
                         {saving ? "Saving..." : <><Save size={16} /> {!trackId || trackId == "new" ? "Create Track" : "Update Track"}</>}
                     </button>
                 </div>
+                <ProgressSpinner
+                    value={uploadProgress}
+                    text={uploadProgress < 100 ? "Uploading…" : "Finalizing"}
+                />
             </div>
         </div>
     );
