@@ -29,6 +29,11 @@ def average_vector(vectors: List[List[float]]) -> List[float]:
     """
     if not vectors:
         return []
+    
+    # remove None vectors
+    vectors = [vec for vec in vectors if vec is not None and len(vec) > 0]
+    if not vectors:
+        return []
 
     dim: int = len(vectors[0])
     total: List[float] = [0.0] * dim

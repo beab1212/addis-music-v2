@@ -19,10 +19,10 @@ async def process_for_you_job(job):
     
     try:
         # 1. Get last listened tracks
-        listened = get_listening_history(user_id, 1 if is_recent else 5)
+        listened = get_listening_history(user_id, 2 if is_recent else 5)
 
         # 2. Get liked tracks
-        liked = [] if is_recent else get_liked_songs(user_id, 15)
+        liked = get_liked_songs(user_id, 1 if is_recent else 15)
 
         # 3. Get user preferences
         preferences = get_user_preference(user_id)
