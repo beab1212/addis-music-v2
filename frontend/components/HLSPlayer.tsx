@@ -24,6 +24,7 @@ export const HLSPlayer = memo(() => {
     advertisementData,
     isAdvertisementPlaying,
     setIsAdvertisementPlaying,
+    setAudioRef,
   } = usePlayerStore();
 
   // Track how much main content has been played (in seconds)
@@ -245,6 +246,13 @@ export const HLSPlayer = memo(() => {
       audio.pause();
     }
   }, [isPlaying, isAdvertisementPlaying]);
+
+  // set audioRef in store
+  useEffect(() => {
+    if (audioRef.current && !isAdvertisementPlaying) {
+      setAudioRef(audioRef.current);
+    }
+  }, [audioRef.current, setAudioRef]);
 
   return (
     <audio
