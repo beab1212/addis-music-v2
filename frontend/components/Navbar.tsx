@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, User, Crown } from 'lucide-react';
+import { Search, User, Crown, ShieldUser } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
@@ -31,6 +31,17 @@ export const Navbar = () => {
             >
               <Search size={20} />
             </motion.button>
+
+            {user?.role === 'admin' && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate.push('/admin')}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                <ShieldUser size={24} />
+              </motion.button>
+            )}
 
             {isAuthenticated ? (
               <>
