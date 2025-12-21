@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { X, Save, Tag, Search } from "lucide-react";
 import SearchSelect from "../SearchSelect";
 import { useToastStore } from '@/store/toastStore';
-import { a } from "framer-motion/client";
+import ProgressSpinner from "@/components/ProgressSpinner";
 
 
 type Props = {
@@ -18,6 +18,7 @@ type Props = {
 export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
     const { addToast } = useToastStore();
     const [saving, setSaving] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // form fields
     const [title, setTitle] = useState("");
@@ -153,10 +154,19 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
                 // creating new album
                 if (albumArt) payload.append("cover", albumArt);
 
-                api.post("/albums", payload, { timeout: 10000 }).then(async (response) => {
+                api.post("/albums", payload, {
+                    timeout: 10000,
+                    onUploadProgress: (progressEvent: any) => {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total
+                        );
+                        setUploadProgress(percentCompleted);
+                    }
+                }).then(async (response) => {
                     addToast( "Album created successfully", "success");
                 }).catch((err) => {
                     addToast(err?.response?.data?.message || "Album creation failed", "error");
+                    setUploadProgress(0);
                 });
 
             } else {
@@ -399,6 +409,10 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
                         {saving ? "Saving..." : <><Save size={16} /> {!albumId || albumId == "new" ? "Create Album" : "Update Album"}</>}
                     </button>
                 </div>
+                <ProgressSpinner
+                    value={uploadProgress}
+                    text={uploadProgress < 100 ? "Uploading…" : "Finalizing"}
+                />
             </div>
         </div>
     );
