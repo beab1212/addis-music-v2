@@ -16,7 +16,7 @@ export const AdminLayout = ({ children }: MainLayoutProps) => {
   useTheme();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300">     
+    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors duration-300 overflow-x-scroll modern-scrollbar-minimal">     
       <Navbar />
       <div className='flex'>
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
