@@ -38,24 +38,24 @@ const PlanSelectionModal: React.FC<PlanSelectionModalProps> = ({
   const periods = [
     {
       name: 'Monthly',
-      price: '$100',
-      perMonth: '/month',
+      price: '50 ETB',
+      perMonth: '50 ETB/month',
       popular: false,
       savings: null,
     },
     {
       name: 'Quarterly',
-      price: '$250',
-      perMonth: '$84/month',
+      price: '127 ETB',
+      perMonth: '42.33 ETB/month',
       popular: false,
-      savings: 'Save 14%',
+      savings: 'Save 15%',
     },
     {
       name: 'Annual',
-      price: '$800',
-      perMonth: '$66/month',
+      price: '450 ETB',
+      perMonth: '37.5 ETB/month',
       popular: true,
-      savings: 'Best Value – Save 35%',
+      savings: 'Best Value – Save 25%',
     },
   ];
 

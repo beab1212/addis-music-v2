@@ -29,15 +29,15 @@ const getEndDateAndPrice = (startDate: Date, planType: string, plan: string): { 
   switch (planType) {
     case subscriptionPlanTypes.MONTHLY:
       endDate.setMonth(endDate.getMonth() + 1);
-      price = 100; // Monthly price
+      price = 50; // Monthly price
       break;
     case subscriptionPlanTypes.QUARTERLY:
       endDate.setMonth(endDate.getMonth() + 3);
-      price = 250; // Quarterly price
+      price = 127; // Quarterly price
       break;
     case subscriptionPlanTypes.ANNUAL:
       endDate.setFullYear(endDate.getFullYear() + 1);
-      price = 800; // Annual price
+      price = 450; // Annual price
       break;
     default:
       throw new Error('Invalid plan type');

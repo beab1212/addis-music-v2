@@ -20,7 +20,7 @@ export default function Premium() {
   const plans = [
     {
       name: 'Free',
-      price: '$0',
+      price: '0 ETB',
       period: 'forever',
       features: [
         'Ad-supported listening',
@@ -32,7 +32,7 @@ export default function Premium() {
     },
     {
       name: 'Premium',
-      price: '$100',
+      price: '50 ETB',
       period: 'month',
       features: [
         'Ad-free listening',
@@ -47,7 +47,7 @@ export default function Premium() {
     },
     {
       name: 'Family',
-      price: '$150',
+      price: '79.99 ETB',
       period: 'month',
       features: [
         'All Premium features',

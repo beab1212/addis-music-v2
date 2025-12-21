@@ -230,9 +230,9 @@ export default function Home() {
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {[
-            { name: "Free", price: "$0", features: ["Unlimited streaming", "Basic playlists", "Light/Dark mode"] },
-            { name: "Pro", price: "$6/mo", features: ["Hi‑fi audio", "Advanced search", "Unlimited playlists"] },
-            { name: "Team", price: "$12/mo", features: ["Collaborative playlists", "Admin tools", "Priority support"] },
+            { name: "Free", price: "0 ETB", features: ["Unlimited streaming", "Basic playlists", "Light/Dark mode"] },
+            { name: "Pro", price: "50 ETB/mo", features: ["Hi‑fi audio", "Advanced search", "Unlimited playlists"] },
+            { name: "Family", price: "79.99 ETB/mo", features: ["Collaborative playlists", "Admin tools", "Priority support"] },
           ].map((p, i) => (
             <div key={i} className="rounded-2xl border border-black/10 dark:border-white/10 p-6">
               <h3 className="text-lg font-semibold">{p.name}</h3>
