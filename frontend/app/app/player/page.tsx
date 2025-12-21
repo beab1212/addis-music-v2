@@ -76,13 +76,18 @@ export default function Player() {
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
             {/* Conditionally apply spinner class based on isPlaying */}
-            <img
-              src={getLowResCloudinaryUrl(currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 900, height: 900 })}
-              alt={currentSong.title}
-              className={`w-full aspect-square rounded-full shadow-2xl object-cover mb-8 slow-spin  ${!isPlaying && "paused"
-                } `}
-            />
-            <div className="flex items-start justify-between mb-6">
+            <div className='relative mb-8'>
+              <img
+                src={getLowResCloudinaryUrl(currentSong.coverUrl || 'https://res.cloudinary.com/dxcbu8zsz/image/upload/v1764662955/Music-album-cover-artwork-for-sale-2_z0nxok.jpg', { width: 900, height: 900 })}
+                alt={currentSong.title}
+                className={`w-full aspect-square rounded-full shadow-2xl object-cover slow-spin  ${!isPlaying && "paused"
+                  } `}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img src="/addisMusic.png" alt="logo" className="w-24 h-24 bg-black/90 rounded-full p-4 border-2 border-white object-contain shadow-lg shadow-black" />
+              </div>
+            </div>
+            <div className="flex items-start justify-between mb-6"> 
               <div className="flex-1">
                 <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
                   {currentSong.title}
@@ -91,7 +96,7 @@ export default function Player() {
               </div>
               <div className="flex gap-2">
                 <button className="p-3 rounded-full bg-white/10 dark:bg-black/20 backdrop-blur-sm text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-black/30 transition-colors"
-                onClick={toggleIsLiked}
+                  onClick={toggleIsLiked}
                 >
                   <Heart size={24} className={isLiked ? 'text-red-500' : ''} />
                 </button>
@@ -122,7 +127,7 @@ export default function Player() {
                       setCurrentTime(newTime);
                     }}
                   />
-                </div> 
+                </div>
                 <span>{formatDuration(currentSong.durationSec)}</span>
               </div>
             </div>
@@ -202,7 +207,7 @@ export default function Player() {
                         className="w-12 h-12 rounded object-cover"
                       />
                       <div className="flex-1 min-w-0">
-                        
+
                         <p className={`font-medium truncate ${currentSong?.id === song.id ? 'text-orange-500' : 'text-gray-900 dark:text-white'}`}>
                           {song.title}
                         </p>
