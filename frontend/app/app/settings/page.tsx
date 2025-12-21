@@ -5,6 +5,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Settings as SettingsIcon, Bell, Globe, Volume2, Shield } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import SixBandEqualizer from '@/components/SixBandEqualizer';
 
 export default function Settings() {
   const { addToast } = useToastStore();
@@ -189,6 +190,11 @@ export default function Settings() {
               </form>
 
             </div>
+          </div>
+
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6x shadow-lg overflow-hidden">
+            {/* <SixBandEqualizer /> */}
           </div>
 
 

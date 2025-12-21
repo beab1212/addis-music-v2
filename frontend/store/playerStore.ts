@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Song } from '@/types';
 import { api } from '@/lib/api';
-import { s } from 'framer-motion/client';
+
 
 interface PlayerState {
   currentSong: Song | null;
@@ -15,6 +15,7 @@ interface PlayerState {
   muted: boolean;
   isLiked: boolean;
   advertisementData: any | null;
+  audioRef: HTMLAudioElement | null;
   isAdvertisementPlaying: boolean;
 
   setCurrentSong: (song: Song) => void;
@@ -34,6 +35,7 @@ interface PlayerState {
   clearQueue: () => void;
   setAdvertisementData: (data: any) => void;
   setIsAdvertisementPlaying: (isPlaying: boolean) => void;
+  setAudioRef: (audioRef: HTMLAudioElement) => void;
 }
 
 const fetchIsLiked = async (trackId: string): Promise<boolean> => {
@@ -80,6 +82,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   isLiked: false,
   advertisementData: null,
   isAdvertisementPlaying: false,
+  audioRef: null,
 
   setIsAdvertisementPlaying: (isPlaying) => set({ isAdvertisementPlaying: isPlaying }),
   setAdvertisementData: (data) => set({ advertisementData: data }),
@@ -108,6 +111,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   toggleMute: () => set((state) => ({ muted: !state.muted })),
+
+  setAudioRef: (audioRef) => set({ audioRef }),
 
   toggleIsLiked: () => {
     if (get().isAdvertisementPlaying) return;
