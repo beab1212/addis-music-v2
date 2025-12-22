@@ -77,7 +77,7 @@ export const bothUpload = multer({
   },
 
   fileFilter: (req, file, cb) => {
-    const allowedAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/m4a', 'audio/x-m4a'];
+    const allowedAudioTypes = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'];
     const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
     const isImage = allowedImageTypes.includes(file.mimetype);
