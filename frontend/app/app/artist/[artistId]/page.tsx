@@ -95,7 +95,7 @@ export default function ArtistDetail() {
               {(artist.verified || artist.isVerified) && <span className="text-white font-semibold">Verified Artist</span>}
             </div>
             <h1 className="text-6xl font-bold text-white mb-4">{capitalizeFirst(artist.name)}</h1>
-            <p className="text-xl text-white/90">{formatNumber(artist.followers || 0)} followers</p>
+            <p className="text-xl text-white/90">{formatNumber(artist.followersCount || 0)} followers</p>
           </div>
         </div>
 
