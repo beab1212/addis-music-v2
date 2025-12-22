@@ -9,42 +9,6 @@ This module provides:
 from typing import List, Optional
 
 
-def average_vector(vectors: List[List[float]]) -> List[float]:
-    """
-    Compute the element-wise average of a list of numeric vectors.
-
-    Args:
-        vectors (List[List[float]]): 
-            A list of vectors (lists of floats). All vectors must have the same length.
-
-    Returns:
-        List[float]: 
-            A vector where each element is the average of the corresponding elements
-            of the input vectors.  
-            If `vectors` is empty, an empty list is returned.
-
-    Example:
-        >>> average_vector([[1, 2], [3, 4], [5, 6]])
-        [3.0, 4.0]
-    """
-    if not vectors:
-        return []
-    
-    # remove None vectors
-    vectors = [vec for vec in vectors if vec is not None and len(vec) > 0]
-    if not vectors:
-        return []
-
-    dim: int = len(vectors[0])
-    total: List[float] = [0.0] * dim
-
-    for vec in vectors:
-        for i in range(dim):
-            total[i] += vec[i]
-
-    return [val / len(vectors) for val in total]
-
-
 def weighted_blend(
     a: Optional[List[float]] = None,
     b: Optional[List[float]] = None,
@@ -93,3 +57,94 @@ def weighted_blend(
         result.append(value)
 
     return result
+
+def weighted_average_vector(vectors: List[List[float]], weights: Optional[List[float]] = None) -> List[float]:
+    """
+    Compute the element-wise average of a list of numeric vectors, optionally weighted.
+
+    Args:
+        vectors (List[List[float]]): 
+            A list of vectors (lists of floats). All vectors must have the same length.
+        weights (Optional[List[float]]): 
+            Optional list of weights for each vector. If None, equal weights are used.
+
+    Returns:
+        List[float]: 
+            A vector where each element is the (weighted) average of the corresponding elements
+            of the input vectors.  
+            If `vectors` is empty, an empty list is returned.
+
+    Example:
+        >>> average_vector([[1, 2], [3, 4], [5, 6]])
+        [3.0, 4.0]
+        >>> average_vector([[1, 2], [3, 4]], weights=[0.3, 0.7])
+        [2.4, 3.4]
+    """
+    if not vectors:
+        return []
+    
+    # Remove None or empty vectors
+    vectors = [vec for vec in vectors if vec is not None and len(vec) > 0]
+    if not vectors:
+        return []
+
+    # Check consistent dimensions
+    dims = {len(v) for v in vectors}
+    if len(dims) != 1:
+        raise ValueError("All vectors must have the same length")
+    dim: int = list(dims)[0]
+    if dim == 0:
+        return []
+
+    if weights is None:
+        weights = [1.0] * len(vectors)
+    if len(weights) != len(vectors):
+        raise ValueError("Weights must match the number of vectors")
+
+    total: List[float] = [0.0] * dim
+    weight_sum = sum(weights)
+
+    if weight_sum == 0:
+        return [0.0] * dim  # Avoid division by zero
+
+    for vec, w in zip(vectors, weights):
+        for i in range(dim):
+            total[i] += w * vec[i]
+
+    return [val / weight_sum for val in total]
+
+
+def average_vector(vectors: List[List[float]]) -> List[float]:
+    """
+    Compute the element-wise average of a list of numeric vectors.
+
+    Args:
+        vectors (List[List[float]]): 
+            A list of vectors (lists of floats). All vectors must have the same length.
+
+    Returns:
+        List[float]: 
+            A vector where each element is the average of the corresponding elements
+            of the input vectors.  
+            If `vectors` is empty, an empty list is returned.
+
+    Example:
+        >>> average_vector([[1, 2], [3, 4], [5, 6]])
+        [3.0, 4.0]
+    """
+    if not vectors:
+        return []
+    
+    # remove None vectors
+    vectors = [vec for vec in vectors if vec is not None and len(vec) > 0]
+    if not vectors:
+        return []
+
+    dim: int = len(vectors[0])
+    total: List[float] = [0.0] * dim
+
+    for vec in vectors:
+        for i in range(dim):
+            total[i] += vec[i]
+
+    return [val / len(vectors) for val in total]
