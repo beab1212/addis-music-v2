@@ -4,6 +4,7 @@ import { Play, MoreVertical } from 'lucide-react';
 import { formatNumber, getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 import { usePlayerStore } from '@/store/playerStore';
 import { memo } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface SongCardProps {
   song: any;
@@ -13,6 +14,7 @@ export const SongCard = memo(({ song }: SongCardProps) => {
   const setCurrentSong = usePlayerStore((state) => state.setCurrentSong);
   const setQueue = usePlayerStore((state) => state.setQueue);
   const currentSong = usePlayerStore((state) => state.currentSong);
+  const navigate = useRouter();
 
   const handlePlay = () => {
     setCurrentSong(song);
@@ -44,7 +46,12 @@ export const SongCard = memo(({ song }: SongCardProps) => {
       </div>
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 dark:text-white truncate">{capitalizeFirst(song.title)}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{capitalizeFirst(song?.artist?.name)}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate.push(`/app/artist/${song?.artist?.id}`);
+        }}
+        >{capitalizeFirst(song?.artist?.name)}</p>
         <div className="flex items-center justify-between mt-2">
           {/* <span className="text-xs text-gray-500 dark:text-gray-500">{formatNumber(song.plays)} plays</span> */}
           <span className="text-xs text-gray-500 dark:text-gray-500">{song.playCount} plays</span>
