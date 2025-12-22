@@ -46,7 +46,7 @@ export const SongCard = memo(({ song }: SongCardProps) => {
       </div>
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 dark:text-white truncate">{capitalizeFirst(song.title)}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 truncate"
+        <p className="text-sm text-gray-600 dark:text-gray-400 truncate z-3"
         onClick={(e) => {
           e.stopPropagation();
           navigate.push(`/app/artist/${song?.artist?.id}`);
