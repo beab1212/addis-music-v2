@@ -57,6 +57,10 @@ export const trackController = {
         if ((req.files as any).cover) {
             coverPath = (req.files as any).cover[0].path;
             coverPath = await uploadImageToCloudinary(coverPath as string);
+        } else {
+            if (existingAlbum?.coverUrl) {
+                coverPath = existingAlbum?.coverUrl
+            }
         }
 
         // Create the track record
