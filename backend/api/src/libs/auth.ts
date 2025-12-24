@@ -96,7 +96,9 @@ export const auth = betterAuth({
                 session
             };
         }),
-        admin() 
+        admin({
+            adminUserIds: ["DVxds0ZPPghc2MqIaoAw1KtgRFRw48mB"]
+        }) 
     ]
 });
 
