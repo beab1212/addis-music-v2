@@ -27,6 +27,7 @@ import { subscriptionController } from "./controllers/subscriptionController";
 import subscriptionRoute from "./routes/subscriptionRoutes";
 import genreTrackRoute from "./routes/genreTracksRouter";
 import adminUserRoute from "./routes/adminUserRouter";
+import  adminAnalyticsRouter  from "./routes/adminAnalyticsRouter";
 
 
 const app = express();
@@ -36,7 +37,6 @@ app.use(cors(config.corsOptions));
 
 app.all("/api/auth/{*any}", toNodeHandler(auth));
 app.use("/api/auth", authRoute);
-app.use("/api/admin", adminUserRoute);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -46,6 +46,9 @@ app.use("/stream", streamRoute);
 
 const api = Router();
 app.use("/api", api);
+
+app.use("/api/admin", adminUserRoute);
+api.use("/admin/analytics", adminAnalyticsRouter);
 
 
 api.use("/system", systemRoute);
