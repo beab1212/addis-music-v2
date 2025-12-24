@@ -13,7 +13,7 @@ import { searchTracks } from '../prisma/vectorQueries';
 
 export const trackController = {
     uploadTrack: async (req: Request, res: Response) => {
-        const { title, artistId, albumId, genreId, tags, releaseDate, description, credit } = uploadTrackSchema.parse(req.body);
+        let { title, artistId, albumId, genreId, tags, releaseDate, description, credit } = uploadTrackSchema.parse(req.body);
 
         // Perform a batch query for artist, album, and genre at once
         const [existingArtist, existingAlbum, existingGenre] = await Promise.all([
@@ -58,9 +58,20 @@ export const trackController = {
             coverPath = (req.files as any).cover[0].path;
             coverPath = await uploadImageToCloudinary(coverPath as string);
         } else {
+            // use album cover if exists
             if (existingAlbum?.coverUrl) {
                 coverPath = existingAlbum?.coverUrl
             }
+        }
+
+        if (!existingAlbum?.releaseDate && !releaseDate) {
+            // both album release date and track release date are not set
+            throw new CustomErrors.BadRequestError('Either album or track release date must be set');
+        }
+
+        if (!releaseDate && existingAlbum?.releaseDate) {
+            // set track release date to album release date
+            releaseDate = new Date(existingAlbum.releaseDate) || new Date();
         }
 
         // Create the track record
