@@ -2,8 +2,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Search, Ban, CheckCircle } from 'lucide-react';
-import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import { authClient } from '@/lib/auth-client';
+import { getLowResCloudinaryUrl } from '@/utils/helpers';
+import UserModal from '@/components/admin/modal/UserModal';
+
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<any[]>([]);
@@ -13,19 +16,45 @@ export default function UsersManagement() {
   const { addToast } = useToastStore();
   const limit = 20;
 
+
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
+
   const fetchUsers = async () => {
     try {
-      const res = await api.get(`/users?page=${page}&limit=${limit}&q=${search}`);
-      setUsers(res.data.data || []);
-      setTotal(res.data.pagination?.total || 0);
+      const { data: users, error } = await authClient.admin.listUsers({
+        query: {
+          searchValue: search,
+          limit: limit,
+          offset: (page - 1) * limit,
+          sortBy: "name",
+        },
+      });
+      if (error) {
+        addToast('Failed to fetch users', 'error');
+      } else {
+        console.log("Fetched users:", users);
+        setUsers(users?.users || []);
+        if (search === '') {
+          setTotal(users?.total || 0);
+        } else {
+          setTotal(users?.users.length || 0);
+        }
+      }
     } catch (error) {
       addToast('Failed to fetch users', 'error');
     }
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, [page]);
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 500); // Debounce search input by 500ms
+
+    return () => clearTimeout(timer);
+  }, [page, search])
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -62,7 +91,12 @@ export default function UsersManagement() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                onClick={() => {
+                  setSelectedUser(user);
+                  setOpenModal(true);
+                }}
+                >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <img src={user.image || '/icons8-google-48.png'} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
@@ -98,14 +132,24 @@ export default function UsersManagement() {
 
         <div className="flex items-center justify-between mt-6">
           <p className="text-gray-600 dark:text-gray-400">
-            Showing {page} of {total}
+            Showing {page} of {Math.ceil(total / limit)} pages
           </p>
           <div className="flex gap-2">
             <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Previous</button>
-            <button disabled={page == Math.min(page * limit, total)} onClick={() => setPage(page + 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Next</button>
+            <button disabled={page === Math.ceil(total / limit)} onClick={() => setPage(page + 1)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-lg disabled:opacity-50">Next</button>
           </div>
         </div>
       </motion.div>
+      {/* Always render UserModal */}
+      <UserModal
+        open={openModal}
+        user={selectedUser}
+        onClose={() => setOpenModal(false)}
+        onSave={() => {
+          setOpenModal(false)
+          fetchUsers();
+        }}
+      />
     </div>
   );
 }
