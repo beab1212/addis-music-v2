@@ -152,6 +152,7 @@ export const genreTracksController = {
             where: {
                 id: { in: trackIds },
             },
+            include: { artist: true },
         });
 
         // Preserve order + attach playCount
