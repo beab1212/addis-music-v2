@@ -22,6 +22,7 @@ export const genreTracksController = {
 
         const tracks = await prisma.track.findMany({
             where: { genreId: genre.id },
+            include: { artist: true },
             skip: total,
             take: limit,
             orderBy: { createdAt: 'desc' },
