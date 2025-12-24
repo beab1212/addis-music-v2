@@ -29,3 +29,10 @@ export const searchSchema = z.object({
         .optional()
         .default(10),
 });
+
+export const userIdSchema = z
+  .string()
+  .min(1, "User ID is required")
+  .max(64, "User ID is too long")
+  .regex(/^[a-zA-Z0-9_-]+$/, "User ID contains invalid characters");
+
