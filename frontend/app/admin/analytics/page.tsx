@@ -1,15 +1,55 @@
 'use client';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { TrendingUp, Users, Music, Album, DollarSign } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { api } from '@/lib/api';
 
 export default function Analytics() {
-  const stats = [
-    { label: 'Total Users', value: '125,430', change: '+12.5%', icon: Users, color: 'from-blue-500 to-cyan-500' },
-    { label: 'Total Tracks', value: '52,400', change: '+5.2%', icon: Music, color: 'from-orange-500 to-pink-500' },
-    { label: 'Total Albums', value: '8,200', change: '+8.1%', icon: Album, color: 'from-purple-500 to-pink-500' },
-    { label: 'Revenue', value: '$124.5K', change: '+18.3%', icon: DollarSign, color: 'from-green-500 to-teal-500' },
-  ];
+  const [userGrowth, setUserGrowth] = useState<{ totalUsers: number; averageGrowth: number } | null>(null);
+  const [trackGrowth, setTrackGrowth] = useState<{ totalTracks: number; averageGrowth: number } | null>(null);
+  const [albumGrowth, setAlbumGrowth] = useState<{ totalAlbums: number; averageGrowth: number } | null>(null);
+  const [totalPlaysGrowth, setTotalPlaysGrowth] = useState<{ totalPlays: number; averageGrowth: number } | null>(null);
+  const [revenueGrowth, setRevenueGrowth] = useState<{ totalRevenue: number; averageGrowth: number } | null>(null);
+  const [genreDistribution, setGenreDistribution] = useState<any[]>([]);
+
+  const fetchAllAnalytics = async () => {
+    try {
+      const [
+        usersRes,
+        tracksRes,
+        albumsRes,
+        playsRes,
+        revenueRes,
+        genreRes,
+      ] = await Promise.all([
+        api.get('/admin/analytics/total-users-with-average-growth'),
+        api.get('/admin/analytics/total-tracks-with-average-growth'),
+        api.get('/admin/analytics/total-albums-with-average-growth'),
+        api.get('/admin/analytics/total-plays-with-average-growth'),
+        api.get('/admin/analytics/total-revenue-with-average-growth'),
+        api.get('/admin/analytics/genre-distribution'),
+      ]);
+
+      setUserGrowth(usersRes.data.data);
+      setTrackGrowth(tracksRes.data.data);
+      setAlbumGrowth(albumsRes.data.data);
+      setTotalPlaysGrowth(playsRes.data.data);
+      setRevenueGrowth(revenueRes.data.data);
+      setGenreDistribution(genreRes.data.data);
+    } catch (error) {
+      console.error('Failed to fetch analytics data', error);
+    }
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAllAnalytics();
+    }, 10000)
+
+    return () => clearTimeout(interval);
+  }, []);
+
 
   const monthlyData = [
     { month: 'Jan', users: 4000, streams: 24000, revenue: 12000 },
@@ -18,13 +58,6 @@ export default function Analytics() {
     { month: 'Apr', users: 2780, streams: 39080, revenue: 22000 },
     { month: 'May', users: 1890, streams: 48000, revenue: 25000 },
     { month: 'Jun', users: 2390, streams: 38000, revenue: 28000 },
-  ];
-
-  const genreData = [
-    { name: 'Pop', value: 400 },
-    { name: 'Rock', value: 300 },
-    { name: 'Electronic', value: 300 },
-    { name: 'Hip-hop', value: 200 },
   ];
 
   const COLORS = ['#f97316', '#ec4899', '#8b5cf6', '#06b6d4'];
@@ -38,18 +71,53 @@ export default function Analytics() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat) => (
-            <motion.div key={stat.label} whileHover={{ scale: 1.02, y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-4`}>
-                <stat.icon size={24} className="text-white" />
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">{stat.label}</p>
-              <div className="flex items-end justify-between">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                <span className="text-green-500 text-sm font-semibold">{stat.change}</span>
-              </div>
-            </motion.div>
-          ))}
+          {/* total user */}
+          <motion.div whileHover={{ scale: 1.02, y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4`}>
+              <Users size={24} className="text-white" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Total Users</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{userGrowth?.totalUsers || 0}</p>
+              <span className="text-green-500 text-sm font-semibold">+{userGrowth?.averageGrowth || 0}%</span>
+            </div>
+          </motion.div>
+
+          {/* total track */}
+          <motion.div whileHover={{ scale: 1.02, y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center mb-4`}>
+              <Music size={24} className="text-white" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Total Tracks</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{trackGrowth?.totalTracks || 0}</p>
+              <span className="text-green-500 text-sm font-semibold">+{trackGrowth?.averageGrowth || 0}%</span>
+            </div>
+          </motion.div>
+
+          {/* total track */}
+          <motion.div whileHover={{ scale: 1.02, y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-4`}>
+              <Album size={24} className="text-white" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Total Albums</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{albumGrowth?.totalAlbums || 0}</p>
+              <span className="text-green-500 text-sm font-semibold">+{albumGrowth?.averageGrowth || 0}%</span>
+            </div>
+          </motion.div>
+
+          {/* total revenue */}
+          <motion.div whileHover={{ scale: 1.02, y: -5 }} className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center mb-4`}>
+              <DollarSign size={24} className="text-white" />
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Revenue</p>
+            <div className="flex items-end justify-between">
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{revenueGrowth?.totalRevenue || 0}</p>
+              <span className="text-green-500 text-sm font-semibold">ETB {revenueGrowth?.averageGrowth || 0}</span>
+            </div>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -71,8 +139,8 @@ export default function Analytics() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Genre Distribution</h2>
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
-                <Pie data={genreData} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {genreData.map((entry, index) => (
+                <Pie data={genreDistribution} cx="50%" cy="50%" labelLine={false} label={({ genre, percentage }: any) => `${genre} ${percentage.toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="percentage">
+                  {genreDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
