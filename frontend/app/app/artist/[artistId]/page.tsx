@@ -22,8 +22,10 @@ export default function ArtistDetail() {
     try {
       if (isFollowing) {
         await api.delete(`/artist-follows/${id}/unfollow`);
+        artist.followersCount = (artist.followersCount || 0) - 1;
       } else {
         await api.post(`/artist-follows/${id}/follow`);
+        artist.followersCount = (artist.followersCount || 0) + 1;
       }
       setIsFollowing(!isFollowing);
     } catch (error) {
