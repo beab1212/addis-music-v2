@@ -10,11 +10,12 @@ export const uploadTrackSchema = z.object({
     ).max(10, "Maximum of 10 tags allowed").optional(),
     releaseDate: z
         .string()
-        .min(1, "Release date is required") // ensures field is not empty
-        .refine((val) => !isNaN(Date.parse(val)), {
-          message: "Release date must be a valid date",
+        .optional()
+        .refine((val) => !val || !isNaN(Date.parse(val)), {
+            message: "Release date must be a valid date",
         })
-        .transform((val) => new Date(val)).optional().nullable(),
+        .transform((val) => (val ? new Date(val) : undefined))
+        .nullable(),
     description: z.string().max(500, "Description must be at most 500 characters").optional().nullable(),
     credit: z.string().max(300, "Credit must be at most 300 characters").optional().nullable(),
 });
