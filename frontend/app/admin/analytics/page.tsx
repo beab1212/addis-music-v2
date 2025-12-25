@@ -43,11 +43,15 @@ export default function Analytics() {
   }
 
   useEffect(() => {
+    fetchAllAnalytics();
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       fetchAllAnalytics();
-    }, 10000)
+    }, 60 * 1000); // Refresh every 1 minute
 
-    return () => clearTimeout(interval);
+    return () => clearInterval(interval);
   }, []);
 
 
