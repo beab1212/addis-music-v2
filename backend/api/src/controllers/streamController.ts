@@ -174,6 +174,7 @@ export const streamController = {
     },
 
     addStream: async (req: Request, res: Response) => {
+        const userId = req.user?.id;
         const audioId = uuidSchema.parse(req.params?.audioId || "");
 
         // check if the ad exists
@@ -199,6 +200,14 @@ export const streamController = {
 
         // build m3u8 content
         const m3u8Content = await buildM3U8Content(adAudioSegments);
+
+        // create add impression
+        await prisma.adImpression.create({
+            data: {
+                adId: audioId,
+                userId
+            }
+        })
 
         // Return the playlist content to the client
         res.setHeader('Content-Type', 'application/vnd.apple.mpegurl')
