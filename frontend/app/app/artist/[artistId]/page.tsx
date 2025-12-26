@@ -7,11 +7,13 @@ import { SongCard } from '@/components/SongCard';
 import { AlbumCard } from '@/components/AlbumCard';
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { usePlayerStore } from '@/store/playerStore';
 import { getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
 
 export default function ArtistDetail() {
   const params = useParams();
   const id = params?.artistId as string;
+  const { setQueue, setCurrentSong } = usePlayerStore();
   const [isFollowing, setIsFollowing] = useState(false);
   const [artist, setArtist] = useState<any>(null);
   const [artistAlbums, setArtistAlbums] = useState<any[]>([]);
@@ -60,6 +62,13 @@ export default function ArtistDetail() {
     fetchData();
   }, [id]);
 
+  const handlePlay = () => {
+    if (artistSongs.length > 0) {
+      setQueue(artistSongs);
+      setCurrentSong(artistSongs[0]);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -105,6 +114,7 @@ export default function ArtistDetail() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={handlePlay}
             className="bg-orange-500 text-white rounded-full p-4 shadow-xl hover:bg-orange-600 transition-colors"
           >
             <Play size={24} fill="white" />
@@ -113,11 +123,10 @@ export default function ArtistDetail() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleFollow}
-            className={`px-8 py-3 rounded-full font-semibold transition-colors ${
-              isFollowing
+            className={`px-8 py-3 rounded-full font-semibold transition-colors ${isFollowing
                 ? 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white'
                 : 'border-2 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white hover:border-gray-400 dark:hover:border-gray-500'
-            }`}
+              }`}
           >
             {isFollowing ? 'Following' : 'Follow'}
           </motion.button>
@@ -149,7 +158,7 @@ export default function ArtistDetail() {
         <div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Albums</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            { artistAlbums.map((album) => (
+            {artistAlbums.map((album) => (
               <AlbumCard key={album.id} album={album} />
             ))}
           </div>
