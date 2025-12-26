@@ -49,5 +49,9 @@ router.put(
     advertisementController.updateAdvertisement
 );
 
+router.post("/click/:id",
+    requireAuth,
+    advertisementController.recordAddImpression
+);
 
 export default router;

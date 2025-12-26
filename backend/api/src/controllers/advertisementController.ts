@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import  { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { uploadImageToCloudinary, deleteImageFromCloudinary } from '../libs/cloudinary';
@@ -31,7 +31,7 @@ export const advertisementController = {
         }
 
         const audioId = uuidv4();
-        
+
         audioPath = (req.files as any).audio[0].path;
 
         // upload to s3 bucket
@@ -120,7 +120,7 @@ export const advertisementController = {
         }
 
         const audioId = uuidv4();
-        
+
         audioPath = (req.files as any).audio[0].path;
 
         // upload to s3 bucket
@@ -145,7 +145,7 @@ export const advertisementController = {
             data: { adTrack: updatedAdTrack },
         });
     },
-    
+
     updateAddCover: async (req: Request, res: Response) => {
         const { id } = req.params;
 
@@ -301,4 +301,35 @@ export const advertisementController = {
         });
     },
 
+    recordAddImpression: async (req: Request, res: Response) => {
+        const userId = req.user?.id as string;
+        const adId = uuidSchema.parse(req.params.id);
+
+        // check if ad exists
+        const ad = await prisma.advertisement.findUnique({ where: { id: adId } });
+
+        if (!ad) {
+            throw new CustomErrors.NotFoundError("Advertisement not found");
+        }
+
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+
+        const latestImpression = await prisma.adImpression.findFirst({
+            where: { userId: userId, adId: adId },
+            orderBy: { shownAt: 'desc' },
+        });
+
+        if (latestImpression && latestImpression.shownAt >= twoMinutesAgo) {
+            await prisma.adImpression.update({
+                where: { id: latestImpression.id },
+                data: { clicked: true },
+            });
+        } else {
+            throw new CustomErrors.BadRequestError("No recent impression found to record a click.");
+        }
+        res.status(200).json({
+            success: true,
+            message: "Ad impression recorded successfully",
+        });
+    }
 }

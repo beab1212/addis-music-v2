@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '@/store/playerStore';
 import { formatNumber, getLowResCloudinaryUrl, capitalizeFirst } from '@/utils/helpers';
+import { api } from '@/lib/api';
 
 
 function AddOverlay() {
@@ -12,6 +13,16 @@ function AddOverlay() {
     }
 
     const ad = advertisementData.advertisement;
+
+    const recordClick = async () => {
+        try {
+            if (ad.id) {
+                await api.post(`/ads/click/${ad.id}`);
+            }
+        } catch (error) {
+            console.error("Failed to record ad click:", error);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -71,6 +82,7 @@ function AddOverlay() {
                     {/* CTA */}
                     <a
                         href={ad?.targetUrl}
+                        onClick={recordClick}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="
