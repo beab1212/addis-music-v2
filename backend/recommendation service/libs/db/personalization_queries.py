@@ -102,3 +102,32 @@ def get_user_preference(user_id: str) -> any:
         """, (user_id,))
 
         return cur.fetchone() or None
+
+
+def get_all_tracks(limit: int) -> any:
+    """
+    Fetch a list of all tracks up to the specified limit.
+
+    Args:
+        limit (int):
+            Maximum number of track records to retrieve.
+
+    Returns:
+        any:
+            A list of dictionaries representing track records, or `None`
+            if no tracks are found.
+
+    Notes:
+        - Results are ordered by track ID.
+    """
+    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        cur.execute("""
+            SELECT t.*, g."name" AS genre_name
+            FROM "Track" t
+            JOIN "Genre" g ON g.id = t."genreId"
+            ORDER BY t.id
+            LIMIT %s;
+        """, (limit,))
+
+        return cur.fetchall() or None
+
