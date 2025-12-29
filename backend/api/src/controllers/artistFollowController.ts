@@ -98,6 +98,68 @@ export const artistFollowController = {
             },
         });
     },
+
+    getFollowedArtistsCount: async (req: Request, res: Response) => {
+        const userId = req.user?.id as string;
+
+        const totalFollows = await prisma.artistFollow.count({
+            where: { userId },
+        });
+
+        res.status(200).json({
+            success: true,
+            data: { totalFollows }
+        });
+    },
+
+    searchFollowedArtists: async (req: Request, res: Response) => {
+        const userId = req.user?.id as string;
+        const { q, page, limit } = searchSchema.parse(req.query);
+        const offset = (page - 1) * limit;
+
+        const [matchedFollows, totalMatches] = await Promise.all([
+            prisma.artistFollow.findMany({
+                where: {
+                    userId,
+                    artist: {
+                        name: {
+                            contains: q,
+                            mode: 'insensitive',
+                        },
+                    },
+                },
+                skip: offset,
+                take: limit,
+                include: {
+                    artist: true,
+                },
+            }),
+            prisma.artistFollow.count({
+                where: {
+                    userId,
+                    artist: {
+                        name: {
+                            contains: q,
+                            mode: 'insensitive',
+                        },
+                    },
+                },
+            }),
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                follows: matchedFollows,
+                pagination: {
+                    total: totalMatches,
+                    page,
+                    limit,
+                },
+            },
+        });
+    },
+
     getFollowStatus: async (req: Request, res: Response) => {
         const artistId = uuidSchema.parse(req.params.artistId);
         const userId = req.user?.id as string;
