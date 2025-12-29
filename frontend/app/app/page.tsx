@@ -41,7 +41,7 @@ export default function Home() {
           api.get('/personalization/new-albums'),
           api.get('/personalization/popular-playlists'),
           api.get('/personalization/featured-artists'),
-          api.get('/tracks'),
+          api.get('http://localhost:5000/test'),
         ]);
 
         setData({
