@@ -14,6 +14,7 @@ export const personalizationControl = {
         const { user_meta_vector, user_audio_vector } = await getCachedOrGenerateVectors(userId as string);
 
         const similarTracks = await getSimilarTracks(
+            userId as string,
             user_meta_vector,
             user_audio_vector,
             limit,
