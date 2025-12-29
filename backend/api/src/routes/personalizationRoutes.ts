@@ -11,5 +11,6 @@ router.get("/featured-artists", requireAuth, personalizationControl.featuredArti
 router.get("/popular-playlists", requireAuth, personalizationControl.popularPlaylists);
 router.get("/new-albums", requireAuth, personalizationControl.newAlbums);
 router.get("/sounds-you-may-like", requireAuth, personalizationControl.soundsYouMayLike);
+router.get("/tracks-from-artist-you-follow", requireAuth, personalizationControl.tracksFromArtistYouFollow);
 
 export default router;

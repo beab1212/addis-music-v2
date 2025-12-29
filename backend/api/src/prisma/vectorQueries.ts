@@ -735,3 +735,78 @@ export const searchArtists = async (query: string, limit: number = 20, offset: n
 
   return filteredResults;
 };
+
+
+
+
+export const trackFromArtistYouFollow = async (
+  userId: string,
+  userMetaVector: number[] = [],
+  userAudioVector: number[] = [],
+  limit: number = 10,
+) => {
+  const options: any[] = [];
+
+  if (userMetaVector.length > 0) options.push(userMetaVector);
+  if (userAudioVector.length > 0) options.push(userAudioVector);
+
+  const vectorCount = options.length;
+  const userIdParam = vectorCount + 1;
+  const oneMonthAgoParam = vectorCount + 2;
+  const limitParam = vectorCount + 3;
+
+  const scoreClause = (() => {
+    if (userMetaVector.length > 0 && userAudioVector.length > 0) {
+      return `
+        (
+          (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.6 +
+          (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.4
+        ) AS score
+      `;
+    }
+    if (userMetaVector.length > 0) {
+      return `(1 - (t."embeddingVector" <-> CAST($1 AS vector))) AS score`;
+    }
+    if (userAudioVector.length > 0) {
+      return `(1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector))) AS score`;
+    }
+    return `1 AS score`;
+  })();
+
+  const sql = `
+    SELECT 
+      ${trackAndArtistSelect},
+      ${scoreClause}
+    FROM "Track" t
+    JOIN "ArtistFollow" af ON af."artistId" = t."artistId"
+    JOIN "Artist" a
+      ON t."artistId" = a."id"
+    LEFT JOIN "PlayHistory" ph 
+      ON ph."trackId" = t.id 
+      AND ph."userId" = $${userIdParam}
+    WHERE af."userId" = $${userIdParam}
+      AND (
+        ph.id IS NULL
+        OR ph."playedAt" >= $${oneMonthAgoParam}
+      )
+    GROUP BY
+      t."id",
+      a."id"
+    ORDER BY score DESC, t."createdAt" DESC
+    LIMIT $${limitParam}
+  `;
+
+  // Calculate one month ago as a Date object (NOT string!)
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+  const results = await prisma.$queryRawUnsafe(
+    sql,
+    ...options,
+    userId,
+    oneMonthAgo,
+    limit
+  );
+
+  return results;
+};
