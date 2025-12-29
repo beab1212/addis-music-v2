@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Edit, LogOut, Crown } from 'lucide-react';
+import { Edit, LogOut, Crown, RefreshCcw } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import { PlaylistCard } from '@/components/PlaylistCard';
@@ -47,6 +47,20 @@ export default function Profile() {
     }
   }
 
+  const handleCancelSubscription = async () => {
+    if (!confirm("Are you sure you want to cancel your subscription?")) {
+      return;
+    }
+    try {
+      await api.post('/subscriptions/cancel-subscription');
+      addToast('Subscription canceled successfully', 'success');
+      // Optionally, refresh current window to reflect changes
+      navigate.refresh();
+    } catch (error: any) {
+      addToast(error?.response?.data?.message || 'Failed to cancel subscription', 'error');
+    }
+  };
+
   useEffect(() => {
     // Fetch liked songs from API or use mock data
     const fetchLikedSongs = async () => {
@@ -67,7 +81,7 @@ export default function Profile() {
             bio: userResponse.data.data.userProfile.bio || '',
           });
         }
-        
+
       } catch (error) {
         console.error('Error fetching liked songs:', error);
       }
@@ -188,7 +202,7 @@ export default function Profile() {
             peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
             peer-placeholder-shown:text-gray-400
             peer-focus:top-2 peer-focus:text-sm peer-focus:text-orange-500">
-                   Display Name
+                  Display Name
                 </label>
               </div>
 
@@ -265,7 +279,17 @@ export default function Profile() {
                 <h3 className="text-2xl font-bold text-green-900 mb-2">Premium Active</h3>
                 <p className="text-green-900/90">Thank you for being a premium member!</p>
               </div>
-              <Crown size={48} className="text-green-900" />
+              <div className="flex items-center gap-4">
+                <Crown size={48} className="text-green-900" />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCancelSubscription}
+                  className="p-3 bg-white/10 backdrop-blur-sm text-white rounded-full hover:bg-white/20 transition-colors"
+                >
+                  <RefreshCcw size={20} />
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}

@@ -11,5 +11,10 @@ router.post(
     authorize("user"),
     subscriptionController.createSubscription
 );
+router.post("/cancel-subscription",
+    requireAuth,
+    authorize("user"),
+    subscriptionController.cancelSubscription
+);
 
 export default router;
