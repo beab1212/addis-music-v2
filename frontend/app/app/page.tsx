@@ -41,7 +41,7 @@ export default function Home() {
           api.get('/personalization/new-albums'),
           api.get('/personalization/popular-playlists'),
           api.get('/personalization/featured-artists'),
-          api.get('http://localhost:5000/test'),
+          api.get('/personalization/tracks-from-artist-you-follow'),
         ]);
 
         setData({
@@ -143,7 +143,7 @@ export default function Home() {
         ))}
       </Section>
 
-      <Section title="Test Track Section">
+      <Section title="From Artists you Follow">
         {data.test.map((s) => (
           <div key={s.id} className="w-56 shrink-0">
             <SongCard song={s} />
