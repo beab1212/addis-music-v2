@@ -113,6 +113,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       set({ advertisementData: streamData });
     });
     set({ currentSong: song, isPlaying: true, currentTime: 0 })
+    window.document.title = `${song.title} - Addis Music`;
   },
 
   togglePlayPause: () => {
