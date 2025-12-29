@@ -114,6 +114,14 @@ export const adminAnalyticsController = {
     // total revenue with average growth with in month in percentage
     getTotalRevenueWithAverageGrowth: async (req: Request, res: Response) => {
         const totalRevenueResult = await prisma.payment.aggregate({
+            // where subscription not in CANCELED and PENDING statuses
+            where: {
+                subscription: {
+                    status: {
+                        notIn: ['CANCELED', 'PENDING'],
+                    },
+                },
+            },
             _sum: {
                 amount: true,
             },
