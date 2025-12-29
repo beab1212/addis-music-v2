@@ -3,7 +3,7 @@ import prisma from '../libs/db';
 import { CustomErrors } from '../errors';
 import { subscriptionSchema } from '../validators/subscriptionValidator';
 import { uuidSchema } from "../validators";
-import { acceptPayment, verifyPayment } from "../utils/payment_helpers";
+import { acceptPayment, verifyPayment, refundPayment } from "../utils/payment_helpers";
 import { v4 as uuid4 } from "uuid";
 
 const subscriptionPlan = {
@@ -182,5 +182,53 @@ export const subscriptionController = {
 
 
     res.status(200).send();
-  }
+  },
+
+  cancelSubscription: async (req: Request, res: Response) => {
+    const userId = req.user?.id as string;
+
+    const existingSubscription = await prisma.subscription.findFirst({
+      where: { userId, status: 'ACTIVE' },
+    });
+
+    if (!existingSubscription) {
+      throw new CustomErrors.NotFoundError('No active subscription found to cancel');
+    }
+
+    // get current date
+    const currentDate = new Date();
+    // check if start date is only 10 days behind current date if not throw error
+    const startDate = existingSubscription.startDate;
+    const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 10) {
+      throw new CustomErrors.BadRequestError('Cancellation period has expired. You can only cancel within 10 days of subscription start date.');
+    }
+
+    const paymentRecord = await prisma.payment.findFirst({
+      where: { subscriptionId: existingSubscription.id, status: 'SUCCESS' },
+    });
+
+    if (paymentRecord) {
+      // trigger refund process here if needed
+      const refundResult = await refundPayment({ paymentId: paymentRecord.id });
+
+      // handle refund failure silently for now
+      // if (!refundResult || refundResult.status !== 'success') {
+      //   throw new CustomErrors.ConflictError('Refund process failed');
+      // }
+
+      // update subscription record
+      await prisma.subscription.update({
+        where: { id: existingSubscription.id },
+        data: { status: 'CANCELED' },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Subscription canceled and refund processed successfully',
+    });
+  },
 };

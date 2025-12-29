@@ -54,7 +54,30 @@ const verifyPayment = async ({ paymentId }: { paymentId: string }) => {
     }
 };
 
+const refundPayment = async ({ paymentId }: { paymentId: string }) => {
+    try {
+        const options = {
+            method: 'POST',
+            url: `https://api.chapa.co/v1/refund/payment_${paymentId}`,
+            headers: {
+                'Authorization': 'Bearer ' + config.chapa.apiKey,
+                'Content-Type': 'application/json'
+            },
+            data: {
+                "reason": "User requested refund"
+            }
+        }
+
+        const response = await axiosClient.request(options);
+        return response.data;
+    } catch (error) {
+        console.error('Error refunding payment:', error);
+        return null;
+    }
+};
+
 export {
     acceptPayment,
-    verifyPayment
+    verifyPayment,
+    refundPayment
 };
