@@ -36,7 +36,8 @@ export default function Premium() {
       period: 'month',
       features: [
         'Ad-free listening',
-        'High audio quality',
+        'Standard audio quality',
+        // 'High audio quality',
         'Unlimited skips',
         // 'Offline downloads',
         'Play any song',
