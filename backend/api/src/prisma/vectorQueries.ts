@@ -112,8 +112,78 @@ const organizeAlbumsWithArtist = (albums: any[]) => {
 
 
 
-// The function to fetch similar tracks
+// The function to fetch similar tracks (Foundation Function)
+// export const getSimilarTracks = async (
+//   userMetaVector: number[] = [],
+//   userAudioVector: number[] = [],
+//   limit: number = 10,
+//   offset: number = 0,) => {
+
+//   // if user has no vectors(history)
+//   if (userMetaVector.length === 0 || userAudioVector.length === 0) {
+//     const latestTracks = await prisma.track.findMany({
+//       orderBy: { createdAt: 'desc' },
+//       take: limit,
+//       skip: offset,
+//     });
+
+//     return latestTracks;
+//   }
+
+//   const options = [];
+
+//   // If userMetaVector is non-empty, push it to options
+//   if (userMetaVector && userMetaVector.length > 0) {
+//     options.push(userMetaVector);
+//   }
+
+//   // If userAudioVector is non-empty, push it to options
+//   if (userAudioVector && userAudioVector.length > 0) {
+//     options.push(userAudioVector);
+//   }
+
+//   const results: any = await prisma.$queryRawUnsafe(`
+//     SELECT 
+//       ${trackAndArtistSelect},
+
+//       ${userMetaVector.length > 0 && userAudioVector.length > 0
+//       ? `
+//           (
+//             (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.8 +
+//             (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.2
+//           ) AS "score"
+//         `
+//       : userMetaVector.length > 0
+//         ? `
+//           (1 - (t."embeddingVector" <-> CAST($1 AS vector))) AS "score"
+//         `
+//         : `
+//           (1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector))) AS "score"
+//         `
+//     }
+
+//     FROM "Track" t
+//     JOIN "Artist" a 
+//       ON t."artistId" = a."id"
+
+//     LEFT JOIN "PlayHistory" ph
+//       ON ph."trackId" = t."id"
+
+//     GROUP BY
+//       t."id",
+//       a."id"
+
+//     ORDER BY "score" DESC
+//     LIMIT $3
+//     OFFSET $4;
+//   `, ...options, limit, offset);
+
+//   return organizeTracksWithArtist(results);
+// };
+
+
 export const getSimilarTracks = async (
+  userId: string,
   userMetaVector: number[] = [],
   userAudioVector: number[] = [],
   limit: number = 10,
@@ -143,43 +213,54 @@ export const getSimilarTracks = async (
   }
 
   const results: any = await prisma.$queryRawUnsafe(`
-    SELECT 
-      ${trackAndArtistSelect},
+  SELECT 
+    ${trackAndArtistSelect},
 
-      ${userMetaVector.length > 0 && userAudioVector.length > 0
+    ${userMetaVector.length > 0 && userAudioVector.length > 0
       ? `
           (
             (1 - (t."embeddingVector" <-> CAST($1 AS vector))) * 0.8 +
             (1 - (t."sonicEmbeddingVector" <-> CAST($2 AS vector))) * 0.2
-          ) AS "score"
+          ) AS score
         `
       : userMetaVector.length > 0
         ? `
-          (1 - (t."embeddingVector" <-> CAST($1 AS vector))) AS "score"
+          (1 - (t."embeddingVector" <-> CAST($1 AS vector))) AS score
         `
         : `
-          (1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector))) AS "score"
+          (1 - (t."sonicEmbeddingVector" <-> CAST($1 AS vector))) AS score
         `
     }
 
     FROM "Track" t
-    JOIN "Artist" a 
+    JOIN "Artist" a
       ON t."artistId" = a."id"
 
     LEFT JOIN "PlayHistory" ph
       ON ph."trackId" = t."id"
 
+    WHERE t."id" NOT IN (
+      SELECT ph2."trackId"
+      FROM "PlayHistory" ph2
+      WHERE ph2."userId" = $3
+      ORDER BY ph2."playedAt" DESC
+      LIMIT 3
+    )
+
     GROUP BY
       t."id",
       a."id"
 
-    ORDER BY "score" DESC
-    LIMIT $3
-    OFFSET $4;
-  `, ...options, limit, offset);
+    ORDER BY score DESC
+    LIMIT $4
+    OFFSET $5;
+  `, ...options, userId, limit, offset);
+
 
   return organizeTracksWithArtist(results);
 };
+
+
 
 
 // The function to fetch similar-sounding tracks(Foundation Function)
@@ -223,6 +304,7 @@ export const getSimilarTracks = async (
 
 //   return organizeTracksWithArtist(results);
 // };
+
 
 export const getSimilarSoundingTracks = async (
   userAudioVector?: number[],
