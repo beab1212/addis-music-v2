@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { Song } from '@/types';
 import { api } from '@/lib/api';
+import { authClient } from "@/lib/auth-client";
+import { data } from 'framer-motion/client';
 
 
 interface PlayerState {
@@ -47,6 +49,21 @@ const fetchIsLiked = async (trackId: string): Promise<boolean> => {
     return false;
   }
 };
+
+const isUserPremium = async (): Promise<boolean> => {
+  try {
+    const session = await authClient.getSession();
+    const plan = (session?.data?.user as any)?.subscription?.plan;
+    if (plan === 'PREMIUM') {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.error('Error checking user subscription status:', error);
+    return false;
+  }
+}
 
  const toggleLike = async (trackId: string): Promise<boolean> => {
   // This function toggles the like status and returns the new status
@@ -133,15 +150,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     set({ queue });
   },
 
-  playNext: () => {
+  playNext: async () => {
     if (get().isAdvertisementPlaying) return;
+
+    let isPremium = await isUserPremium();
+
     const { queue, currentSong, repeatMode, isShuffle } = get();
     if (!currentSong || queue.length === 0) return;
 
     const currentIndex = queue.findIndex(s => s.id === currentSong.id);
 
     let nextIndex;
-    if (isShuffle) {
+    if (isShuffle || !isPremium) {
       nextIndex = Math.floor(Math.random() * queue.length);
     } else {
       nextIndex = currentIndex + 1;
@@ -157,8 +177,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
   },
 
-  playPrevious: () => {
+  playPrevious: async () => {
     if (get().isAdvertisementPlaying) return;
+    let isPremium = await isUserPremium();
+    if (!isPremium) {
+      set({ currentTime: 0 });
+      return;
+    }
+
     const { queue, currentSong, currentTime } = get();
     if (!currentSong || queue.length === 0) return;
 
