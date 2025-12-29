@@ -2,8 +2,11 @@ import logging
 import numpy as np
 import json
 from libs.db.personalization_queries import get_listening_history, get_liked_songs, get_user_preference
-from utils.personalization_helpers import average_vector, weighted_blend
+from utils.personalization_helpers import average_vector, weighted_blend, weighted_average_vector
 from libs.redis import redis_connection
+from typing import List, Optional
+
+
 
 
 async def process_for_you_job(job):
@@ -19,10 +22,10 @@ async def process_for_you_job(job):
     
     try:
         # 1. Get last listened tracks
-        listened = get_listening_history(user_id, 2 if is_recent else 5)
+        listened = get_listening_history(user_id, 1 if is_recent else 10)
 
         # 2. Get liked tracks
-        liked = get_liked_songs(user_id, 1 if is_recent else 15)
+        liked = [] if is_recent else get_liked_songs(user_id, 4)
 
         # 3. Get user preferences
         preferences = get_user_preference(user_id)
@@ -38,16 +41,25 @@ async def process_for_you_job(job):
 
         # 6. Calculate average vectors with recency for listened (exponential decay: recent tracks weighted more)
         if listened_meta:
-            recency_weights = [0.9 ** i for i in range(len(listened_meta))]  # Decay: 1, 0.9, 0.81, ...
-            recency_weights = recency_weights[::-1]  # Reverse to weight recent higher (assuming recent first)
+            # We use exponential decay with a low base (0.6) so that weight drops off very quickly
+            # Multiplying by 0.6 means 40% decay each step
+            recency_weights = [0.6 ** i for i in range(len(listened_meta))]  # Example: 1.0, 0.6, 0.36, 0.216, 0.1296, 0.07776, ...
         else:
             recency_weights = None
 
 
-        avg_listened_meta = average_vector(listened_meta)
-        avg_liked_meta = average_vector(liked_meta)
-        avg_listened_audio = average_vector(listened_audio)
-        avg_liked_audio = average_vector(liked_audio)
+        print("Recency Weights:", recency_weights)    
+        avg_listened_meta = weighted_average_vector(listened_meta, recency_weights)
+        avg_listened_audio = weighted_average_vector(listened_audio, recency_weights)
+        avg_liked_meta = weighted_average_vector(liked_meta)
+        avg_liked_audio = weighted_average_vector(liked_audio)
+
+        
+
+        # avg_listened_meta = average_vector(listened_meta)
+        # avg_liked_meta = average_vector(liked_meta)
+        # avg_listened_audio = average_vector(listened_audio)
+        # avg_liked_audio = average_vector(liked_audio)
 
 
         # print("Listened Tracks:", avg_listened_meta)
@@ -60,7 +72,7 @@ async def process_for_you_job(job):
         # 7. Generate weighted user vectors
         user_meta_vector = weighted_blend(
             pref_meta, avg_listened_meta, avg_liked_meta,
-            0.30, 0.50, 0.20
+            0.20, 0.60, 0.20
         )
 
         user_audio_vector = weighted_blend(
