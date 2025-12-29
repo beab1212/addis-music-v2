@@ -9,11 +9,13 @@ import { SongCard } from '@/components/SongCard';
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { useToastStore } from '@/store/toastStore';
+import FollowModal from '@/components/FollowModal';
 
 export default function Profile() {
   const { user, logout } = useAuthStore();
   const navigate = useRouter();
   const { addToast } = useToastStore();
+  const [refresh, setRefresh] = useState(false);
 
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,9 +26,13 @@ export default function Profile() {
     bio: '',
   });
 
+  // Modal state
+  const [openFollowModal, setOpenFollowModal] = useState(false);
+
   const [likedSongs, setLikedSongs] = useState([]);
   const [userPlaylists, setUserPlaylists] = useState([]);
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [followedArtistsCount, setFollowedArtistsCount] = useState(0);
 
   const changeHandler = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -68,6 +74,9 @@ export default function Profile() {
         const response = await api.get('/track-likes/liked-tracks');
         const playlistsResponse = await api.get('/playlists/user');
         const userResponse = await api.get('/user/me');
+        const followCountResponse = await api.get('/artist-follows/follow-count');
+
+        setFollowedArtistsCount(followCountResponse.data.data.totalFollows);
         setUserPlaylists(playlistsResponse.data.data.playlists);
         setLikedSongs(response.data.data.tracks);
         setUserInfo(userResponse.data.data);
@@ -88,7 +97,7 @@ export default function Profile() {
     };
 
     fetchLikedSongs();
-  }, []);
+  }, [refresh]);
 
 
 
@@ -296,20 +305,24 @@ export default function Profile() {
 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+            onClick={() => navigate.push("/app/library")}
+          >
             <p className="text-gray-600 dark:text-gray-400 mb-2">Playlists</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
               {userPlaylists.length}
             </p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg"
+            onClick={() => navigate.push("/app/liked")}
+          >
             <p className="text-gray-600 dark:text-gray-400 mb-2">Liked Songs</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">{likedSongs.length}</p>
           </div>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg cursor-pointer" onClick={() => setOpenFollowModal(true)}>
             <p className="text-gray-600 dark:text-gray-400 mb-2">Following</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">
-              {user?.followedArtists?.length}
+              {followedArtistsCount || 0}
             </p>
           </div>
         </div>
@@ -340,6 +353,14 @@ export default function Profile() {
           )}
         </div>
       </motion.div>
+
+      <FollowModal
+        open={openFollowModal}
+        onClose={() => {
+          setOpenFollowModal(false)
+          setRefresh(!refresh)
+        }}
+      />
     </div>
   );
 };
