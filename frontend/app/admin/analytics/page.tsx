@@ -118,8 +118,8 @@ export default function Analytics() {
             </div>
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">Revenue</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">{revenueGrowth?.totalRevenue || 0}</p>
-              <span className="text-green-500 text-sm font-semibold">ETB {revenueGrowth?.averageGrowth || 0}</span>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">ETB {revenueGrowth?.totalRevenue || 0}</p>
+              <span className="text-green-500 text-sm font-semibold">+{revenueGrowth?.averageGrowth || 0}%</span>
             </div>
           </motion.div>
         </div>
