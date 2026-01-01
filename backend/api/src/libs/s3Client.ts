@@ -49,10 +49,9 @@ export const deleteAudioFromS3 = async (key: string) => {
     };
 
     // Delete HLS segments folder if exists
-    const folderPrefix = key
     const listParams = {
         Bucket: 'hls-playlist',
-        Prefix: folderPrefix,
+        Prefix: key,
     };
 
     try {
