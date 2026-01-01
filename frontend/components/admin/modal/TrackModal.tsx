@@ -82,24 +82,24 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
         if (!open) return;
 
         if (!trackId || trackId === "new") {
-                console.log("New Track data cleanup");
-                // reset for new
-                setTitle("");
-                setMood("");
-                setReleaseDate("");
-                setGenre(null);
-                setGenreQuery("");
-                setArtist(null);
-                setArtistQuery("");
-                setAlbum(null);
-                setAlbumQuery("");
-                setTags([]);
-                setDescription("");
-                setCredits("");
-                setTrackArt(null);
-                setAudioFile(null);
-                return;
-            }
+            console.log("New Track data cleanup");
+            // reset for new
+            setTitle("");
+            setMood("");
+            setReleaseDate("");
+            setGenre(null);
+            setGenreQuery("");
+            setArtist(null);
+            setArtistQuery("");
+            setAlbum(null);
+            setAlbumQuery("");
+            setTags([]);
+            setDescription("");
+            setCredits("");
+            setTrackArt(null);
+            setAudioFile(null);
+            return;
+        }
 
 
         const load = async () => {
@@ -182,82 +182,78 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
 
     if (!open) return null;
 
-    const handleSelectTag = (t: { id: string; name: string }) => {
-        if (tags.find(x => x.id === t.id)) return;
-        setTags(prev => [...prev, t]);
-    };
-
-    const handleRemoveTag = (id: string) => {
-        setTags(prev => prev.filter(t => t.id !== id));
-    };
-
     const handleSave = async () => {
-        setSaving(true);
+        const isNewTrack = !trackId || trackId === "new";
+        if (!isNewTrack && !trackId) return;
 
-        const payload = new FormData();
-        payload.append("title", title);
-        mood.split(",").map(t => t.trim()).forEach((tag, index) => {
-            payload.append("tags[]", tag);
-        });
-        payload.append("releaseDate", releaseDate);
-        if (genre?.id) payload.append("genreId", genre.id);
-        if (artist?.id) payload.append("artistId", artist.id);
-        if (album?.id) payload.append("albumId", album.id);
-        payload.append("description", description ?? "");
-        payload.append("credit", credits ?? "");
-        
-        
+        setSaving(true);
+        setUploadProgress(0);
 
         try {
-            if (trackId === "new") {
-                // creating new track
+            if (isNewTrack) {
+                if (!audioFile) {
+                    addToast("Please upload an audio file", "error");
+                    return;
+                }
+
+                const payload = new FormData();
+                payload.append("title", title);
+                payload.append("releaseDate", releaseDate || "");
+                payload.append("description", description || "");
+                payload.append("credit", credits || "");
+
+                if (genre?.id) payload.append("genreId", genre.id);
+                if (artist?.id) payload.append("artistId", artist.id);
+                if (album?.id) payload.append("albumId", album.id);
                 if (trackArt) payload.append("cover", trackArt);
-                if (audioFile) payload.append("audio", audioFile);
+                payload.append("audio", audioFile);
 
-                api.post("/tracks/upload", payload, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },timeout: 0,
-                    onUploadProgress: (progressEvent: any) => {
-                        const percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
-                        );
-                        setUploadProgress(percentCompleted);
-                    },
-
-                }).then(async (response) => {
-                    addToast( "Track created successfully", "success");
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Track creation failed", "error");
-                    setUploadProgress(0);
+                mood.split(",").map(t => t.trim()).filter(Boolean).forEach(tag => {
+                    payload.append("tags[]", tag);
                 });
-            
+
+                await api.post("/tracks/upload", payload, {
+                    headers: { "Content-Type": "multipart/form-data" },
+                    timeout: 0,
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(percent);
+                        }
+                    },
+                });
+
+                addToast("Track created successfully!", "success");
+                onSave("new");
+                onClose();
             } else {
-                // updating existing track
+                // Update existing track
                 const updatePayload: any = {
                     title,
-                    releaseDate,
-                    description,
-                    credit: credits,
-                    tags: mood.split(",").map(t => t.trim()),
+                    releaseDate: releaseDate || null,
+                    description: description || "",
+                    credit: credits || "",
+                    tags: mood.split(",").map(t => t.trim()).filter(Boolean),
                 };
+
                 if (genre?.id) updatePayload.genreId = genre.id;
+                else updatePayload.genreId = null;
+
                 if (artist?.id) updatePayload.artistId = artist.id;
+                else updatePayload.artistId = null;
+
                 if (album?.id) updatePayload.albumId = album.id;
-                api.post(`/tracks/${trackId}`, updatePayload).then(async (response) => {
-                    addToast( "Track updated successfully", "success");                    
-                    onClose();
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Track update failed", "error");
-                });
+                else updatePayload.albumId = null;
+
+                await api.post(`/tracks/${trackId}`, updatePayload);
+                addToast("Track updated successfully!", "success");
+                await onSave(trackId);
+                onClose();
             }
-        
-            // always call onSave for parent refresh (for edit case)
-            if (trackId) await onSave(trackId);
-            onClose();
-        } catch (err) {
-            console.error("save failed", err);
-            // keep saving false and keep modal open
+        } catch (err: any) {
+            const message = err?.response?.data?.message || (isNewTrack ? "Upload failed" : "Update failed");
+            addToast(message, "error");
+            setUploadProgress(0);
         } finally {
             setSaving(false);
         }
@@ -381,26 +377,26 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
                         </label>
                     </div>
 
-                    
+
                     {/* Track art and audio */}
                     <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${!trackId || trackId === "new" ? "" : "hidden"}`}>
                         {/* Track Art Section */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Track Art
+                                Track Art
                             </label>
 
                             <div className="relative group">
-                            <div className="aspect-square w-40 max-w-40 mx-autox bg-gray-900/50 dark:bg-[#0b0b0d] backdrop-blur-sm border-2 border-dashed border-gray-400/50 dark:border-gray-600 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:border-gray-500/70">
-                                {trackArt ? (
-                                <div className="relative w-full h-full">
-                                    <img
-                                    src={URL.createObjectURL(trackArt)}
-                                    alt="Track artwork"
-                                    className="w-full h-full object-cover"
-                                    />
-                                    {/* Overlay on hover */}
-                                    {/* <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div className="aspect-square w-40 max-w-40 mx-autox bg-gray-900/50 dark:bg-[#0b0b0d] backdrop-blur-sm border-2 border-dashed border-gray-400/50 dark:border-gray-600 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:border-gray-500/70">
+                                    {trackArt ? (
+                                        <div className="relative w-full h-full">
+                                            <img
+                                                src={URL.createObjectURL(trackArt)}
+                                                alt="Track artwork"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            {/* Overlay on hover */}
+                                            {/* <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                     <label
                                         htmlFor="trackArt"
                                         className="cursor-pointer bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-medium px-5 py-2.5 rounded-xl border border-white/30 shadow-lg transition-all duration-200 hover:scale-105"
@@ -409,137 +405,137 @@ export default function TrackModal({ open, trackId, onClose, onSave }: Props) {
                                     </label>
                                     </div> */}
 
-                                    {/* Remove button */}
-                                    <button
-                                    onClick={() => setTrackArt(null)}
-                                    className="absolute top-3 right-3 bg-red-600/90 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
-                                    >
-                                    ✕ Remove
-                                    </button>
+                                            {/* Remove button */}
+                                            <button
+                                                onClick={() => setTrackArt(null)}
+                                                className="absolute top-3 right-3 bg-red-600/90 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                                            >
+                                                ✕ Remove
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <label
+                                            htmlFor="trackArt"
+                                            className="flex flex-col items-center justify-center w-full h-full cursor-pointer text-gray-400 hover:text-gray-300 transition-colors"
+                                        >
+                                            <div className="mb-3 p-3 bg-gray-700/50 rounded-full">
+                                                <svg
+                                                    className="w-10 h-10"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <span className="text-lg font-medium">Upload Artwork</span>
+                                            <span className="text-xs mt-1 opacity-80">PNG, JPG up to 10MB</span>
+                                        </label>
+                                    )}
                                 </div>
-                                ) : (
-                                <label
-                                    htmlFor="trackArt"
-                                    className="flex flex-col items-center justify-center w-full h-full cursor-pointer text-gray-400 hover:text-gray-300 transition-colors"
-                                >
-                                    <div className="mb-3 p-3 bg-gray-700/50 rounded-full">
-                                    <svg
-                                        className="w-10 h-10"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    </div>
-                                    <span className="text-lg font-medium">Upload Artwork</span>
-                                    <span className="text-xs mt-1 opacity-80">PNG, JPG up to 10MB</span>
-                                </label>
-                                )}
-                            </div>
 
-                            <input
-                                id="trackArt"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleTrackArtChange}
-                            />
+                                <input
+                                    id="trackArt"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleTrackArtChange}
+                                />
                             </div>
                         </div>
 
                         {/* Audio File Section */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Audio File
+                                Audio File
                             </label>
 
                             <div className="relative group">
-                            <div className="w-full max-w-md mx-autox h-24 bg-gray-900/50 dark:bg-[#0b0b0d] backdrop-blur-sm border-2 border-dashed border-gray-400/50 dark:border-gray-600 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:border-gray-500/70 flex items-center justify-center">
-                                {audioFile ? (
-                                <div className="flex items-center justify-between w-full px-6">
-                                    <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-600/20 rounded-lg">
-                                        <svg
-                                        className="w-6 h-6 text-purple-400"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                                <div className="w-full max-w-md mx-autox h-24 bg-gray-900/50 dark:bg-[#0b0b0d] backdrop-blur-sm border-2 border-dashed border-gray-400/50 dark:border-gray-600 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:border-gray-500/70 flex items-center justify-center">
+                                    {audioFile ? (
+                                        <div className="flex items-center justify-between w-full px-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-purple-600/20 rounded-lg">
+                                                    <svg
+                                                        className="w-6 h-6 text-purple-400"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white font-medium truncate max-w-xs">
+                                                        {audioFile.name}
+                                                    </p>
+                                                    <p className="text-gray-400 text-xs">
+                                                        {(audioFile.size / 1024 / 1024).toFixed(2)} MB
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <label
+                                                    htmlFor="audioFile"
+                                                    className="cursor-pointer bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-medium px-4 py-2 rounded-xl border border-white/30 shadow-lg transition-all duration-200 hover:scale-105"
+                                                >
+                                                    Change
+                                                </label>
+                                                <button
+                                                    onClick={() => setAudioFile(null)}
+                                                    className="bg-red-600/90 hover:bg-red-700 text-white text-xs font-semibold px-2 py-1.5 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label
+                                            htmlFor="audioFile"
+                                            className="flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-gray-300 transition-colors"
                                         >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                                        />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p className="text-white font-medium truncate max-w-xs">
-                                        {audioFile.name}
-                                        </p>
-                                        <p className="text-gray-400 text-xs">
-                                        {(audioFile.size / 1024 / 1024).toFixed(2)} MB
-                                        </p>
-                                    </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
-                                    <label
-                                        htmlFor="audioFile"
-                                        className="cursor-pointer bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-medium px-4 py-2 rounded-xl border border-white/30 shadow-lg transition-all duration-200 hover:scale-105"
-                                    >
-                                        Change
-                                    </label>
-                                    <button
-                                        onClick={() => setAudioFile(null)}
-                                        className="bg-red-600/90 hover:bg-red-700 text-white text-xs font-semibold px-2 py-1.5 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
-                                    >
-                                        ✕
-                                    </button>
-                                    </div>
+                                            <div className="mb-3 p-3 bg-gray-700/50 rounded-full">
+                                                <svg
+                                                    className="w-8 h-8"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <span className="text-lg font-medium">Upload Audio</span>
+                                            <span className="text-xs opacity-80">MP3, WAV, FLAC • Max 100MB</span>
+                                        </label>
+                                    )}
                                 </div>
-                                ) : (
-                                <label
-                                    htmlFor="audioFile"
-                                    className="flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-gray-300 transition-colors"
-                                >
-                                    <div className="mb-3 p-3 bg-gray-700/50 rounded-full">
-                                    <svg
-                                        className="w-8 h-8"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={1.5}
-                                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                                        />
-                                    </svg>
-                                    </div>
-                                    <span className="text-lg font-medium">Upload Audio</span>
-                                    <span className="text-xs opacity-80">MP3, WAV, FLAC • Max 100MB</span>
-                                </label>
-                                )}
-                            </div>
 
-                            <input
-                                id="audioFile"
-                                type="file"
-                                accept="audio/*"
-                                className="hidden"
-                                onChange={handleAudioChange}
-                            />
+                                <input
+                                    id="audioFile"
+                                    type="file"
+                                    accept="audio/*"
+                                    className="hidden"
+                                    onChange={handleAudioChange}
+                                />
                             </div>
                         </div>
-                        </div>
+                    </div>
 
 
 
