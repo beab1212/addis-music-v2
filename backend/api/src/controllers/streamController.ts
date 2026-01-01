@@ -27,7 +27,8 @@ const getPlaylistFromCacheOrGenerate = async (audioId: string, isAdd: boolean = 
 
     // Cache the playlist in Redis for performance 19 minutes
     // cache minutes must be less than signed url expiration time
-    redisClient.setex(cacheKey, 1140, JSON.stringify(newPlaylist)); // Cache for 19 minutes
+    if (newPlaylist.length > 0)
+        redisClient.setex(cacheKey, 1140, JSON.stringify(newPlaylist)); // Cache for 19 minutes
 
     return newPlaylist;
 };
