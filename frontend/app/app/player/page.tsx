@@ -61,7 +61,7 @@ export default function Player() {
   }, [queue]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden -mb-24">
       <div className={`absolute inset-0 bg-linear-to-br ${gradientClass} opacity-20 dark:opacity-30`} />
       <div
         className={`absolute inset-0 bg-linear-to-br ${gradientClass} opacity-10 blur-3xl`}
