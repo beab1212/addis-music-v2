@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand, ListObjectsV2Command, DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
 import config from "../config/config";
 import  { v4 as uuidv4 } from "uuid";
@@ -48,8 +48,29 @@ export const deleteAudioFromS3 = async (key: string) => {
         Key: key,
     };
 
+    // Delete HLS segments folder if exists
+    const folderPrefix = key.split('/')[1]
+    const listParams = {
+        Bucket: 'hls-playlist',
+        Prefix: folderPrefix,
+    };
+
     try {
+        // Delete the single audio object
         await s3Client.send(new DeleteObjectCommand(deleteParams));
+
+        // Delete HLS segments folder if exists
+        const listed = await s3Client.send(new ListObjectsV2Command(listParams));
+        if (listed.Contents && listed.Contents.length > 0) {
+            const objects = listed.Contents.map(obj => ({ Key: obj.Key! }));
+            await s3Client.send(new DeleteObjectsCommand({
+                Bucket: listParams.Bucket,
+                Delete: {
+                    Objects: objects,
+                    Quiet: false,
+                },
+            }));
+        }
     } catch (err) {
         console.error("Error deleting audio from S3:", err);
         throw err;
