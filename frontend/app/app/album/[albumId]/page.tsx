@@ -112,7 +112,7 @@ export default function AlbumDetail() {
             <div className="col-span-7">Title</div>
             <div className="col-span-2 text-right">Duration</div>
           </div>
-          {albumTrack.map((song: any, index: number) => (
+          {albumTrack?.map((song: any, index: number) => (
             <motion.div
               key={song.id}
               whileHover={{ backgroundColor: 'rgba(249, 115, 22, 0.1)' }}
