@@ -114,8 +114,9 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
     if (!open) return null;
 
     const handleSave = async () => {
+        const isNewTrack = !artistId || artistId === "new";
         setSaving(true);
-
+        setUploadProgress(0);
         const payload = new FormData();
         payload.append("name", name);
         payload.append("bio", bio ?? "");
@@ -125,25 +126,19 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
         }
 
         try {
-            if (artistId === "new") {
+            if (isNewTrack) {
                 // creating new album
                 if (artistArt) payload.append("image", artistArt);
-
-                api.post("/artists", payload, { 
+                await api.post("/artists", payload, {
                     timeout: 10000,
-                    onUploadProgress: (progressEvent: any) => {
-                        const percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
-                        );
-                        setUploadProgress(percentCompleted);
-                    }
-                }).then(async (response) => {
-                    addToast("Artist created successfully", "success");
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Artist creation failed", "error");
-                    setUploadProgress(0);
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(percent);
+                        }
+                    },
                 });
-
+                addToast("Artist created successfully", "success");
             } else {
                 // updating existing artist
                 const updatePayload: any = {
@@ -152,19 +147,18 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
                     isVerified,
                     genres: genre,
                 };
-                api.put(`/artists/${artistId}`, updatePayload).then(async (response) => {
-                    addToast("Artist updated successfully", "success");
-                    onClose();
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Artist update failed", "error");
-                });
+                await api.put(`/artists/${artistId}`, updatePayload);
+                addToast("Artist updated successfully", "success");
             }
 
             // always call onSave for parent refresh (for edit case)
             if (artistId) await onSave(artistId);
             onClose();
-        } catch (err) {
+        } catch (err: any) {
+            const message = err?.response?.data?.message || (isNewTrack ? "Artist creation failed" : "Artist update failed");
+            addToast(message, "error");
             console.error("save failed", err);
+            setUploadProgress(0);
             // keep saving false and keep modal open
         } finally {
             setSaving(false);
@@ -172,7 +166,7 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
     };
 
     return (
-        <div className="fixed inset-0 z-[50] flex items-center justify-center px-4 overflow-hidden">
+        <div className="fixed inset-0 z-[40] flex items-center justify-center px-4 overflow-hidden">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -269,7 +263,7 @@ export default function ArtistModal({ open, artistId, onClose, onSave }: Props) 
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* isVerified Checker */}
                     <div>
                         <label className="flex items-center gap-3 cursor-pointer group rounded-lg p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition duration-200">
