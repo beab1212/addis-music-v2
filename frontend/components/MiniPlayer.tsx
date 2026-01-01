@@ -82,7 +82,7 @@ export const MiniPlayer = memo(() => {
                 onClick={() => router.push('/app/player')}
                 className="w-12 h-12 rounded-xl shadow-md object-cover ring-2 ring-white/30 group-hover:ring-orange-400/60 transition-all group-hover:scale-105"
               />
-              <div className="min-w-0">
+              <div className="min-w-0 max-w-30">
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-orange-500 transition-colors"
                   onClick={() => router.push('/app/player')}
                 >
