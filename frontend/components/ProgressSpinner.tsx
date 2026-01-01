@@ -18,7 +18,7 @@ export default function ProgressSpinner({
   const offset = circumference - (value / 100) * circumference;
 
   return (
-    <div className={`absolute inset-0 bg-black/50 border-2 flex items-center justify-center ${value >= 100 || value <= 0 ? 'hidden' : ''}`}>
+    <div className={`absolute inset-0 bg-black/70 border-2 flex items-center justify-center ${value >= 100 || value <= 0 ? 'hidden' : ''}`}>
       <div
       className="flex items-center justify-center"
       style={{ width: size, height: size }}
