@@ -1,6 +1,7 @@
 from libs.s3_client import client
 from utils.generate_hls import generate_hls
 from config.config import settings
+from libs.redis import redis_connection
 
 
 HLS_BUCKET_NAME = settings.s3_storage.hls_bucket_name or "hls-playlist"
@@ -50,10 +51,18 @@ def generate_signed_urls_for_folder(audio_id, bucket_name = HLS_BUCKET_NAME,  ex
 
         # Check if the folder has any content
         if 'Contents' not in response or not response['Contents']:
+
+            # mark process in redis to avoid multiple HLS generations
+            redis_key = f"hls_generation_in_progress:{audio_id}"
+            if redis_connection.get(redis_key):
+                print(f"HLS generation already in progress for audio_id: {audio_id}")
+                return signed_urls  # Return empty if generation is in progress
+            
+            redis_connection.set(redis_key, "1", ex=300)  # Set key with 5 minutes expiration
             print(f"No objects found in the folder: {folder_prefix}")
-            # Generate HLS content if flag is set
             print(f"Generating HLS for folder: {folder_prefix}")
             generate_hls(audio_id=audio_id, is_add=is_add)
+            redis_connection.delete(redis_key)  # Remove the key after generation
             # List objects again after HLS generation
             response = client.list_objects_v2(
                 Bucket=bucket_name,
