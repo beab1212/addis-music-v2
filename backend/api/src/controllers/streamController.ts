@@ -73,6 +73,15 @@ const setPlayHistory = async (userId: string, trackId: string) => {
             }
         });
     }
+
+    // const now = new Date();
+    // await prisma.playHistory.create({
+    //     data: {
+    //         userId: userId,
+    //         trackId: trackId,
+    //         playedAt: now
+    //     }
+    // });
 }
 
 
