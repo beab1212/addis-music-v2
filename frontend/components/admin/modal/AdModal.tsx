@@ -102,66 +102,75 @@ export default function AdModal({ open, adId, onClose, onSave }: Props) {
 
 
     const handleSave = async () => {
+        if (saving) return;
+
         setSaving(true);
+        setUploadProgress(0);
 
-        const payload = new FormData();
-        payload.append("title", title);
-        payload.append("linkUrl", linkUrl);
-        payload.append("videoUrl", videoUrl);
-        payload.append("startDate", startDate);
-        payload.append("endDate", endDate);
-        payload.append("advertiser", advertiser);
-        payload.append("isActive", isActive ? "true" : "false");
-
-
+        const isNewAd = adId === "new";
 
         try {
-            if (adId === "new") {
-                // creating new ad
+            const payload = new FormData();
+            payload.append("title", title);
+            payload.append("linkUrl", linkUrl || "");
+            payload.append("videoUrl", videoUrl || "");
+            payload.append("startDate", startDate || "");
+            payload.append("endDate", endDate || "");
+            payload.append("advertiser", advertiser || "");
+            payload.append("isActive", isActive ? "true" : "false");
+
+            if (isNewAd) {
+                // Validate required audio for new ad
+                if (!audioFile) {
+                    addToast("Please upload an audio file", "error");
+                    setSaving(false);
+                    return;
+                }
+
                 if (audioFile) payload.append("audio", audioFile);
                 if (adArt) payload.append("cover", adArt);
 
-                api.post("/ads/upload", payload, {
+                await api.post("/ads/upload", payload, {
                     timeout: 0,
-                    onUploadProgress: (progressEvent: any) => {
-                        const percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
-                        );
-                        setUploadProgress(percentCompleted);
+                    onUploadProgress: (progressEvent) => {
+                        if (progressEvent.total) {
+                            const percent = Math.round(
+                                (progressEvent.loaded * 100) / progressEvent.total
+                            );
+                            setUploadProgress(percent);
+                        }
                     },
-
-                }).then(async (response) => {
-                    addToast("Ad created successfully", "success");
-                    onClose();
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Ad creation failed", "error");
-                    setUploadProgress(0);
                 });
 
+                addToast("Ad created successfully", "success");
+                await onSave("new"); // Or pass new ad ID if returned
+                onClose();
             } else {
-                // updating existing ad
-                const updatePayload: any = {
+                // Update existing ad
+                const updatePayload = {
                     title,
-                    linkUrl,
-                    videoUrl,
-                    startDate,
-                    endDate,
-                    advertiser,
+                    linkUrl: linkUrl || null,
+                    videoUrl: videoUrl || null,
+                    startDate: startDate || null,
+                    endDate: endDate || null,
+                    advertiser: advertiser || null,
                     isActive,
                 };
-                api.put(`/ads/${adId}`, updatePayload).then(async (response) => {
-                    addToast("Ad updated successfully", "success");
-                    onClose();
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Ad update failed", "error");
-                });
-            }
 
-            // always call onSave for parent refresh (for edit case)
-            // if (adId) await onSave(adId);
-        } catch (err) {
-            console.error("save failed", err);
-            // keep saving false and keep modal open
+                await api.put(`/ads/${adId}`, updatePayload);
+
+                addToast("Ad updated successfully", "success");
+                await onSave(adId);
+                onClose();
+            }
+        } catch (err: any) {
+            const message =
+                err?.response?.data?.message ||
+                (isNewAd ? "Ad creation failed" : "Ad update failed");
+
+            addToast(message, "error");
+            setUploadProgress(0); // Reset progress on error
+            console.error("Save failed:", err);
         } finally {
             setSaving(false);
         }
