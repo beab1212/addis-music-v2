@@ -68,7 +68,7 @@ export default function AlbumDetail() {
   }
 
   const handlePlay = () => {
-    if (albumTrack.length > 0) {
+    if (albumTrack?.length > 0) {
       setQueue(albumTrack);
       setCurrentSong(albumTrack[0]);
     }
@@ -90,7 +90,7 @@ export default function AlbumDetail() {
             </h1>
             <p className="text-xl text-gray-700 dark:text-gray-300 mb-2">{album.artist?.name || 'Unknown'}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {formatDate(album.releaseDate || new Date().toISOString())} • {albumTrack.length} songs
+              {formatDate(album.releaseDate || new Date().toISOString())} • {albumTrack?.length} songs
             </p>
           </div>
         </div>
