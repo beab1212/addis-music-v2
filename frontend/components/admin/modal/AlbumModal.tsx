@@ -137,7 +137,9 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
     if (!open) return null;
 
     const handleSave = async () => {
+        const isNewAlbum = !albumId || albumId === "new";
         setSaving(true);
+        setUploadProgress(0);
 
         const payload = new FormData();
         payload.append("title", title);
@@ -150,24 +152,20 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
 
 
         try {
-            if (albumId === "new") {
+            if (isNewAlbum) {
                 // creating new album
                 if (albumArt) payload.append("cover", albumArt);
 
-                api.post("/albums", payload, {
+                await api.post("/albums", payload, {
                     timeout: 10000,
                     onUploadProgress: (progressEvent: any) => {
-                        const percentCompleted = Math.round(
-                            (progressEvent.loaded * 100) / progressEvent.total
-                        );
-                        setUploadProgress(percentCompleted);
+                        if (progressEvent.total) {
+                            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                            setUploadProgress(percent);
+                        }
                     }
-                }).then(async (response) => {
-                    addToast( "Album created successfully", "success");
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Album creation failed", "error");
-                    setUploadProgress(0);
                 });
+                addToast("Album created successfully", "success");
 
             } else {
                 // updating existing album
@@ -179,21 +177,20 @@ export default function AlbumModal({ open, albumId, onClose, onSave }: Props) {
                 };
                 if (genre?.id) updatePayload.genreId = genre.id;
                 if (artist?.id) updatePayload.artistId = artist.id;
-                api.put(`/albums/${albumId}`, updatePayload).then(async (response) => {
-                    addToast( "Album updated successfully", "success");
-                    onClose();
-                }).catch((err) => {
-                    addToast(err?.response?.data?.message || "Album update failed", "error");
-                });
+                await api.put(`/albums/${albumId}`, updatePayload);
+                addToast("Album updated successfully", "success");
             }
 
             // always call onSave for parent refresh (for edit case)
             if (albumId) await onSave(albumId);
             onClose();
-        } catch (err) {
+        } catch (err: any) {
+            const message = err?.response?.data?.message || (isNewAlbum ? "Album creation failed" : "Album update failed");
             console.error("save failed", err);
             // keep saving false and keep modal open
         } finally {
+            onClose();
+            setUploadProgress(0);
             setSaving(false);
         }
     };
