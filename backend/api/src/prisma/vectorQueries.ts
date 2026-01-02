@@ -415,8 +415,7 @@ export const getNewAlbums = async (
   limit: number = 10,
   offset: number = 0
 ) => {
-
-  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
+  const hasVectors = userMetaVector.length > 0;
 
   const results: any = await prisma.$queryRawUnsafe(`
     SELECT 
@@ -437,36 +436,22 @@ export const getNewAlbums = async (
       ar."createdAt" AS "artistCreatedAt",
 
       ${hasVectors
-      ? `
-          -- Calculate score based only on embeddingVector
-          (1 - (a."embeddingVector" <-> CAST($1 AS vector))) AS "score"
-        `
-      : `
-          1.0 AS "score"  -- Default score when vectors are not available
-        `
-    }
-
+        ? `(1 - (a."embeddingVector" <-> $3)) AS "score"`
+        : `1.0 AS "score"`
+      }
     FROM "Album" a
-    JOIN "Artist" ar
-      ON a."artistId" = ar."id"
-
-    -- No PlayHistory join anymore
-    GROUP BY
-      a."id", ar."id"
-
-    -- Apply ordering based on score (if vectors are used) and limit/offset for pagination
+    JOIN "Artist" ar ON a."artistId" = ar."id"
+    GROUP BY a."id", ar."id"
     ORDER BY "score" DESC
-
-    LIMIT $2
-    OFFSET $3;
+    LIMIT $1 OFFSET $2
   `,
-    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
-    limit,  // Add limit as parameter
-    offset  // Add offset as parameter
+    limit,   // always $1
+    offset,  // always $2
+    ...(hasVectors ? [userMetaVector] : [])  // $3 only if vector provided
   );
 
   return organizeAlbumsWithArtist(results);
-}
+};
 
 export const popularPlaylists = async (
   userMetaVector: number[] = [],
@@ -474,7 +459,6 @@ export const popularPlaylists = async (
   limit: number = 10,
   offset: number = 0
 ) => {
-
   const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
 
   const results: any = await prisma.$queryRawUnsafe(`
@@ -483,29 +467,29 @@ export const popularPlaylists = async (
       p."title",
       p."description",
       p."coverUrl",
-      p."userId",  -- User who created the playlist (not creatorId)
+      p."userId",
       p."createdAt",
 
-      ${hasVectors
-      ? `
-          -- Calculate score based on embeddingVector
-          (1 - (p."embeddingVector" <-> CAST($1 AS vector))) AS "vectorScore"
-          `
-      : `
-          1.0 AS "vectorScore"  -- Default score when vectors are not available
-        `
-    },
-      
-      -- Calculate the combined score
-      (
-        -- Likes Score: Count the total likes on tracks in the playlist
-        COALESCE(SUM(CASE WHEN tl."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.5 +
-        
-        -- Play History Score: Count the total plays on tracks in the playlist
-        COALESCE(SUM(CASE WHEN ph."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.3 +
+      -- Likes Score: total number of likes on tracks in the playlist
+      COALESCE(SUM(CASE WHEN tl."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.5 AS "likesScore",
 
-        -- Vector Score: As calculated from the embedding vector (if available)
-        COALESCE((1 - (p."embeddingVector" <-> CAST($1 AS vector))), 1) * 0.2
+      -- Play History Score: total number of plays on tracks in the playlist
+      COALESCE(SUM(CASE WHEN ph."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.3 AS "playScore",
+
+      -- Vector similarity score (only used when vectors are provided)
+      ${hasVectors
+        ? `(1 - (p."embeddingVector" <-> $3)) * 0.2 AS "vectorScore"`
+        : `0.2 AS "vectorScore"`
+      },
+
+      -- Final combined score
+      (
+        COALESCE(SUM(CASE WHEN tl."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.5 +
+        COALESCE(SUM(CASE WHEN ph."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.3 +
+        ${hasVectors
+          ? `(1 - (p."embeddingVector" <-> $3)) * 0.2`
+          : `0.2`
+        }
       ) AS "combinedScore"
 
     FROM "Playlist" p
@@ -514,25 +498,20 @@ export const popularPlaylists = async (
     LEFT JOIN "TrackLike" tl ON t."id" = tl."trackId"
     LEFT JOIN "PlayHistory" ph ON t."id" = ph."trackId"
 
-    GROUP BY 
-      p."id"
+    GROUP BY p."id"
 
-    ORDER BY "combinedScore" DESC  -- Order by the combined score
+    ORDER BY "combinedScore" DESC
 
-    LIMIT $2
-    OFFSET $3;
+    LIMIT $1
+    OFFSET $2;
   `,
-    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
-    limit,  // Add limit as parameter
-    offset  // Add offset as parameter
+    limit,   // $1
+    offset,  // $2
+    ...(hasVectors ? [userMetaVector] : [])  // $3 only when hasVectors = true
   );
 
-  // console.log("Popular playlist: ", results);
-
-
   return results;
-
-}
+};
 
 
 // Featured Artists
@@ -543,7 +522,7 @@ export const featuredArtists = async (
   offset: number = 0
 ) => {
 
-  const hasVectors = userMetaVector.length > 0 && userAudioVector.length > 0;
+  const hasVectors = userMetaVector.length > 0;
 
   const results: any = await prisma.$queryRawUnsafe(`
     SELECT 
@@ -558,14 +537,9 @@ export const featuredArtists = async (
       COUNT(af."id")::int AS followers,
 
       ${hasVectors
-      ? `
-          -- Calculate score based on embeddingVector
-          (1 - (a."embeddingVector" <-> CAST($1 AS vector))) AS "score"
-        `
-      : `
-          1.0 AS "score"  -- Default score when vectors are not available
-        `
-    }
+        ? `(1 - (a."embeddingVector" <-> $3)) AS "score"`
+        : `1.0 AS "score"`
+      }
 
     FROM "Artist" a
     LEFT JOIN "ArtistFollow" af
@@ -576,17 +550,16 @@ export const featuredArtists = async (
 
     ORDER BY "score" DESC  -- Order by the score
 
-    LIMIT $2
-    OFFSET $3;
+    LIMIT $1
+    OFFSET $2;
   `,
-    ...(hasVectors ? [userMetaVector] : []),  // Pass the vector if available
     limit,  // Add limit as parameter
-    offset  // Add offset as parameter
+    offset,  // Add offset as parameter
+    ...(hasVectors ? [userMetaVector] : [])  // Pass the vector if available
+
   );
 
   // console.log("Featured artists: ", results);
-
-
   return results;
 
 }
@@ -597,7 +570,7 @@ export const featuredArtists = async (
 
 // Tuning constants — adjust these as needed to reduce noise and improve relevance
 // Cosine Similarity threshold to consider a result relevant (0 to 1) 1 ≈ identical, 0.5 ≈ somewhat similar 0 ≈ no similarity
-const SEARCH_MIN_SIMILARITY = 0.28;
+const SEARCH_MIN_SIMILARITY = 0.2;
 
 // Loose cosine *distance* filter to keep the query fast and index-friendly
 // pgvector <=> returns cosine_distance = 1 − cosine_similarity
