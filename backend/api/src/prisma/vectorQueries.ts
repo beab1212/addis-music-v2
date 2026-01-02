@@ -436,7 +436,7 @@ export const getNewAlbums = async (
       ar."createdAt" AS "artistCreatedAt",
 
       ${hasVectors
-        ? `(1 - (a."embeddingVector" <-> $3)) AS "score"`
+        ? `(1 - (a."embeddingVector" <-> CAST($3 AS vector))) AS "score"`
         : `1.0 AS "score"`
       }
     FROM "Album" a
@@ -478,7 +478,7 @@ export const popularPlaylists = async (
 
       -- Vector similarity score (only used when vectors are provided)
       ${hasVectors
-        ? `(1 - (p."embeddingVector" <-> $3)) * 0.2 AS "vectorScore"`
+        ? `(1 - (p."embeddingVector" <-> CAST($3 AS vector))) * 0.2 AS "vectorScore"`
         : `0.2 AS "vectorScore"`
       },
 
@@ -487,7 +487,7 @@ export const popularPlaylists = async (
         COALESCE(SUM(CASE WHEN tl."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.5 +
         COALESCE(SUM(CASE WHEN ph."id" IS NOT NULL THEN 1 ELSE 0 END), 0) * 0.3 +
         ${hasVectors
-          ? `(1 - (p."embeddingVector" <-> $3)) * 0.2`
+          ? `(1 - (p."embeddingVector" <-> CAST($3 AS vector))) * 0.2`
           : `0.2`
         }
       ) AS "combinedScore"
@@ -537,7 +537,7 @@ export const featuredArtists = async (
       COUNT(af."id")::int AS followers,
 
       ${hasVectors
-        ? `(1 - (a."embeddingVector" <-> $3)) AS "score"`
+        ? `(1 - (a."embeddingVector" <-> CAST($3 AS vector))) AS "score"`
         : `1.0 AS "score"`
       }
 
