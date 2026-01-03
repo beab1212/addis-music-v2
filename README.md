@@ -1,13 +1,4 @@
 # Addis-Music-v2
-
-
-
-
-
-
-
-
-
 # Backend API Service Setup Instructions
 
 This guide sets up **Redis**, **PostgreSQL**, and **pgvector** for the music streaming platform.
@@ -24,7 +15,7 @@ redis-cli ping
 # Should return: PONG
 ```
 
-# 2. Install and Start PostgresSQL
+## 2. Install and Start PostgresSQL
 
 ```bash
 sudo apt install postgresql postgresql-contrib
@@ -32,12 +23,12 @@ sudo service postgresql start
 psql --version
 ```
 
-# 3. Install pgvector Extension
+## 3. Install pgvector Extension
 ```bash
 sudo apt install postgresql-17-pgvector     # replace 17 with your version
 ```
 
-# 4. Set Up PostgresSQl Database and User
+## 4. Set Up PostgresSQl Database and User
 ```bash
 sudo -i -u postgres psql
 ```
@@ -62,7 +53,49 @@ GRANT CREATE ON DATABASE postgres TO addismusic
 \q
 ```
 
-# 5. Sync Database Schema
+## 5. Install Minio Object Storage
+Option 1: Using Docker (Recommended for Local Development)
+
+Run this — it will pull the Community Edition automatically from Docker Hub:
+```bash
+docker run -d \
+  --name minio \
+  -p 9000:9000 \
+  -p 9001:9001 \
+  -e "MINIO_ROOT_USER=minioadmin" \
+  -e "MINIO_ROOT_PASSWORD=minioadmin" \
+  -v ~/minio-data:/data \
+  minio/minio server /data --console-address ":9001"
+```
+
+Option 2: Download the Community Edition Binary (Manual Install)
+You can always get the latest Community Edition binary from MinIO’s official open-source release site:
+```bash
+wget https://dl.min.io/server/minio/release/linux-amd64/minio
+chmod +x minio
+sudo mv minio /usr/local/bin/
+```
+Then start it:
+```bash
+minio server /var/www/minio-data --console-address ":9001"
+```
+
+## 6. Clone the Source Code From Github
+```bash
+git clone https://github.com/beab1212/addis-music-v2.git
+```
+
+#### Change your directory in to the API folder
+```bash
+cd addis-music-v2/backend/api
+```
+
+## 7 Install All API Service Dependencies
+```bash
+npm i
+```
+
+## 8. Sync Database Schema
 ```bash
 npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma
 ```
@@ -118,33 +151,119 @@ const results = await prisma.$queryRaw`
 `;
 ```
 
-# 6. Setup MeiliSearch
+
+## 9. Build and Start the API Service
+```bash
+npm run build
+npm start
+```
+
+<!-- # 6. Setup MeiliSearch
 Note: This will delete all existing track documents
 ```bash
 npx ts-node src/scripts/setupMeili.ts
+``` -->
+
+---
+---
+# Backend Recommendation Service Setup Instructions
+
+## 1. Change System Directory to Recommendation service
+```bash
+cd ../recommendation\ service
+```
+
+## 2. Create and Activate Virtual Environment
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+## 2. Install all Required Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Install CPU only pytorch if your device doesn't have GPU
+```bash
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+```
+
+## 3. Run the Recommendation Service
+```bash
+python main.py
 ```
 
 
-# Install CPU only pytorch if your device doesn't have GPU
+
+---
+---
+# Backend Media Service Setup Instructions
+
+## 1. Change System Directory to Media service
+```bash
+cd ../media\ service
+```
+
+## 2. Create and Activate Virtual Environment
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+## 3. Install all Required Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+## 4. Run the Recommendation Service
+```bash
+uvicorn main:app
+```
+
+---
+---
+# Frontend
+
+## 1. Change System Directory to Frontend service
+```bash
+cd ../../frontend
+```
+
+
+## 2. Install all Required Dependencies
+```bash
+npm install
+```
+
+## 3. Build and Start the Frontend
+```bash
+npm run build
+npm start
+```
+
+
+
+
+
+
+
+
+
+
+<!-- # Install CPU only pytorch if your device doesn't have GPU
 ```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 ```
 
 ```bash
 pip install psycopg2-binary sentence-transformers numpy
-```
-
-
-
-
-
-
-
+``` -->
 
 
 
 <!-- New setup update -->
-Create a migration like this:
+<!-- Create a migration like this:
 ```bash
 npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma --create-only
 ```
@@ -168,7 +287,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 # on Playlist schema
 "embeddingVector" VECTOR(384);
-```
+``` -->
 
 
 
@@ -193,7 +312,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 
 
-# Temporary
+<!-- # Temporary
 
 npx @better-auth/cli migrate --config ./src/libs/auth.ts
 
@@ -247,5 +366,5 @@ minio server /var/www/minio-data --console-address ":9001"
 ```bash
 uvicorn main:app --reload
 uvicorn main:app --reload --port 8001
-```
+``` -->
 
