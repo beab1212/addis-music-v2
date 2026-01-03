@@ -93,7 +93,7 @@ async def process_for_you_job(job):
             "user_audio_vector": user_audio_vector
         })
 
-        redis_connection.set(cache_key, cache_value, ex=10)  # Cache for 10 seconds
+        redis_connection.set(cache_key, cache_value, ex=5)  # Cache for 10 seconds
 
 
         return {"status": "done", "data": {
